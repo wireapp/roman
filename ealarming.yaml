@@ -34,7 +34,7 @@ database:
   driverClass: org.postgresql.Driver
   user: postgres
   password: ${POSTGRES_PASSWORD}
-  url: jdbc:postgresql://localhost/postgres
+  url: jdbc:postgresql://localhost/ealarming
   properties:
     charSet: UTF-8
   maxWaitForConnection: 1s

@@ -1,1 +1,15 @@
+CREATE TABLE Alert (
+ id SERIAL PRIMARY KEY,
+ created TIMESTAMP NOT NULL,
+ title VARCHAR NOT NULL,
+ message VARCHAR NOT NULL,
+ category VARCHAR,
+ severity INTEGER,
+ creator UUID NOT NULL,
+ contact UUID,
+ starting TIMESTAMP NOT NULL,
+ ending TIMESTAMP NOT NULL,
+ status INTEGER,
+ responses VARCHAR NOT NULL
+);
 

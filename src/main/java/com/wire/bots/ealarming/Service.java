@@ -17,11 +17,16 @@
 
 package com.wire.bots.ealarming;
 
+import com.wire.bots.ealarming.DAO.AlertDAO;
 import com.wire.bots.ealarming.model.Config;
+import com.wire.bots.ealarming.resources.AlertResource;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
+import com.wire.bots.sdk.tools.AuthValidator;
+import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.skife.jdbi.v2.DBI;
 
 public class Service extends Server<Config> {
     public static Service instance;
@@ -48,6 +53,12 @@ public class Service extends Server<Config> {
 
     @Override
     protected void onRun(Config config, Environment env) {
+        final DBI jdbi = new DBIFactory().build(environment, config.database, "postgresql");
+        final AlertDAO alertDAO = jdbi.onDemand(AlertDAO.class);
+
+        AuthValidator validator = new AuthValidator(config.auth);
+
+        addResource(new AlertResource(alertDAO, validator), env);
 
     }
 }
