@@ -78,7 +78,7 @@ public class AlertResource {
                     ok().
                     build();
         } catch (Exception e) {
-            Logger.error("AlertResource.post: %s", e);
+            Logger.error("AlertResource.putGroups: %s", e);
             return Response
                     .ok(e)
                     .status(500)

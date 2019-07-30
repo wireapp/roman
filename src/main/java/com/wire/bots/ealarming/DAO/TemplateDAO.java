@@ -1,5 +1,6 @@
 package com.wire.bots.ealarming.DAO;
 
+import com.wire.bots.ealarming.model.Group;
 import com.wire.bots.ealarming.model.Template;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
@@ -31,6 +32,11 @@ public interface TemplateDAO {
     List<Template> select();
 
     @SqlUpdate("INSERT INTO Template2Group (template_id, group_id) VALUES (:templateId, :groupId)")
-    int put(@Bind("templateId") int templateId,
-            @Bind("groupId") int groupId);
+    int putGroup(@Bind("templateId") int templateId,
+                 @Bind("groupId") int groupId);
+
+    @SqlQuery("SELECT G.* FROM Template2Group AS T, Groups AS G WHERE T.template_id = :templateId AND T.group_id = G.id")
+    @RegisterMapper(GroupMapper.class)
+    List<Group> selectGroups(@Bind("templateId") int templateId);
+
 }

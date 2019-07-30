@@ -2,6 +2,7 @@ package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.TemplateDAO;
 import com.wire.bots.ealarming.model.Template;
+import com.wire.bots.ealarming.model.TemplateResult;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -10,6 +11,7 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 
 @Api
@@ -32,15 +34,18 @@ public class TemplateResource {
             @ApiResponse(code = 200, message = "Template")})
     public Response get(@ApiParam @PathParam("templateId") int templateId) {
         try {
-            Template template = templateDAO.get(templateId);
-            if (template == null) {
+            TemplateResult result = new TemplateResult();
+            result.template = templateDAO.get(templateId);
+            if (result.template == null) {
                 return Response.
                         status(404).
                         build();
             }
 
+            result.groups = templateDAO.selectGroups(templateId);
+            
             return Response.
-                    ok(template).
+                    ok(result).
                     build();
         } catch (Exception e) {
             Logger.error("TemplateResource.get(%d): %s", templateId, e);
@@ -91,6 +96,30 @@ public class TemplateResource {
                     build();
         } catch (Exception e) {
             Logger.error("TemplateResource.post: %s", e);
+            return Response
+                    .ok(e)
+                    .status(500)
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("{templateId}")
+    @ApiOperation(value = "Add Groups for this Template")
+    @ApiResponses(value = {
+            @ApiResponse(code = 500, message = "Something went wrong"),
+            @ApiResponse(code = 200, message = "Nothing")})
+    public Response putGroups(@ApiParam @PathParam("templateId") int templateId,
+                              @ApiParam @Valid ArrayList<Integer> groups) {
+        try {
+            for (Integer groupId : groups) {
+                templateDAO.putGroup(templateId, groupId);
+            }
+            return Response.
+                    ok().
+                    build();
+        } catch (Exception e) {
+            Logger.error("TemplateResource.putGroups: %s", e);
             return Response
                     .ok(e)
                     .status(500)
