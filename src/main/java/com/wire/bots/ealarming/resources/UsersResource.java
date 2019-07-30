@@ -34,7 +34,7 @@ public class UsersResource {
             @ApiResponse(code = 200, message = "Users")})
     public Response get(@ApiParam @PathParam("alertId") int alertId) {
         try {
-            List<Alert2User> select = alert2UserDAO.select(alertId);
+            List<Alert2User> select = alert2UserDAO.selectUsers(alertId);
 
             ArrayList<User> ret = new ArrayList<>();
             for (Alert2User alert2User : select) {
@@ -59,16 +59,16 @@ public class UsersResource {
         }
     }
 
-    @POST
+    @PUT
     @ApiOperation(value = "Add Users for this Alert")
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Users")})
+            @ApiResponse(code = 200, message = "Nothing")})
     public Response post(@ApiParam @PathParam("alertId") int alertId,
                          @ApiParam @Valid ArrayList<UUID> users) {
         try {
             for (UUID userId : users) {
-                alert2UserDAO.insert(alertId, userId, null, null, null);
+                alert2UserDAO.insertUser(alertId, userId);
             }
             return Response.
                     ok().

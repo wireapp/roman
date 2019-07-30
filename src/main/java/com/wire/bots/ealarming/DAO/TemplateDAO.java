@@ -30,4 +30,7 @@ public interface TemplateDAO {
     @RegisterMapper(TemplateMapper.class)
     List<Template> select();
 
+    @SqlUpdate("INSERT INTO Template2Group (template_id, group_id) VALUES (:templateId, :groupId)")
+    int put(@Bind("templateId") int templateId,
+            @Bind("groupId") int groupId);
 }

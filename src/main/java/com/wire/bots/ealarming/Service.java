@@ -60,12 +60,11 @@ public class Service extends Server<Config> {
         final DBI jdbi = new DBIFactory().build(environment, config.database, "postgresql");
         final AlertDAO alertDAO = jdbi.onDemand(AlertDAO.class);
         final TemplateDAO templateDAO = jdbi.onDemand(TemplateDAO.class);
-
         final Alert2UserDAO alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
 
         AuthValidator validator = new AuthValidator(config.auth);
 
-        addResource(new AlertResource(alertDAO, validator), env);
+        addResource(new AlertResource(alertDAO, alert2UserDAO, validator), env);
         addResource(new TemplateResource(templateDAO, validator), env);
         addResource(new UsersResource(alert2UserDAO, validator), env);
     }

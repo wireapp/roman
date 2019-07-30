@@ -44,3 +44,10 @@ CREATE TABLE Alert2Group (
  group_id INTEGER NOT NULL,
  PRIMARY KEY(alert_id, group_id)
 );
+
+CREATE TABLE Groups (
+ id INTEGER NOT NULL PRIMARY KEY,
+ name VARCHAR NOT NULL,
+ type INTEGER,
+ deleted INTEGER
+);
