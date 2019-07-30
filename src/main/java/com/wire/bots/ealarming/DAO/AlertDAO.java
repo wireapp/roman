@@ -27,11 +27,11 @@ public interface AlertDAO {
                @Bind("responses") String responses);
 
     @SqlQuery("SELECT * FROM Alert WHERE id = :id")
-    @RegisterMapper(AlertResultSetMapper.class)
+    @RegisterMapper(AlertMapper.class)
     Alert get(@Bind("id") int id);
 
     @SqlQuery("SELECT * FROM Alert ORDER BY created DESC")
-    @RegisterMapper(AlertResultSetMapper.class)
-    List<Alert> list();
+    @RegisterMapper(AlertMapper.class)
+    List<Alert> select();
 
 }

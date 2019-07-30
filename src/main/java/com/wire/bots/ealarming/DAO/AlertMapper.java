@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class AlertResultSetMapper implements ResultSetMapper<Alert> {
+public class AlertMapper implements ResultSetMapper<Alert> {
     @Override
     @Nullable
     public Alert map(int i, ResultSet rs, StatementContext statementContext) {

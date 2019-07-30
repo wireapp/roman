@@ -25,14 +25,14 @@ public class AlertResource {
     }
 
     @GET
-    @Path("{id}")
+    @Path("{alertId}")
     @ApiOperation(value = "Get Alert  by its id")
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong"),
             @ApiResponse(code = 200, message = "Alert")})
-    public Response get(@ApiParam @PathParam("id") int id) {
+    public Response get(@ApiParam @PathParam("alertId") int alertId) {
         try {
-            Alert alert = alertDAO.get(id);
+            Alert alert = alertDAO.get(alertId);
             if (alert == null) {
                 return Response.
                         status(404).
@@ -43,7 +43,7 @@ public class AlertResource {
                     ok(alert).
                     build();
         } catch (Exception e) {
-            Logger.error("AlertResource.get(%d): %s", id, e);
+            Logger.error("AlertResource.get(%d): %s", alertId, e);
             return Response
                     .ok(e.getMessage())
                     .status(500)
@@ -58,7 +58,7 @@ public class AlertResource {
             @ApiResponse(code = 200, message = "List of Alerts")})
     public Response getAll() {
         try {
-            List<Alert> list = alertDAO.list();
+            List<Alert> list = alertDAO.select();
             return Response.
                     ok(list).
                     build();

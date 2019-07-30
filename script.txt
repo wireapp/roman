@@ -13,3 +13,34 @@ CREATE TABLE Alert (
  responses VARCHAR NOT NULL
 );
 
+CREATE TABLE Template (
+ id SERIAL PRIMARY KEY,
+ created TIMESTAMP NOT NULL,
+ title VARCHAR NOT NULL,
+ message VARCHAR NOT NULL,
+ category VARCHAR,
+ severity INTEGER,
+ contact UUID,
+ responses VARCHAR NOT NULL
+);
+
+CREATE TABLE Alert2User (
+ alert_id INTEGER NOT NULL,
+ user_id UUID NOT NULL,
+ message_status INTEGER,
+ escalated TIMESTAMP,
+ response_id INTEGER,
+ PRIMARY KEY(alert_id, user_id)
+);
+
+CREATE TABLE Template2Group (
+ template_id INTEGER NOT NULL,
+ group_id INTEGER NOT NULL,
+ PRIMARY KEY(template_id, group_id)
+);
+
+CREATE TABLE Alert2Group (
+ alert_id INTEGER NOT NULL,
+ group_id INTEGER NOT NULL,
+ PRIMARY KEY(alert_id, group_id)
+);
