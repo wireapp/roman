@@ -1,7 +1,7 @@
 package com.wire.bots.ealarming.resources;
 
-import com.wire.bots.ealarming.DAO.AlertDAO;
-import com.wire.bots.ealarming.model.Alert;
+import com.wire.bots.ealarming.DAO.TemplateDAO;
+import com.wire.bots.ealarming.model.Template;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -13,37 +13,37 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Api
-@Path("/alerts")
+@Path("/templates")
 @Produces(MediaType.APPLICATION_JSON)
-public class AlertResource {
-    private final AlertDAO alertDAO;
+public class TemplateResource {
+    private final TemplateDAO templateDAO;
     private final AuthValidator validator;
 
-    public AlertResource(AlertDAO alertDAO, AuthValidator validator) {
-        this.alertDAO = alertDAO;
+    public TemplateResource(TemplateDAO templateDAO, AuthValidator validator) {
+        this.templateDAO = templateDAO;
         this.validator = validator;
     }
 
     @GET
-    @Path("{alertId}")
-    @ApiOperation(value = "Get Alert  by its id")
+    @Path("{templateId}")
+    @ApiOperation(value = "Get Template by its id")
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Alert")})
-    public Response get(@ApiParam @PathParam("alertId") int alertId) {
+            @ApiResponse(code = 200, message = "Template")})
+    public Response get(@ApiParam @PathParam("templateId") int templateId) {
         try {
-            Alert alert = alertDAO.get(alertId);
-            if (alert == null) {
+            Template template = templateDAO.get(templateId);
+            if (template == null) {
                 return Response.
                         status(404).
                         build();
             }
 
             return Response.
-                    ok(alert).
+                    ok(template).
                     build();
         } catch (Exception e) {
-            Logger.error("AlertResource.get(%d): %s", alertId, e);
+            Logger.error("TemplateResource.get(%d): %s", templateId, e);
             return Response
                     .ok(e)
                     .status(500)
@@ -52,18 +52,18 @@ public class AlertResource {
     }
 
     @GET
-    @ApiOperation(value = "Get All Alerts ")
+    @ApiOperation(value = "Get All Templates")
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "List of Alerts")})
+            @ApiResponse(code = 200, message = "List of Templates")})
     public Response getAll() {
         try {
-            List<Alert> list = alertDAO.select();
+            List<Template> list = templateDAO.select();
             return Response.
                     ok(list).
                     build();
         } catch (Exception e) {
-            Logger.error("AlertResource.getAll: %s", e);
+            Logger.error("TemplateResource.getAll: %s", e);
             return Response
                     .ok(e)
                     .status(500)
@@ -72,29 +72,25 @@ public class AlertResource {
     }
 
     @POST
-    @ApiOperation(value = "Create new Alert")
+    @ApiOperation(value = "Create new Template")
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "New Alert")})
-    public Response post(@ApiParam @Valid Alert alert) {
+            @ApiResponse(code = 200, message = "New Template")})
+    public Response post(@ApiParam @Valid Template template) {
         try {
-            int id = alertDAO.insert(alert.title,
-                    alert.message,
-                    alert.category,
-                    alert.severity,
-                    alert.creator,
-                    alert.contact,
-                    alert.starting,
-                    alert.ending,
-                    alert.status,
-                    alert.responses);
+            int id = templateDAO.insert(template.title,
+                    template.message,
+                    template.category,
+                    template.severity,
+                    template.contact,
+                    template.responses);
 
-            Alert ret = alertDAO.get(id);
+            Template ret = templateDAO.get(id);
             return Response.
                     ok(ret).
                     build();
         } catch (Exception e) {
-            Logger.error("AlertResource.post: %s", e);
+            Logger.error("TemplateResource.post: %s", e);
             return Response
                     .ok(e)
                     .status(500)
