@@ -31,5 +31,12 @@ public interface Alert2UserDAO {
                      @Bind("messageId") UUID messageId,
                      @Bind("status") int status);
 
+    @SqlQuery("SELECT count(*) AS count, message_status FROM Alert2User WHERE alert_id = :alertId GROUP BY message_status")
+    @RegisterMapper(ReportMapper.class)
+    List<_Pair> report(@Bind("alertId") int alertId);
 
+    class _Pair {
+        public int type;
+        public int count;
+    }
 }

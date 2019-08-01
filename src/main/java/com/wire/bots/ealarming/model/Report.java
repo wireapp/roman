@@ -2,11 +2,11 @@ package com.wire.bots.ealarming.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.util.List;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AlertResult {
-    public Alert alert;
-    public List<Group> groups;
-    public List<User> users;
+public class Report {
+    public int unknown;
+    public int sent;
+    public int delivered;
+    public int read;
+    public int responded;
 }

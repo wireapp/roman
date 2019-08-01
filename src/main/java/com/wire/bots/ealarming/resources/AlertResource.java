@@ -2,10 +2,11 @@ package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.DAO.AlertDAO;
+import com.wire.bots.ealarming.DAO.UserDAO;
 import com.wire.bots.ealarming.model.Alert;
 import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.ealarming.model.AlertResult;
-import com.wire.bots.ealarming.model.Group;
+import com.wire.bots.ealarming.model.User;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -23,11 +24,13 @@ import java.util.List;
 public class AlertResource {
     private final AlertDAO alertDAO;
     private final Alert2UserDAO alert2UserDAO;
+    private final UserDAO userDAO;
     private final AuthValidator validator;
 
-    public AlertResource(AlertDAO alertDAO, Alert2UserDAO alert2UserDAO, AuthValidator validator) {
+    public AlertResource(AlertDAO alertDAO, Alert2UserDAO alert2UserDAO, UserDAO userDAO, AuthValidator validator) {
         this.alertDAO = alertDAO;
         this.alert2UserDAO = alert2UserDAO;
+        this.userDAO = userDAO;
         this.validator = validator;
     }
 
@@ -94,20 +97,32 @@ public class AlertResource {
             @ApiResponse(code = 200, message = "Alert")})
     public Response get(@ApiParam @PathParam("alertId") int alertId) {
         try {
-            Alert alert = alertDAO.get(alertId);
-            if (alert == null) {
+            AlertResult result = new AlertResult();
+
+            result.alert = alertDAO.get(alertId);
+            if (result.alert == null) {
                 return Response.
                         status(404).
                         build();
             }
 
-            List<Group> groups = alertDAO.selectGroups(alertId);
-            List<Alert2User> users = alert2UserDAO.selectUsers(alertId);
+            result.groups = alertDAO.selectGroups(alertId);
+            result.users = new ArrayList<>();
 
-            AlertResult result = new AlertResult();
-            result.alert = alert;
-            result.groups = groups;
-            result.users = users;
+            for (Alert2User alert2User : alert2UserDAO.selectUsers(alertId)) {
+                User user = userDAO.get(alert2User.userId);
+                if (user == null) {
+                    user = new User();
+                }
+
+                user.userId = alert2User.userId;
+                user.alertId = alert2User.alertId;
+                user.messageStatus = alert2User.messageStatus;
+                user.responseId = alert2User.responseId;
+                user.escalated = alert2User.escalated;
+
+                result.users.add(user);
+            }
 
             return Response.
                     ok(result).

@@ -49,7 +49,16 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     public void onConfirmation(WireClient client, ConfirmationMessage msg) {
-        if (msg.getType() == ConfirmationMessage.Type.DELIVERED)
-            alert2UserDAO.updateStatus(msg.getUserId(), msg.getConfirmationMessageId(), 2);
+        UUID userId = msg.getUserId();
+        UUID messageId = msg.getConfirmationMessageId();
+
+        switch (msg.getType()) {
+            case DELIVERED:
+                alert2UserDAO.updateStatus(userId, messageId, 2); //todo enum
+                break;
+            case READ:
+                alert2UserDAO.updateStatus(userId, messageId, 3); //todo enum
+                break;
+        }
     }
 }

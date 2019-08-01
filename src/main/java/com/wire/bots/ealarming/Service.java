@@ -64,12 +64,13 @@ public class Service extends Server<Config> {
 
         AuthValidator validator = new AuthValidator(config.auth);
 
-        addResource(new AlertResource(alertDAO, alert2UserDAO, validator), env);
+        addResource(new AlertResource(alertDAO, alert2UserDAO, userDAO, validator), env);
         addResource(new TemplateResource(templateDAO, groupsDAO, validator), env);
         addResource(new UsersResource(alert2UserDAO, userDAO, validator), env);
         addResource(new SearchResource(userDAO, groupsDAO, validator), env);
         addResource(new GroupsResource(groupsDAO, validator), env);
         addResource(new BroadcastResource(alertDAO, alert2UserDAO, groupsDAO, user2BotDAO, getRepo(), validator), env);
+        addResource(new ReportResource(alert2UserDAO, validator), env);
 
     }
 }
