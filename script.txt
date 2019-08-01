@@ -63,3 +63,9 @@ CREATE TABLE Users (
  location VARCHAR NOT NULL,
  User_Id UUID
 );
+
+CREATE TABLE User2Group (
+ group_id INTEGER NOT NULL,
+ user_id INTEGER NOT NULL,
+ PRIMARY KEY(user_id, group_id)
+);

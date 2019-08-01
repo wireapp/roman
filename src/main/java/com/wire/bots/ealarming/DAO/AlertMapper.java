@@ -22,7 +22,7 @@ public class AlertMapper implements ResultSetMapper<Alert> {
             alert.message = rs.getString("message");
             alert.category = rs.getString("category");
             alert.severity = rs.getInt("severity");
-            alert.creator = (UUID) rs.getObject("creator");
+            alert.creator = getUuid(rs, "creator");
             alert.contact = getUuid(rs, "contact");
             alert.starting = rs.getString("starting");
             alert.ending = rs.getString("ending");

@@ -19,10 +19,7 @@ package com.wire.bots.ealarming;
 
 import com.wire.bots.ealarming.DAO.*;
 import com.wire.bots.ealarming.model.Config;
-import com.wire.bots.ealarming.resources.AlertResource;
-import com.wire.bots.ealarming.resources.SearchResource;
-import com.wire.bots.ealarming.resources.TemplateResource;
-import com.wire.bots.ealarming.resources.UsersResource;
+import com.wire.bots.ealarming.resources.*;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
 import com.wire.bots.sdk.tools.AuthValidator;
@@ -69,5 +66,7 @@ public class Service extends Server<Config> {
         addResource(new TemplateResource(templateDAO, groupsDAO, validator), env);
         addResource(new UsersResource(alert2UserDAO, validator), env);
         addResource(new SearchResource(userDAO, groupsDAO, validator), env);
+        addResource(new GroupsResource(groupsDAO, validator), env);
+
     }
 }
