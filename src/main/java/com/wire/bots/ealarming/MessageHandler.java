@@ -45,7 +45,11 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onText(WireClient client, TextMessage msg) {
-
+        UUID userId = msg.getUserId();
+        UUID messageId = msg.getQuotedMessageId();
+        if (messageId != null) {
+            alert2UserDAO.updateStatus(userId, messageId, 4); //todo enum
+        }
     }
 
     public void onConfirmation(WireClient client, ConfirmationMessage msg) {
