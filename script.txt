@@ -28,6 +28,7 @@ CREATE TABLE Alert2User (
  alert_id INTEGER NOT NULL,
  user_id UUID NOT NULL,
  message_status INTEGER,
+ message_id UUID,
  escalated TIMESTAMP,
  response_id INTEGER,
  PRIMARY KEY(alert_id, user_id)

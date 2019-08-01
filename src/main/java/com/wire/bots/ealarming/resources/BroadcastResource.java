@@ -69,7 +69,8 @@ public class BroadcastResource {
                     UUID botId = user2BotDAO.get(userId);
                     if (botId != null) {
                         try (WireClient client = clientRepo.getClient(botId)) {
-                            client.sendText(alert.message);
+                            UUID messageId = client.sendText(alert.message);
+                            alert2UserDAO.insertStatus(alertId, userId, messageId, 1);
                             result.sent++;
                         } catch (Exception e) {
 
@@ -83,14 +84,14 @@ public class BroadcastResource {
                 UUID botId = user2BotDAO.get(userId);
                 if (botId != null) {
                     try (WireClient client = clientRepo.getClient(botId)) {
-                        client.sendText(alert.message);
+                        UUID messageId = client.sendText(alert.message);
+                        alert2UserDAO.insertStatus(alertId, userId, messageId, 1);
                         result.sent++;
                     } catch (Exception e) {
 
                     }
                 }
             }
-
 
             return Response.
                     ok(result).

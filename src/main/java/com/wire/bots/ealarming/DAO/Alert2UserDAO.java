@@ -19,4 +19,17 @@ public interface Alert2UserDAO {
             "VALUES (:alertId, :userId)")
     int insertUser(@Bind("alertId") int alertId,
                    @Bind("userId") UUID userId);
+
+    @SqlUpdate("UPDATE Alert2User SET message_status = :status, message_id = :messageId WHERE alert_id = :alertId AND user_id = :userId")
+    int insertStatus(@Bind("alertId") int alertId,
+                     @Bind("userId") UUID userId,
+                     @Bind("messageId") UUID messageId,
+                     @Bind("status") int status);
+
+    @SqlUpdate("UPDATE Alert2User SET message_status = :status WHERE message_id = :messageId AND user_id = :userId")
+    int updateStatus(@Bind("userId") UUID userId,
+                     @Bind("messageId") UUID messageId,
+                     @Bind("status") int status);
+
+
 }

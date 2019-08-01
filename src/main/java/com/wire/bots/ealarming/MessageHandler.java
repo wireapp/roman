@@ -1,8 +1,10 @@
 package com.wire.bots.ealarming;
 
+import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.DAO.User2BotDAO;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
+import com.wire.bots.sdk.models.ConfirmationMessage;
 import com.wire.bots.sdk.models.TextMessage;
 import com.wire.bots.sdk.server.model.NewBot;
 import com.wire.bots.sdk.server.model.SystemMessage;
@@ -13,9 +15,11 @@ import java.util.UUID;
 
 public class MessageHandler extends MessageHandlerBase {
     private final User2BotDAO user2BotDAO;
+    private final Alert2UserDAO alert2UserDAO;
 
     MessageHandler(DBI jdbi) {
         user2BotDAO = jdbi.onDemand(User2BotDAO.class);
+        alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
     }
 
     @Override
@@ -42,5 +46,10 @@ public class MessageHandler extends MessageHandlerBase {
     @Override
     public void onText(WireClient client, TextMessage msg) {
 
+    }
+
+    public void onConfirmation(WireClient client, ConfirmationMessage msg) {
+        if (msg.getType() == ConfirmationMessage.Type.DELIVERED)
+            alert2UserDAO.updateStatus(msg.getUserId(), msg.getConfirmationMessageId(), 2);
     }
 }
