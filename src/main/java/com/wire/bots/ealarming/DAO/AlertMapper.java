@@ -23,9 +23,7 @@ public class AlertMapper implements ResultSetMapper<Alert> {
             alert.category = rs.getString("category");
             alert.severity = rs.getInt("severity");
             alert.creator = (UUID) rs.getObject("creator");
-            Object contact = rs.getObject("contact");
-            if (contact != null)
-                alert.contact = (UUID) contact;
+            alert.contact = getUuid(rs, "contact");
             alert.starting = rs.getString("starting");
             alert.ending = rs.getString("ending");
             alert.status = rs.getInt("status");
@@ -35,5 +33,13 @@ public class AlertMapper implements ResultSetMapper<Alert> {
             Logger.error("AlertResultSetMapper: i: %d, e: %s", i, e);
             return null;
         }
+    }
+
+    private UUID getUuid(ResultSet rs, String name) throws SQLException {
+        UUID contact = null;
+        Object rsObject = rs.getObject(name);
+        if (rsObject != null)
+            contact = (UUID) rsObject;
+        return contact;
     }
 }

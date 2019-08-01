@@ -6,12 +6,12 @@ import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Template {
-    public int id;
+    public Integer id;
     public String created;
     public String title;
     public String message;
     public String category;
-    public int severity;
+    public Integer severity;
     public UUID contact;
     public String responses;
 }

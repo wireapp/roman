@@ -9,7 +9,7 @@ logging:
     "com.wire.bots.logger": INFO
 
 swagger:
-  resourcePackage: com.wire.bots.ealarming.resources,com.wire.bots.sdk.server.resources
+  resourcePackage: com.wire.bots.ealarming.resources
   uriPrefix: /ealarming
   schemes:
     - http

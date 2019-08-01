@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class GroupMapper implements ResultSetMapper<Group> {
+public class GroupsMapper implements ResultSetMapper<Group> {
     @Override
     @Nullable
     public Group map(int i, ResultSet rs, StatementContext statementContext) {

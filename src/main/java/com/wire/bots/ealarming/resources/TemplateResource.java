@@ -1,5 +1,6 @@
 package com.wire.bots.ealarming.resources;
 
+import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.DAO.TemplateDAO;
 import com.wire.bots.ealarming.model.Template;
 import com.wire.bots.ealarming.model.TemplateResult;
@@ -19,10 +20,12 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class TemplateResource {
     private final TemplateDAO templateDAO;
+    private final GroupsDAO groupsDAO;
     private final AuthValidator validator;
 
-    public TemplateResource(TemplateDAO templateDAO, AuthValidator validator) {
+    public TemplateResource(TemplateDAO templateDAO, GroupsDAO groupsDAO, AuthValidator validator) {
         this.templateDAO = templateDAO;
+        this.groupsDAO = groupsDAO;
         this.validator = validator;
     }
 
@@ -42,7 +45,7 @@ public class TemplateResource {
                         build();
             }
 
-            result.groups = templateDAO.selectGroups(templateId);
+            result.groups = groupsDAO.selectGroups(templateId);
             
             return Response.
                     ok(result).

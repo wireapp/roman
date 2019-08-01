@@ -17,11 +17,10 @@
 
 package com.wire.bots.ealarming;
 
-import com.wire.bots.ealarming.DAO.Alert2UserDAO;
-import com.wire.bots.ealarming.DAO.AlertDAO;
-import com.wire.bots.ealarming.DAO.TemplateDAO;
+import com.wire.bots.ealarming.DAO.*;
 import com.wire.bots.ealarming.model.Config;
 import com.wire.bots.ealarming.resources.AlertResource;
+import com.wire.bots.ealarming.resources.SearchResource;
 import com.wire.bots.ealarming.resources.TemplateResource;
 import com.wire.bots.ealarming.resources.UsersResource;
 import com.wire.bots.sdk.MessageHandlerBase;
@@ -61,11 +60,14 @@ public class Service extends Server<Config> {
         final AlertDAO alertDAO = jdbi.onDemand(AlertDAO.class);
         final TemplateDAO templateDAO = jdbi.onDemand(TemplateDAO.class);
         final Alert2UserDAO alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
+        final UserDAO userDAO = jdbi.onDemand(UserDAO.class);
+        final GroupsDAO groupsDAO = jdbi.onDemand(GroupsDAO.class);
 
         AuthValidator validator = new AuthValidator(config.auth);
 
         addResource(new AlertResource(alertDAO, alert2UserDAO, validator), env);
-        addResource(new TemplateResource(templateDAO, validator), env);
+        addResource(new TemplateResource(templateDAO, groupsDAO, validator), env);
         addResource(new UsersResource(alert2UserDAO, validator), env);
+        addResource(new SearchResource(userDAO, groupsDAO, validator), env);
     }
 }

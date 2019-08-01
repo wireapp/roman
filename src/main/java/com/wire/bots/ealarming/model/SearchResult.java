@@ -2,10 +2,10 @@ package com.wire.bots.ealarming.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Group {
-    public Integer id;
-    public String name;
-    public Integer type;
-    public Integer deleted;
+public class SearchResult {
+    public List<User> users;
+    public List<Group> groups;
 }

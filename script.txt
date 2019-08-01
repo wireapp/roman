@@ -45,9 +45,21 @@ CREATE TABLE Alert2Group (
  PRIMARY KEY(alert_id, group_id)
 );
 
+------------------------------------------------
+
 CREATE TABLE Groups (
  id INTEGER NOT NULL PRIMARY KEY,
  name VARCHAR NOT NULL,
  type INTEGER,
  deleted INTEGER
+);
+
+CREATE TABLE Users (
+ id SERIAL PRIMARY KEY,
+ firstname VARCHAR NOT NULL,
+ surname VARCHAR NOT NULL,
+ title VARCHAR NOT NULL,
+ department VARCHAR NOT NULL,
+ location VARCHAR NOT NULL,
+ User_Id UUID
 );

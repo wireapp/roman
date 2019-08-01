@@ -32,7 +32,7 @@ public interface AlertDAO {
                  @Bind("groupId") int groupId);
 
     @SqlQuery("SELECT G.* FROM Alert2Group AS A, Groups AS G WHERE A.alert_id = :alertId AND A.group_id = G.id")
-    @RegisterMapper(GroupMapper.class)
+    @RegisterMapper(GroupsMapper.class)
     List<Group> selectGroups(@Bind("alertId") int alertId);
 
     @SqlQuery("SELECT * FROM Alert WHERE id = :id")
