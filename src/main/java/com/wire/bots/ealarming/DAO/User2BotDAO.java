@@ -19,7 +19,7 @@ public interface User2BotDAO {
     @RegisterMapper(_Mapper.class)
     UUID get(@Bind("userId") UUID userId);
 
-    @SqlUpdate("INSERT INTO User2Bot VALUES (bot_id, userId) VALUES (:botId, :userId)")
+    @SqlUpdate("INSERT INTO User2Bot(bot_id, user_id) VALUES (:botId, :userId)")
     int insert(@Bind("userId") UUID userId,
                @Bind("botId") UUID botId
     );
