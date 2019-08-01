@@ -30,6 +30,7 @@ import org.skife.jdbi.v2.DBI;
 
 public class Service extends Server<Config> {
     static Service instance;
+    DBI jdbi;
 
     public static void main(String[] args) throws Exception {
         Service instance = new Service();
@@ -44,29 +45,31 @@ public class Service extends Server<Config> {
 
     @Override
     protected void initialize(Config config, Environment env) {
+        jdbi = new DBIFactory().build(environment, config.database, "postgresql");
     }
 
     @Override
     protected MessageHandlerBase createHandler(Config config, Environment env) {
-        return new MessageHandler(config);
+        return new MessageHandler(jdbi);
     }
 
     @Override
     protected void onRun(Config config, Environment env) {
-        final DBI jdbi = new DBIFactory().build(environment, config.database, "postgresql");
         final AlertDAO alertDAO = jdbi.onDemand(AlertDAO.class);
         final TemplateDAO templateDAO = jdbi.onDemand(TemplateDAO.class);
         final Alert2UserDAO alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
         final UserDAO userDAO = jdbi.onDemand(UserDAO.class);
         final GroupsDAO groupsDAO = jdbi.onDemand(GroupsDAO.class);
+        final User2BotDAO user2BotDAO = jdbi.onDemand(User2BotDAO.class);
 
         AuthValidator validator = new AuthValidator(config.auth);
 
         addResource(new AlertResource(alertDAO, alert2UserDAO, validator), env);
         addResource(new TemplateResource(templateDAO, groupsDAO, validator), env);
-        addResource(new UsersResource(alert2UserDAO, validator), env);
+        addResource(new UsersResource(alert2UserDAO, userDAO, validator), env);
         addResource(new SearchResource(userDAO, groupsDAO, validator), env);
         addResource(new GroupsResource(groupsDAO, validator), env);
+        addResource(new BroadcastResource(alertDAO, alert2UserDAO, groupsDAO, user2BotDAO, getRepo(), validator), env);
 
     }
 }

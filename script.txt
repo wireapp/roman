@@ -33,16 +33,21 @@ CREATE TABLE Alert2User (
  PRIMARY KEY(alert_id, user_id)
 );
 
+CREATE TABLE Alert2Group (
+ alert_id INTEGER NOT NULL,
+ group_id INTEGER NOT NULL,
+ PRIMARY KEY(alert_id, group_id)
+);
+
 CREATE TABLE Template2Group (
  template_id INTEGER NOT NULL,
  group_id INTEGER NOT NULL,
  PRIMARY KEY(template_id, group_id)
 );
 
-CREATE TABLE Alert2Group (
- alert_id INTEGER NOT NULL,
- group_id INTEGER NOT NULL,
- PRIMARY KEY(alert_id, group_id)
+CREATE TABLE User2Bot (
+ user_id UUID PRIMARY KEY,
+ bot_id UUID NOT NULL
 );
 
 ------------------------------------------------

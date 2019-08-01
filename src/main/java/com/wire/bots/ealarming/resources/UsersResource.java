@@ -1,6 +1,7 @@
 package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
+import com.wire.bots.ealarming.DAO.UserDAO;
 import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.ealarming.model.User;
 import com.wire.bots.sdk.tools.AuthValidator;
@@ -19,11 +20,13 @@ import java.util.UUID;
 @Path("/users/{alertId}")
 @Produces(MediaType.APPLICATION_JSON)
 public class UsersResource {
+    private final UserDAO userDAO;
     private final AuthValidator validator;
     private final Alert2UserDAO alert2UserDAO;
 
-    public UsersResource(Alert2UserDAO alert2UserDAO, AuthValidator validator) {
+    public UsersResource(Alert2UserDAO alert2UserDAO, UserDAO userDAO, AuthValidator validator) {
         this.alert2UserDAO = alert2UserDAO;
+        this.userDAO = userDAO;
         this.validator = validator;
     }
 
@@ -38,7 +41,11 @@ public class UsersResource {
 
             ArrayList<User> ret = new ArrayList<>();
             for (Alert2User alert2User : select) {
-                User user = new User();
+                User user = userDAO.get(alert2User.userId);
+                if (user == null) {
+                    user = new User();
+                }
+                
                 user.userId = alert2User.userId;
                 user.alertId = alert2User.alertId;
                 user.messageStatus = alert2User.messageStatus;

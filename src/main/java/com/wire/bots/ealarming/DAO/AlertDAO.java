@@ -27,6 +27,14 @@ public interface AlertDAO {
                @Bind("status") int status,
                @Bind("responses") String responses);
 
+    @SqlQuery("SELECT * FROM Alert WHERE id = :id")
+    @RegisterMapper(AlertMapper.class)
+    Alert get(@Bind("id") int id);
+
+    @SqlQuery("SELECT * FROM Alert ORDER BY created DESC")
+    @RegisterMapper(AlertMapper.class)
+    List<Alert> list();
+
     @SqlUpdate("INSERT INTO Alert2Group (alert_id, group_id) VALUES (:alertId, :groupId)")
     int putGroup(@Bind("alertId") int alertId,
                  @Bind("groupId") int groupId);
@@ -35,11 +43,5 @@ public interface AlertDAO {
     @RegisterMapper(GroupsMapper.class)
     List<Group> selectGroups(@Bind("alertId") int alertId);
 
-    @SqlQuery("SELECT * FROM Alert WHERE id = :id")
-    @RegisterMapper(AlertMapper.class)
-    Alert get(@Bind("id") int id);
 
-    @SqlQuery("SELECT * FROM Alert ORDER BY created DESC")
-    @RegisterMapper(AlertMapper.class)
-    List<Alert> select();
 }
