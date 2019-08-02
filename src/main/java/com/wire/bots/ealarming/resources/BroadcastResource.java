@@ -1,5 +1,8 @@
 package com.wire.bots.ealarming.resources;
 
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.DAO.AlertDAO;
 import com.wire.bots.ealarming.DAO.GroupsDAO;
@@ -21,13 +24,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.UUID;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.*;
 
 @Api
 @Path("/broadcast")
 @Produces(MediaType.APPLICATION_JSON)
 public class BroadcastResource {
+    private static final MustacheFactory mf = new DefaultMustacheFactory();
+
     private final AlertDAO alertDAO;
     private final Alert2UserDAO alert2UserDAO;
     private final GroupsDAO groupsDAO;
@@ -57,43 +64,14 @@ public class BroadcastResource {
             @ApiResponse(code = 200, message = "Report")})
     public Response post(@ApiParam @PathParam("alertId") int alertId) {
         try {
-            _Result result = new _Result();
-
             Alert alert = alertDAO.get(alertId);
-            List<Alert2User> users = alert2UserDAO.selectUsers(alertId);
-            List<Group> groups = alertDAO.selectGroups(alertId);
 
-            for (Group group : groups) {
-                List<User> groupUsers = groupsDAO.selectUsers(group.id);
-                for (User user : groupUsers) {
-                    UUID userId = user.userId;
-                    UUID botId = user2BotDAO.get(userId);
-                    if (botId != null) {
-                        try (WireClient client = clientRepo.getClient(botId)) {
-                            UUID messageId = client.sendText(alert.message);
-                            alert2UserDAO.insertStatus(alertId, userId, messageId, 1);
-                            result.sent++;
-                        } catch (Exception e) {
+            HashSet<_Task> tasks = new HashSet<>();
+            tasks.addAll(extractGroups(alertId));
+            tasks.addAll(extractUsers(alertId));
 
-                        }
-                    }
-                }
-            }
-
-            for (Alert2User user : users) {
-                UUID userId = user.userId;
-                UUID botId = user2BotDAO.get(userId);
-                if (botId != null) {
-                    try (WireClient client = clientRepo.getClient(botId)) {
-                        UUID messageId = client.sendText(alert.message);
-                        alert2UserDAO.insertStatus(alertId, userId, messageId, 1);
-                        result.sent++;
-                    } catch (Exception e) {
-
-                    }
-                }
-            }
-
+            _Result result = new _Result();
+            result.sent = sendAlert(alert, tasks);
             return Response.
                     ok(result).
                     build();
@@ -106,7 +84,126 @@ public class BroadcastResource {
         }
     }
 
-    class _Result {
+    private int sendAlert(Alert alert, HashSet<_Task> tasks) throws IOException {
+        _Message message = new _Message();
+        message.title = alert.title;
+        message.body = alert.message;
+        message.category = alert.category;
+        message.severity = severity(alert.severity);
+        message.contact = alert.contact;
+        message.responses = responses(alert.responses);
+
+        String text = execute(message);
+        int sent = 0;
+        for (_Task task : tasks) {
+            try (WireClient client = clientRepo.getClient(task.botId)) {
+                UUID messageId = client.sendText(text);
+                alert2UserDAO.insertStatus(alert.id, task.userId, messageId, 1);
+                sent++;
+            } catch (Exception ignore) {
+
+            }
+        }
+        return sent;
+    }
+
+    private String severity(Integer severity) {
+        switch (severity) {
+            case 0:
+                return "ℹ️";
+            case 1:
+                return "❗";
+            case 2:
+                return "🔥";
+            default:
+                return "✅";
+        }
+    }
+
+    private List<_Response> responses(String responses) {
+        ArrayList<_Response> ret = new ArrayList<>();
+        String[] split = responses.split(",");
+        for (int i = 0; i < split.length; i++) {
+            _Response res = new _Response();
+            res.id = i;
+            res.label = split[i].trim();
+            ret.add(res);
+        }
+        return ret;
+    }
+
+    private HashSet<_Task> extractUsers(int alertId) {
+        HashSet<_Task> tasks = new HashSet<>();
+        List<Alert2User> users = alert2UserDAO.selectUsers(alertId);
+        for (Alert2User user : users) {
+            UUID userId = user.userId;
+            UUID botId = user2BotDAO.get(userId);
+            if (botId != null) {
+                _Task task = new _Task();
+                task.botId = botId;
+                task.userId = userId;
+                tasks.add(task);
+            }
+        }
+        return tasks;
+    }
+
+    private HashSet<_Task> extractGroups(int alertId) {
+        HashSet<_Task> tasks = new HashSet<>();
+        List<Group> groups = alertDAO.selectGroups(alertId);
+        for (Group group : groups) {
+            List<User> groupUsers = groupsDAO.selectUsers(group.id);
+            for (User user : groupUsers) {
+                UUID userId = user.userId;
+                UUID botId = user2BotDAO.get(userId);
+                if (botId != null) {
+                    _Task task = new _Task();
+                    task.botId = botId;
+                    task.userId = userId;
+                    tasks.add(task);
+                }
+            }
+        }
+        return tasks;
+    }
+
+    private String execute(_Message message) throws IOException {
+        try (StringWriter sw = new StringWriter()) {
+            Mustache mustache = compileTemplate();
+            mustache.execute(new PrintWriter(sw), message).flush();
+            return sw.toString();
+        }
+    }
+
+    private Mustache compileTemplate() {
+        String path = "templates/message.txt";
+        return mf.compile(path);
+    }
+
+    static class _Result {
         public int sent = 0;
+    }
+
+    class _Message {
+        String title;
+        String body;
+        UUID contact;
+        String severity;
+        String category;
+        List<_Response> responses;
+    }
+
+    class _Response {
+        String label;
+        int id;
+    }
+
+    class _Task {
+        UUID userId;
+        UUID botId;
+
+        public boolean equals(_Task t) {
+            return Objects.equals(userId, t.userId);
+        }
     }
 }
