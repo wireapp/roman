@@ -47,8 +47,9 @@ public class MessageHandler extends MessageHandlerBase {
     public void onText(WireClient client, TextMessage msg) {
         UUID userId = msg.getUserId();
         UUID messageId = msg.getQuotedMessageId();
+        String text = msg.getText().trim();
         if (messageId != null) {
-            alert2UserDAO.updateStatus(userId, messageId, 4); //todo enum
+            alert2UserDAO.updateStatus(userId, messageId, text, 4); //todo enum
         }
     }
 
@@ -58,10 +59,10 @@ public class MessageHandler extends MessageHandlerBase {
 
         switch (msg.getType()) {
             case DELIVERED:
-                alert2UserDAO.updateStatus(userId, messageId, 2); //todo enum
+                alert2UserDAO.updateStatus(userId, messageId, null, 2); //todo enum
                 break;
             case READ:
-                alert2UserDAO.updateStatus(userId, messageId, 3); //todo enum
+                alert2UserDAO.updateStatus(userId, messageId, null, 3); //todo enum
                 break;
         }
     }

@@ -16,7 +16,7 @@ public interface Alert2UserDAO {
     List<Alert2User> selectUsers(@Bind("alertId") int alertId);
 
     @SqlUpdate("INSERT INTO Alert2User (alert_id, user_id) " +
-            "VALUES (:alertId, :userId)")
+            "VALUES (:alertId, :userId) ON CONFLICT(alert_id,user_id) DO NOTHING")
     int insertUser(@Bind("alertId") int alertId,
                    @Bind("userId") UUID userId);
 
@@ -26,9 +26,10 @@ public interface Alert2UserDAO {
                      @Bind("messageId") UUID messageId,
                      @Bind("status") int status);
 
-    @SqlUpdate("UPDATE Alert2User SET message_status = :status WHERE message_id = :messageId AND user_id = :userId")
+    @SqlUpdate("UPDATE Alert2User SET message_status = :status, response = :response WHERE message_id = :messageId AND user_id = :userId")
     int updateStatus(@Bind("userId") UUID userId,
                      @Bind("messageId") UUID messageId,
+                     @Bind("response") String response,
                      @Bind("status") int status);
 
     @SqlQuery("SELECT count(*) AS count, message_status FROM Alert2User WHERE alert_id = :alertId GROUP BY message_status")

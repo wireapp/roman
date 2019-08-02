@@ -21,6 +21,7 @@ public class Alert2UserMapper implements ResultSetMapper<Alert2User> {
             ret.messageStatus = rs.getInt("message_status");
             ret.escalated = rs.getString("escalated");
             ret.responseId = rs.getInt("response_id");
+            ret.response = rs.getString("response");
             return ret;
         } catch (SQLException e) {
             Logger.error("Alert2UserMapper: i: %d, e: %s", i, e);
