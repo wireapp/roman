@@ -2,6 +2,7 @@ package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.model.Report;
+import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -39,7 +40,7 @@ public class ReportResource {
             for (Alert2UserDAO._Pair pair : pairs) {
                 switch (pair.type) {
                     case 0:
-                        ret.unknown = pair.count;
+                        ret.scheduled = pair.count;
                         break;
                     case 1:
                         ret.sent = pair.count;
@@ -61,7 +62,7 @@ public class ReportResource {
         } catch (Exception e) {
             Logger.error("ReportResource.get(%d): %s", alertId, e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }

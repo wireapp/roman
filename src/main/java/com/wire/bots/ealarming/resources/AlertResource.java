@@ -7,6 +7,7 @@ import com.wire.bots.ealarming.model.Alert;
 import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.ealarming.model.AlertResult;
 import com.wire.bots.ealarming.model.User;
+import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -59,7 +60,7 @@ public class AlertResource {
         } catch (Exception e) {
             Logger.error("AlertResource.post: %s", e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
@@ -83,7 +84,7 @@ public class AlertResource {
         } catch (Exception e) {
             Logger.error("AlertResource.putGroups: %s", e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
@@ -130,7 +131,7 @@ public class AlertResource {
         } catch (Exception e) {
             Logger.error("AlertResource.get(%d): %s", alertId, e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
@@ -150,7 +151,7 @@ public class AlertResource {
         } catch (Exception e) {
             Logger.error("AlertResource.getAll: %s", e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }

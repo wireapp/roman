@@ -10,6 +10,7 @@ import com.wire.bots.ealarming.model.Group;
 import com.wire.bots.ealarming.model.User;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
+import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -99,7 +100,7 @@ public class BroadcastResource {
         } catch (Exception e) {
             Logger.error("AlertResource.post: %s", e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }

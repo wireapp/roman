@@ -4,6 +4,7 @@ import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.DAO.UserDAO;
 import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.ealarming.model.User;
+import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -60,7 +61,7 @@ public class UsersResource {
         } catch (Exception e) {
             Logger.error("UsersResource.get(%d): %s", alertId, e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
@@ -83,7 +84,7 @@ public class UsersResource {
         } catch (Exception e) {
             Logger.error("AlertResource.post: %s", e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }

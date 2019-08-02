@@ -4,6 +4,7 @@ import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.DAO.TemplateDAO;
 import com.wire.bots.ealarming.model.Template;
 import com.wire.bots.ealarming.model.TemplateResult;
+import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -53,7 +54,7 @@ public class TemplateResource {
         } catch (Exception e) {
             Logger.error("TemplateResource.get(%d): %s", templateId, e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
@@ -73,7 +74,7 @@ public class TemplateResource {
         } catch (Exception e) {
             Logger.error("TemplateResource.getAll: %s", e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
@@ -100,7 +101,7 @@ public class TemplateResource {
         } catch (Exception e) {
             Logger.error("TemplateResource.post: %s", e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
@@ -124,7 +125,7 @@ public class TemplateResource {
         } catch (Exception e) {
             Logger.error("TemplateResource.putGroups: %s", e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }

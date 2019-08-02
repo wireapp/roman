@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Report {
-    public int unknown;
+    public int scheduled;
     public int sent;
     public int delivered;
     public int read;

@@ -3,6 +3,7 @@ package com.wire.bots.ealarming.resources;
 import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.model.Group;
 import com.wire.bots.ealarming.model.User;
+import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -42,7 +43,7 @@ public class GroupsResource {
         } catch (Exception e) {
             Logger.error("GroupsResource.get(%d): %s", groupId, e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
@@ -62,7 +63,7 @@ public class GroupsResource {
         } catch (Exception e) {
             Logger.error("GroupsResource.list: %s", e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }

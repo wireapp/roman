@@ -3,6 +3,7 @@ package com.wire.bots.ealarming.resources;
 import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.DAO.UserDAO;
 import com.wire.bots.ealarming.model.SearchResult;
+import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
@@ -45,7 +46,7 @@ public class SearchResource {
         } catch (Exception e) {
             Logger.error("SearchResource.search?q=%s : %s", keyword, e);
             return Response
-                    .ok(e)
+                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
