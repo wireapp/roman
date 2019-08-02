@@ -2,6 +2,7 @@ package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.DAO.AlertDAO;
+import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.DAO.UserDAO;
 import com.wire.bots.ealarming.model.Alert;
 import com.wire.bots.ealarming.model.Alert2User;
@@ -11,6 +12,7 @@ import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
+import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -26,12 +28,14 @@ public class AlertResource {
     private final AlertDAO alertDAO;
     private final Alert2UserDAO alert2UserDAO;
     private final UserDAO userDAO;
+    private final GroupsDAO groupsDAO;
     private final AuthValidator validator;
 
-    public AlertResource(AlertDAO alertDAO, Alert2UserDAO alert2UserDAO, UserDAO userDAO, AuthValidator validator) {
-        this.alertDAO = alertDAO;
-        this.alert2UserDAO = alert2UserDAO;
-        this.userDAO = userDAO;
+    public AlertResource(DBI jdbi, AuthValidator validator) {
+        this.alertDAO = jdbi.onDemand(AlertDAO.class);
+        this.alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
+        this.userDAO = jdbi.onDemand(UserDAO.class);
+        this.groupsDAO = jdbi.onDemand(GroupsDAO.class);
         this.validator = validator;
     }
 
@@ -77,6 +81,10 @@ public class AlertResource {
         try {
             for (Integer groupId : groups) {
                 alertDAO.putGroup(alertId, groupId);
+                List<User> groupUsers = groupsDAO.selectUsers(groupId);
+                for (User user : groupUsers) {
+                    alert2UserDAO.insertUser(alertId, user.userId);
+                }
             }
             return Response.
                     ok().
@@ -121,6 +129,7 @@ public class AlertResource {
                 user.messageStatus = alert2User.messageStatus;
                 user.responseId = alert2User.responseId;
                 user.escalated = alert2User.escalated;
+                user.response = alert2User.response;
 
                 result.users.add(user);
             }

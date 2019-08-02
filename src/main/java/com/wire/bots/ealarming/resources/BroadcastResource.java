@@ -67,7 +67,7 @@ public class BroadcastResource {
             Alert alert = alertDAO.get(alertId);
 
             HashSet<_Task> tasks = new HashSet<>();
-            tasks.addAll(extractGroups(alertId));
+            //tasks.addAll(extractGroups(alertId));
             tasks.addAll(extractUsers(alertId));
 
             _Result result = new _Result();

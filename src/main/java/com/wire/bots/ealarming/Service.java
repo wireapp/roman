@@ -64,7 +64,7 @@ public class Service extends Server<Config> {
 
         AuthValidator validator = new AuthValidator(config.auth);
 
-        addResource(new AlertResource(alertDAO, alert2UserDAO, userDAO, validator), env);
+        addResource(new AlertResource(jdbi, validator), env);
         addResource(new TemplateResource(templateDAO, groupsDAO, validator), env);
         addResource(new UsersResource(alert2UserDAO, userDAO, validator), env);
         addResource(new SearchResource(userDAO, groupsDAO, validator), env);
