@@ -30,10 +30,9 @@ public class SearchResource {
     }
 
     @GET
-    @ApiOperation(value = "Search users by a keyword")
+    @ApiOperation(value = "Search users by the keyword", response = SearchResult.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Users")})
+            @ApiResponse(code = 500, message = "Something went wrong")})
     public Response search(@ApiParam @QueryParam("q") String keyword) {
         try {
             SearchResult result = new SearchResult();

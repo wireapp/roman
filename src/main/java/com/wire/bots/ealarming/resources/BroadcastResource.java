@@ -58,20 +58,17 @@ public class BroadcastResource {
 
     @POST
     @Path("{alertId}")
-    @ApiOperation(value = "Broadcast Alert")
+    @ApiOperation(value = "Broadcast Alert", response = _Result.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Report")})
+            @ApiResponse(code = 500, message = "Something went wrong")})
     public Response post(@ApiParam @PathParam("alertId") int alertId) {
         try {
             Alert alert = alertDAO.get(alertId);
 
-            HashSet<_Task> tasks = new HashSet<>();
-            //tasks.addAll(extractGroups(alertId));
-            tasks.addAll(extractUsers(alertId));
+            HashSet<_Task> users = extractUsers(alertId);
 
             _Result result = new _Result();
-            result.sent = sendAlert(alert, tasks);
+            result.sent = sendAlert(alert, users);
             return Response.
                     ok(result).
                     build();

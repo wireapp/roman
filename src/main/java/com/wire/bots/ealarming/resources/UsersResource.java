@@ -8,8 +8,8 @@ import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
+import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -32,10 +32,9 @@ public class UsersResource {
     }
 
     @GET
-    @ApiOperation(value = "Get all Users for this Alert")
+    @ApiOperation(value = "Get all Users for this Alert", response = User.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Users")})
+            @ApiResponse(code = 500, message = "Something went wrong")})
     public Response get(@ApiParam @PathParam("alertId") int alertId) {
         try {
             List<Alert2User> select = alert2UserDAO.selectUsers(alertId);
@@ -46,7 +45,7 @@ public class UsersResource {
                 if (user == null) {
                     user = new User();
                 }
-                
+
                 user.userId = alert2User.userId;
                 user.alertId = alert2User.alertId;
                 user.messageStatus = alert2User.messageStatus;
@@ -70,10 +69,9 @@ public class UsersResource {
     @PUT
     @ApiOperation(value = "Add Users for this Alert")
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Nothing")})
+            @ApiResponse(code = 500, message = "Something went wrong")})
     public Response post(@ApiParam @PathParam("alertId") int alertId,
-                         @ApiParam @Valid ArrayList<UUID> users) {
+                         @ApiParam @NotEmpty ArrayList<UUID> users) {
         try {
             for (UUID userId : users) {
                 alert2UserDAO.insertUser(alertId, userId);

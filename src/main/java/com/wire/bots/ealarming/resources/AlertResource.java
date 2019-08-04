@@ -12,6 +12,7 @@ import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
@@ -40,10 +41,9 @@ public class AlertResource {
     }
 
     @POST
-    @ApiOperation(value = "Create new Alert")
+    @ApiOperation(value = "Create new Alert", response = Alert.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "New Alert")})
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response post(@ApiParam @Valid Alert alert) {
         try {
             int id = alertDAO.insert(alert.title,
@@ -72,12 +72,11 @@ public class AlertResource {
 
     @PUT
     @Path("{alertId}")
-    @ApiOperation(value = "Add Groups for this Alert")
+    @ApiOperation(value = "Add Groups for this Alert", code = 201)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Nothing")})
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response putGroups(@ApiParam @PathParam("alertId") int alertId,
-                              @ApiParam @Valid ArrayList<Integer> groups) {
+                              @ApiParam @NotEmpty ArrayList<Integer> groups) {
         try {
             for (Integer groupId : groups) {
                 alertDAO.putGroup(alertId, groupId);
@@ -88,6 +87,7 @@ public class AlertResource {
             }
             return Response.
                     ok().
+                    status(201).
                     build();
         } catch (Exception e) {
             Logger.error("AlertResource.putGroups: %s", e);
@@ -100,10 +100,9 @@ public class AlertResource {
 
     @GET
     @Path("{alertId}")
-    @ApiOperation(value = "Get Alert by its id")
+    @ApiOperation(value = "Get Alert by its id", response = AlertResult.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Alert")})
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response get(@ApiParam @PathParam("alertId") int alertId) {
         try {
             AlertResult result = new AlertResult();
@@ -147,10 +146,9 @@ public class AlertResource {
     }
 
     @GET
-    @ApiOperation(value = "Get All Alerts ")
+    @ApiOperation(value = "Get All Alerts", response = Alert.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "List of Alerts")})
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response getAll() {
         try {
             List<Alert> list = alertDAO.list();

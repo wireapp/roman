@@ -32,10 +32,10 @@ public class TemplateResource {
 
     @GET
     @Path("{templateId}")
-    @ApiOperation(value = "Get Template by its id")
+    @ApiOperation(value = "Get Template by its id", response = TemplateResult.class)
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Template")})
+            @ApiResponse(code = 404, message = "Template not found", response = ErrorMessage.class)})
     public Response get(@ApiParam @PathParam("templateId") int templateId) {
         try {
             TemplateResult result = new TemplateResult();
@@ -47,7 +47,7 @@ public class TemplateResource {
             }
 
             result.groups = groupsDAO.selectGroups(templateId);
-            
+
             return Response.
                     ok(result).
                     build();
@@ -61,10 +61,9 @@ public class TemplateResource {
     }
 
     @GET
-    @ApiOperation(value = "Get All Templates")
+    @ApiOperation(value = "Get All Templates", response = Template.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "List of Templates")})
+            @ApiResponse(code = 500, message = "Something went wrong")})
     public Response getAll() {
         try {
             List<Template> list = templateDAO.select();
@@ -81,10 +80,9 @@ public class TemplateResource {
     }
 
     @POST
-    @ApiOperation(value = "Create new Template")
+    @ApiOperation(value = "Create new Template", response = Template.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "New Template")})
+            @ApiResponse(code = 500, message = "Something went wrong")})
     public Response post(@ApiParam @Valid Template template) {
         try {
             int id = templateDAO.insert(template.title,
@@ -111,8 +109,7 @@ public class TemplateResource {
     @Path("{templateId}")
     @ApiOperation(value = "Add Groups for this Template")
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Nothing")})
+            @ApiResponse(code = 500, message = "Something went wrong")})
     public Response putGroups(@ApiParam @PathParam("templateId") int templateId,
                               @ApiParam @Valid ArrayList<Integer> groups) {
         try {

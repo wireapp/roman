@@ -28,12 +28,13 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public boolean onNewBot(NewBot newBot) {
+        UUID botId = newBot.id;
         UUID userId = newBot.origin.id;
+
         Logger.info(String.format("onNewBot: bot: %s, user: %s",
-                newBot.id,
+                botId,
                 userId));
 
-        UUID botId = UUID.fromString(newBot.id);
         user2BotDAO.insert(userId, botId);
         try {
             String title = title();
@@ -67,7 +68,7 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onNewConversation(WireClient client, SystemMessage msg) {
-        UUID botId = UUID.fromString(client.getId());
+        UUID botId = client.getId();
         UUID convId = client.getConversationId();
     }
 

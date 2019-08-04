@@ -28,10 +28,9 @@ public class ReportResource {
     }
 
     @GET
-    @ApiOperation(value = "Get Report for this Alert")
+    @ApiOperation(value = "Get Report for this Alert", response = Report.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
-            @ApiResponse(code = 200, message = "Report")})
+            @ApiResponse(code = 500, message = "Something went wrong")})
     public Response get(@ApiParam @PathParam("alertId") int alertId) {
         try {
             Report ret = new Report();
