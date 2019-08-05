@@ -8,14 +8,15 @@ import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
-import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Api
 @Path("/users/{alertId}")
@@ -51,6 +52,7 @@ public class UsersResource {
                 user.messageStatus = alert2User.messageStatus;
                 user.responseId = alert2User.responseId;
                 user.escalated = alert2User.escalated;
+                user.response = alert2User.response;
 
                 ret.add(user);
             }
@@ -59,28 +61,6 @@ public class UsersResource {
                     build();
         } catch (Exception e) {
             Logger.error("UsersResource.get(%d): %s", alertId, e);
-            return Response
-                    .ok(new ErrorMessage(e.getMessage()))
-                    .status(500)
-                    .build();
-        }
-    }
-
-    @PUT
-    @ApiOperation(value = "Add Users for this Alert")
-    @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong")})
-    public Response post(@ApiParam @PathParam("alertId") int alertId,
-                         @ApiParam @NotEmpty ArrayList<UUID> users) {
-        try {
-            for (UUID userId : users) {
-                alert2UserDAO.insertUser(alertId, userId);
-            }
-            return Response.
-                    ok().
-                    build();
-        } catch (Exception e) {
-            Logger.error("AlertResource.post: %s", e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
