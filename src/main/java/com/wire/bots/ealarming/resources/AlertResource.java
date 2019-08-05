@@ -3,10 +3,7 @@ package com.wire.bots.ealarming.resources;
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.DAO.AlertDAO;
 import com.wire.bots.ealarming.DAO.GroupsDAO;
-import com.wire.bots.ealarming.model.Alert;
-import com.wire.bots.ealarming.model.AlertPayload;
-import com.wire.bots.ealarming.model.AlertResult;
-import com.wire.bots.ealarming.model.User;
+import com.wire.bots.ealarming.model.*;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
@@ -118,14 +115,18 @@ public class AlertResource {
     }
 
     @GET
-    @ApiOperation(value = "Get All Alerts", response = Alert.class)
+    @ApiOperation(value = "Get All Alerts", response = Result.class)
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response getAll() {
         try {
-            List<Alert> list = alertDAO.list();
+            Result<Alert> ret = new Result<>();
+            ret.items = alertDAO.list();
+            ret.page = 1;
+            ret.size = ret.items.size();
+
             return Response.
-                    ok(list).
+                    ok(ret).
                     build();
         } catch (Exception e) {
             Logger.error("AlertResource.getAll: %s", e);

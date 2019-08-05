@@ -3,6 +3,7 @@ package com.wire.bots.ealarming.resources;
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.DAO.UserDAO;
 import com.wire.bots.ealarming.model.Alert2User;
+import com.wire.bots.ealarming.model.Result;
 import com.wire.bots.ealarming.model.User;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
@@ -33,14 +34,18 @@ public class UsersResource {
     }
 
     @GET
-    @ApiOperation(value = "Get all Users for this Alert", response = User.class)
+    @ApiOperation(value = "Get all Users for this Alert", response = Result.class)
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong")})
     public Response get(@ApiParam @PathParam("alertId") int alertId) {
         try {
             List<Alert2User> select = alert2UserDAO.selectUsers(alertId);
 
-            ArrayList<User> ret = new ArrayList<>();
+            Result<User> ret = new Result<>();
+            ret.items = new ArrayList<>();
+            ret.page = 1;
+            ret.size = select.size();
+
             for (Alert2User alert2User : select) {
                 User user = userDAO.get(alert2User.userId);
                 if (user == null) {
@@ -54,7 +59,7 @@ public class UsersResource {
                 user.escalated = alert2User.escalated;
                 user.response = alert2User.response;
 
-                ret.add(user);
+                ret.items.add(user);
             }
             return Response.
                     ok(ret).

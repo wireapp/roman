@@ -32,7 +32,7 @@ public class TemplateResource {
 
     @GET
     @Path("{templateId}")
-    @ApiOperation(value = "Get Template by its id", response = TemplateResult.class)
+    @ApiOperation(value = "Get Template by templateId", response = TemplateResult.class)
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong"),
             @ApiResponse(code = 404, message = "Template not found", response = ErrorMessage.class)})
