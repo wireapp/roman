@@ -2,8 +2,8 @@ package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.DAO.TemplateDAO;
+import com.wire.bots.ealarming.model.Group;
 import com.wire.bots.ealarming.model.Template;
-import com.wire.bots.ealarming.model.TemplateResult;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
@@ -13,7 +13,6 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 
 @Api
@@ -32,26 +31,25 @@ public class TemplateResource {
 
     @GET
     @Path("{templateId}")
-    @ApiOperation(value = "Get Template by templateId", response = TemplateResult.class)
+    @ApiOperation(value = "Get Template by templateId", response = Template.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong"),
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class),
             @ApiResponse(code = 404, message = "Template not found", response = ErrorMessage.class)})
     public Response get(@ApiParam @PathParam("templateId") int templateId) {
         try {
-            TemplateResult result = new TemplateResult();
-            result.template = templateDAO.get(templateId);
-            if (result.template == null) {
+            Template template = getTemplate(templateId);
+            if (template == null) {
                 return Response.
+                        ok(new ErrorMessage("Template not found")).
                         status(404).
                         build();
             }
 
-            result.groups = groupsDAO.selectGroups(templateId);
-
             return Response.
-                    ok(result).
+                    ok(template).
                     build();
         } catch (Exception e) {
+            e.printStackTrace();
             Logger.error("TemplateResource.get(%d): %s", templateId, e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
@@ -63,7 +61,7 @@ public class TemplateResource {
     @GET
     @ApiOperation(value = "Get All Templates", response = Template.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong")})
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response getAll() {
         try {
             List<Template> list = templateDAO.select();
@@ -82,22 +80,28 @@ public class TemplateResource {
     @POST
     @ApiOperation(value = "Create new Template", response = Template.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong")})
-    public Response post(@ApiParam @Valid Template template) {
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
+    public Response insert(@ApiParam @Valid Template template) {
         try {
-            int id = templateDAO.insert(template.title,
+            int templateId = templateDAO.insert(template.title,
                     template.message,
                     template.category,
                     template.severity,
                     template.contact,
                     template.responses);
 
-            Template ret = templateDAO.get(id);
+            for (Integer groupId : template.groups) {
+                templateDAO.addGroup(templateId, groupId);
+            }
+
+            Template ret = getTemplate(templateId);
+
             return Response.
                     ok(ret).
                     build();
         } catch (Exception e) {
-            Logger.error("TemplateResource.post: %s", e);
+            e.printStackTrace();
+            Logger.error("TemplateResource.insert: %s", e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
@@ -107,24 +111,86 @@ public class TemplateResource {
 
     @PUT
     @Path("{templateId}")
-    @ApiOperation(value = "Add Groups for this Template")
+    @ApiOperation(value = "Update template", code = 201, response = Template.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong")})
-    public Response putGroups(@ApiParam @PathParam("templateId") int templateId,
-                              @ApiParam @Valid ArrayList<Integer> groups) {
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class),
+            @ApiResponse(code = 404, message = "Template not found", response = ErrorMessage.class)})
+    public Response update(@ApiParam @PathParam("templateId") int templateId,
+                           @ApiParam @Valid Template template) {
         try {
-            for (Integer groupId : groups) {
-                templateDAO.putGroup(templateId, groupId);
+            if (null == getTemplate(templateId)) {
+                return Response.
+                        ok(new ErrorMessage("Template not found")).
+                        status(404).
+                        build();
             }
+
+            int update = templateDAO.update(templateId,
+                    template.title,
+                    template.message,
+                    template.category,
+                    template.severity,
+                    template.contact,
+                    template.responses);
+
+            for (Integer groupId : template.groups) {
+                templateDAO.addGroup(templateId, groupId);
+            }
+
+            Template ret = getTemplate(templateId);
             return Response.
-                    ok().
+                    ok(ret).
+                    status(201).
                     build();
         } catch (Exception e) {
-            Logger.error("TemplateResource.putGroups: %s", e);
+            e.printStackTrace();
+            Logger.error("TemplateResource.update(%d): %s", templateId, e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
+    }
+
+    @DELETE
+    @Path("{templateId}")
+    @ApiOperation(value = "Delete template")
+    @ApiResponses(value = {
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class),
+            @ApiResponse(code = 404, message = "Template not found", response = ErrorMessage.class)})
+    public Response delete(@ApiParam @PathParam("templateId") int templateId) {
+        try {
+            int del = templateDAO.delete(templateId);
+            int deleteGroup = templateDAO.removeAllGroups(templateId);
+
+            if (del == 0) {
+                return Response.
+                        ok(new ErrorMessage("Template not found")).
+                        status(404).
+                        build();
+            }
+
+            return Response.
+                    ok().
+                    build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("TemplateResource.delete(%d): %s", templateId, e);
+            return Response
+                    .ok(new ErrorMessage(e.getMessage()))
+                    .status(500)
+                    .build();
+        }
+    }
+
+    private Template getTemplate(int templateId) {
+        Template ret = templateDAO.get(templateId);
+        if (ret == null)
+            return null;
+
+        List<Group> groups = groupsDAO.selectGroups(templateId);
+        for (Group group : groups)
+            ret.groups.add(group.id);
+        return ret;
     }
 }

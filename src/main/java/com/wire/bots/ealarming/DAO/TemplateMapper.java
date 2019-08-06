@@ -8,6 +8,7 @@ import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class TemplateMapper implements ResultSetMapper<Template> {
@@ -15,6 +16,7 @@ public class TemplateMapper implements ResultSetMapper<Template> {
     @Nullable
     public Template map(int i, ResultSet rs, StatementContext statementContext) {
         Template template = new Template();
+        template.groups = new ArrayList<>();
         try {
             template.id = rs.getInt("id");
             template.created = rs.getString("created");

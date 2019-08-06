@@ -22,6 +22,19 @@ public interface TemplateDAO {
                @Bind("contact") @Nullable UUID contact,
                @Bind("responses") String responses);
 
+    @SqlUpdate("UPDATE Template SET title = :title, message = :message, category = :category, severity = :severity," +
+            " contact = :contact, responses = :responses WHERE id = :id")
+    int update(@Bind("id") int id,
+               @Bind("title") String title,
+               @Bind("message") String message,
+               @Bind("category") String category,
+               @Bind("severity") int severity,
+               @Bind("contact") UUID contact,
+               @Bind("responses") String responses);
+
+    @SqlUpdate("DELETE FROM Template WHERE id = :id")
+    int delete(@Bind("id") int id);
+
     @SqlQuery("SELECT * FROM Template WHERE id = :id")
     @RegisterMapper(TemplateMapper.class)
     Template get(@Bind("id") int id);
@@ -31,7 +44,13 @@ public interface TemplateDAO {
     List<Template> select();
 
     @SqlUpdate("INSERT INTO Template2Group (template_id, group_id) VALUES (:templateId, :groupId)")
-    int putGroup(@Bind("templateId") int templateId,
+    int addGroup(@Bind("templateId") int templateId,
                  @Bind("groupId") int groupId);
 
+    @SqlUpdate("DELETE FROM Template2Group WHERE template_id = :templateId AND group_id = :groupId")
+    int removeGroup(@Bind("templateId") int templateId,
+                    @Bind("groupId") int groupId);
+
+    @SqlUpdate("DELETE FROM Template2Group WHERE template_id = :templateId")
+    int removeAllGroups(@Bind("templateId") int templateId);
 }
