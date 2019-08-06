@@ -98,7 +98,11 @@ public class BroadcastResource {
         for (_Task task : tasks) {
             try (WireClient client = clientRepo.getClient(task.botId)) {
                 UUID messageId = client.sendText(text);
-                alert2UserDAO.insertStatus(alert.id, task.userId, messageId, Alert2User.Type.SENT.ordinal());
+                Alert2User.Type status = Alert2User.Type.SENT;
+                int insert = alert2UserDAO.insertStatus(alert.id, task.userId, messageId, status.ordinal());
+                if (insert == 0)
+                    Logger.warning("sendAlert: alert: %d, user: %s, msgId: %s, %s. insert: %s",
+                            alert.id, task.userId, messageId, status, insert);
                 sent++;
             } catch (Exception ignore) {
 

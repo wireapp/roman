@@ -58,14 +58,20 @@ public class AlertResource {
                 List<User> groupUsers = groupsDAO.selectUsers(groupId);
                 for (User user : groupUsers) {
                     if (!payload.exclude.contains(user.userId)) {
-                        alert2UserDAO.insertUser(alertId, user.userId);
+                        int insert = alert2UserDAO.insertUser(alertId, user.userId);
+                        if (insert == 0)
+                            Logger.warning("AlertResource.post: alert: %s, user: %s. insert: %s",
+                                    alertId, user.userId, insert);
                     }
                 }
             }
 
             ArrayList<UUID> userIds = payload.include;
             for (UUID userId : userIds) {
-                alert2UserDAO.insertUser(alertId, userId);
+                int insert = alert2UserDAO.insertUser(alertId, userId);
+                if (insert == 0)
+                    Logger.warning("AlertResource.post: alert: %s, user: %s. insert: %s",
+                            alertId, userId, insert);
             }
 
             AlertResult result = new AlertResult();
