@@ -26,6 +26,11 @@ public interface Alert2UserDAO {
                      @Bind("messageId") UUID messageId,
                      @Bind("status") int status);
 
+    @SqlQuery("SELECT * FROM Alert2User WHERE user_id = :userId AND message_id =: messageId")
+    @RegisterMapper(Alert2UserMapper.class)
+    Alert2User getStatus(@Bind("userId") UUID userId,
+                         @Bind("messageId") UUID messageId);
+
     @SqlUpdate("UPDATE Alert2User SET message_status = :status, response = :response WHERE message_id = :messageId AND user_id = :userId")
     int updateStatus(@Bind("userId") UUID userId,
                      @Bind("messageId") UUID messageId,

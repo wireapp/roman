@@ -133,6 +133,8 @@ public class TemplateResource {
                     template.contact,
                     template.responses);
 
+            templateDAO.removeAllGroups(templateId);
+
             for (Integer groupId : template.groups) {
                 templateDAO.addGroup(templateId, groupId);
             }

@@ -8,6 +8,14 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Alert2User {
+    public enum Type {
+        SCHEDULED,
+        SENT,
+        DELIVERED,
+        READ,
+        RESPONDED
+    }
+
     public Integer alertId;
     public UUID userId;
     public Integer messageStatus;

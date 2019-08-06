@@ -3,6 +3,7 @@ package com.wire.bots.ealarming;
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.DAO.User2BotDAO;
 import com.wire.bots.ealarming.DAO.UserDAO;
+import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.models.ConfirmationMessage;
@@ -82,8 +83,15 @@ public class MessageHandler extends MessageHandlerBase {
         UUID userId = msg.getUserId();
         UUID messageId = msg.getQuotedMessageId();
         String text = msg.getText().trim();
-        if (messageId != null) {
-            alert2UserDAO.updateStatus(userId, messageId, text, 4); //todo enum
+
+        if (messageId == null)
+            return;
+
+        Alert2User old = alert2UserDAO.getStatus(userId, messageId);
+        Alert2User.Type status = Alert2User.Type.RESPONDED;
+
+        if (old.messageStatus < status.ordinal()) {
+            alert2UserDAO.updateStatus(userId, messageId, text, status.ordinal());
         }
     }
 
@@ -91,13 +99,26 @@ public class MessageHandler extends MessageHandlerBase {
         UUID userId = msg.getUserId();
         UUID messageId = msg.getConfirmationMessageId();
 
-        switch (msg.getType()) {
+        Alert2User old = alert2UserDAO.getStatus(userId, messageId);
+
+        Alert2User.Type newStatus = getType(msg.getType());
+        if (old.messageStatus < newStatus.ordinal())
+            alert2UserDAO.updateStatus(userId, messageId, null, newStatus.ordinal());
+    }
+
+    private Alert2User.Type getType(ConfirmationMessage.Type type) {
+        Alert2User.Type newStatus;
+        switch (type) {
             case DELIVERED:
-                alert2UserDAO.updateStatus(userId, messageId, null, 2); //todo enum
+                newStatus = Alert2User.Type.DELIVERED;
                 break;
             case READ:
-                alert2UserDAO.updateStatus(userId, messageId, null, 3); //todo enum
+                newStatus = Alert2User.Type.READ;
                 break;
+            default:
+                newStatus = Alert2User.Type.SCHEDULED;
+
         }
+        return newStatus;
     }
 }

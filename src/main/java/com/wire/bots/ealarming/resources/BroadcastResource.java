@@ -27,7 +27,10 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
 
 @Api
 @Path("/broadcast")
@@ -60,7 +63,7 @@ public class BroadcastResource {
     @Path("{alertId}")
     @ApiOperation(value = "Broadcast Alert", response = _Result.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong")})
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response post(@ApiParam @PathParam("alertId") int alertId) {
         try {
             Alert alert = alertDAO.get(alertId);
@@ -95,7 +98,7 @@ public class BroadcastResource {
         for (_Task task : tasks) {
             try (WireClient client = clientRepo.getClient(task.botId)) {
                 UUID messageId = client.sendText(text);
-                alert2UserDAO.insertStatus(alert.id, task.userId, messageId, 1);
+                alert2UserDAO.insertStatus(alert.id, task.userId, messageId, Alert2User.Type.SENT.ordinal());
                 sent++;
             } catch (Exception ignore) {
 
@@ -198,9 +201,5 @@ public class BroadcastResource {
     class _Task {
         UUID userId;
         UUID botId;
-
-        public boolean equals(_Task t) {
-            return Objects.equals(userId, t.userId);
-        }
     }
 }
