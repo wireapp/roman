@@ -10,6 +10,7 @@ import com.wire.bots.sdk.models.ConfirmationMessage;
 import com.wire.bots.sdk.models.TextMessage;
 import com.wire.bots.sdk.server.model.NewBot;
 import com.wire.bots.sdk.server.model.SystemMessage;
+import com.wire.bots.sdk.server.model.User;
 import com.wire.bots.sdk.tools.Logger;
 import org.skife.jdbi.v2.DBI;
 
@@ -30,11 +31,13 @@ public class MessageHandler extends MessageHandlerBase {
     @Override
     public boolean onNewBot(NewBot newBot) {
         UUID botId = newBot.id;
-        UUID userId = newBot.origin.id;
+        User origin = newBot.origin;
+        UUID userId = origin.id;
 
-        Logger.info(String.format("onNewBot: bot: %s, user: %s",
+        Logger.info(String.format("onNewBot: bot: %s, user: %s, %s",
                 botId,
-                userId));
+                userId,
+                origin.handle));
 
         user2BotDAO.insert(userId, botId);
         try {
@@ -42,7 +45,7 @@ public class MessageHandler extends MessageHandlerBase {
             String department = department();
             String location = location();
 
-            userDAO.insertUser(userId, newBot.origin.name, "", title, department, location);
+            userDAO.insertUser(userId, origin.name, origin.handle, title, department, location);
         } catch (Exception e) {
             Logger.error(e.getMessage());
         }
@@ -71,6 +74,11 @@ public class MessageHandler extends MessageHandlerBase {
     public void onNewConversation(WireClient client, SystemMessage msg) {
         UUID botId = client.getId();
         UUID convId = client.getConversationId();
+        try {
+            client.sendText("This is eAlarming bot");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -91,7 +99,10 @@ public class MessageHandler extends MessageHandlerBase {
         Alert2User.Type status = Alert2User.Type.RESPONDED;
 
         if (old.messageStatus < status.ordinal()) {
-            alert2UserDAO.updateStatus(userId, messageId, text, status.ordinal());
+            int update = alert2UserDAO.updateStatus(userId, messageId, text, status.ordinal());
+            if (update == 0)
+                Logger.warning("onConfirmation: user: %s, msgId: %s, %s. update: %s",
+                        userId, messageId, status, update);
         }
     }
 
@@ -102,8 +113,12 @@ public class MessageHandler extends MessageHandlerBase {
         Alert2User old = alert2UserDAO.getStatus(userId, messageId);
 
         Alert2User.Type newStatus = getType(msg.getType());
-        if (old.messageStatus < newStatus.ordinal())
-            alert2UserDAO.updateStatus(userId, messageId, null, newStatus.ordinal());
+        if (old.messageStatus < newStatus.ordinal()) {
+            int update = alert2UserDAO.updateStatus(userId, messageId, null, newStatus.ordinal());
+            if (update == 0)
+                Logger.warning("onConfirmation: user: %s, msgId: %s, %s. update: %s",
+                        userId, messageId, newStatus, update);
+        }
     }
 
     private Alert2User.Type getType(ConfirmationMessage.Type type) {
@@ -117,7 +132,6 @@ public class MessageHandler extends MessageHandlerBase {
                 break;
             default:
                 newStatus = Alert2User.Type.SCHEDULED;
-
         }
         return newStatus;
     }
