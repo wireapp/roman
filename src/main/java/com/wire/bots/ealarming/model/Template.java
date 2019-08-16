@@ -21,8 +21,8 @@ public class Template {
     public String message;
 
     @NotNull
-    @Max(3)
-    @Min(0)
+    @Max(4)
+    @Min(1)
     public Integer severity;
 
     @NotNull

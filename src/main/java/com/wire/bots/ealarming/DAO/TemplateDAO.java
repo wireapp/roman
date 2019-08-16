@@ -47,10 +47,6 @@ public interface TemplateDAO {
     @SqlQuery("SELECT response FROM Template2Response WHERE template_id = :templateId")
     List<String> selectResponses(@Bind("templateId") int templateId);
 
-    @SqlUpdate("DELETE FROM Template2Response WHERE template_id = :templateId AND response = :response")
-    int removeResponse(@Bind("templateId") int templateId,
-                       @Bind("response") String response);
-
     @SqlUpdate("DELETE FROM Template2Response WHERE template_id = :templateId")
     int removeAllResponses(@Bind("templateId") int templateId);
 }

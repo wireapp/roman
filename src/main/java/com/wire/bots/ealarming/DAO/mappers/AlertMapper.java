@@ -20,14 +20,12 @@ public class AlertMapper implements ResultSetMapper<Alert> {
             alert.created = rs.getString("created");
             alert.title = rs.getString("title");
             alert.message = rs.getString("message");
-            alert.category = rs.getString("category");
             alert.severity = rs.getInt("severity");
             alert.creator = getUuid(rs, "creator");
             alert.contact = getUuid(rs, "contact");
             alert.starting = rs.getString("starting");
             alert.ending = rs.getString("ending");
             alert.status = rs.getInt("status");
-            alert.responses = rs.getString("responses");
             return alert;
         } catch (SQLException e) {
             Logger.error("AlertResultSetMapper: i: %d, e: %s", i, e);

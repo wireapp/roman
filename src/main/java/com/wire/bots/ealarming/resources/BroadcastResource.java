@@ -27,7 +27,6 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -88,10 +87,9 @@ public class BroadcastResource {
         _Message message = new _Message();
         message.title = alert.title;
         message.body = alert.message;
-        message.category = alert.category;
         message.severity = severity(alert.severity);
         message.contact = alert.contact;
-        message.responses = responses(alert.responses);
+        message.responses = alert.responses;
 
         String text = execute(message);
         int sent = 0;
@@ -113,27 +111,15 @@ public class BroadcastResource {
 
     private String severity(Integer severity) {
         switch (severity) {
-            case 0:
-                return "ℹ️";
             case 1:
-                return "❗";
+                return "ℹ️";
             case 2:
+                return "❗";
+            case 3:
                 return "🔥";
             default:
                 return "✅";
         }
-    }
-
-    private List<_Response> responses(String responses) {
-        ArrayList<_Response> ret = new ArrayList<>();
-        String[] split = responses.split(",");
-        for (int i = 0; i < split.length; i++) {
-            _Response res = new _Response();
-            res.id = i;
-            res.label = split[i].trim();
-            ret.add(res);
-        }
-        return ret;
     }
 
     private HashSet<_Task> extractUsers(int alertId) {
@@ -193,13 +179,7 @@ public class BroadcastResource {
         String body;
         UUID contact;
         String severity;
-        String category;
-        List<_Response> responses;
-    }
-
-    class _Response {
-        String label;
-        int id;
+        List<String> responses;
     }
 
     class _Task {

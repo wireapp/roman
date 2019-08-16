@@ -3,14 +3,12 @@ CREATE TABLE Alert (
  created TIMESTAMP NOT NULL,
  title VARCHAR NOT NULL,
  message VARCHAR NOT NULL,
- category VARCHAR,
- severity INTEGER,
- creator UUID NOT NULL,
+ severity INTEGER NOT NULL,
+ creator UUID,
  contact UUID,
  starting TIMESTAMP NOT NULL,
  ending TIMESTAMP NOT NULL,
- status INTEGER,
- responses VARCHAR NOT NULL
+ status INTEGER NOT NULL
 );
 
 CREATE TABLE Template (
@@ -37,6 +35,12 @@ CREATE TABLE Alert2Group (
  alert_id INTEGER NOT NULL,
  group_id INTEGER NOT NULL,
  PRIMARY KEY(alert_id, group_id)
+);
+
+CREATE TABLE Alert2Response (
+ alert_id INTEGER NOT NULL,
+ response VARCHAR NOT NULL,
+ PRIMARY KEY(alert_id, response)
 );
 
 CREATE TABLE Template2Response (

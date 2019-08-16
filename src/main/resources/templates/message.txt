@@ -1,12 +1,12 @@
 {{severity}} **{{ title }}**
-_{{ category }}_
 
 {{ body }}
 
-{{#responses}}
-- {{ label }}({{ id }})
-{{/responses}}
+{{ responses }}
 
+{{#contact}}
 [contact](wire://users/{{ contact }})
+{{/contact}}
+
 __
 

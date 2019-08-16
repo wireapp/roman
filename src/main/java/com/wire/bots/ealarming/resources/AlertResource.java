@@ -14,7 +14,6 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,19 +39,16 @@ public class AlertResource {
             @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response post(@ApiParam @Valid AlertPayload payload) {
         try {
-            Alert alert = payload.alert;
-            int alertId = alertDAO.insert(alert.title,
-                    alert.message,
-                    alert.category,
-                    alert.severity,
-                    alert.creator,
-                    alert.contact,
-                    alert.starting,
-                    alert.ending,
-                    alert.status,
-                    alert.responses);
+            int alertId = alertDAO.insert(
+                    payload.title,
+                    payload.message,
+                    payload.severity);
 
-            ArrayList<Integer> groups = payload.groups;
+            for (String response : payload.responses) {
+                alertDAO.addResponse(alertId, response);
+            }
+
+            List<Integer> groups = payload.groups;
             for (Integer groupId : groups) {
                 alertDAO.putGroup(alertId, groupId);
                 List<User> groupUsers = groupsDAO.selectUsers(groupId);
@@ -66,7 +62,7 @@ public class AlertResource {
                 }
             }
 
-            ArrayList<UUID> userIds = payload.include;
+            List<UUID> userIds = payload.include;
             for (UUID userId : userIds) {
                 int insert = alert2UserDAO.insertUser(alertId, userId);
                 if (insert == 0)
@@ -106,6 +102,8 @@ public class AlertResource {
                         build();
             }
 
+            result.alert.responses = alertDAO.selectResponses(alertId);
+
             result.groups = alertDAO.selectGroups(alertId);
 
             return Response.
@@ -130,6 +128,10 @@ public class AlertResource {
             ret.items = alertDAO.list();
             ret.page = 1;
             ret.size = ret.items.size();
+
+            for (Alert alert : ret.items) {
+                alert.responses = alertDAO.selectResponses(alert.id);
+            }
 
             return Response.
                     ok(ret).
