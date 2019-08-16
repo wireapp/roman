@@ -1,4 +1,4 @@
-package com.wire.bots.ealarming.DAO;
+package com.wire.bots.ealarming.DAO.mappers;
 
 import com.wire.bots.ealarming.model.Alert;
 import com.wire.bots.sdk.tools.Logger;

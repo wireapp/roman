@@ -1,5 +1,6 @@
-package com.wire.bots.ealarming.DAO;
+package com.wire.bots.ealarming.DAO.mappers;
 
+import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.sdk.tools.Logger;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;

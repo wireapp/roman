@@ -2,26 +2,30 @@ package com.wire.bots.ealarming.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Template {
     public Integer id;
-    public String created;
+    public String created; //time of creation
+    public UUID contact;
+
     @NotNull
     public String title;
+
     @NotNull
     public String message;
+
     @NotNull
-    public String category;
-    @NotNull
+    @Max(3)
+    @Min(0)
     public Integer severity;
+
     @NotNull
-    public UUID contact;
-    @NotNull
-    public String responses;
-    @NotNull
-    public ArrayList<Integer> groups;
+    public List<String> responses;
+
 }

@@ -1,5 +1,7 @@
 package com.wire.bots.ealarming.DAO;
 
+import com.wire.bots.ealarming.DAO.mappers.Alert2UserMapper;
+import com.wire.bots.ealarming.DAO.mappers.ReportMapper;
 import com.wire.bots.ealarming.model.Alert2User;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;

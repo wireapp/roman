@@ -2,7 +2,6 @@ package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.DAO.TemplateDAO;
-import com.wire.bots.ealarming.model.Group;
 import com.wire.bots.ealarming.model.Template;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
@@ -64,9 +63,12 @@ public class TemplateResource {
             @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response getAll() {
         try {
-            List<Template> list = templateDAO.select();
+            List<Template> templates = templateDAO.select();
+            for (Template template : templates) {
+                template.responses = templateDAO.selectResponses(template.id);
+            }
             return Response.
-                    ok(list).
+                    ok(templates).
                     build();
         } catch (Exception e) {
             Logger.error("TemplateResource.getAll: %s", e);
@@ -85,13 +87,11 @@ public class TemplateResource {
         try {
             int templateId = templateDAO.insert(template.title,
                     template.message,
-                    template.category,
                     template.severity,
-                    template.contact,
-                    template.responses);
+                    template.contact);
 
-            for (Integer groupId : template.groups) {
-                templateDAO.addGroup(templateId, groupId);
+            for (String response : template.responses) {
+                templateDAO.addResponse(templateId, response);
             }
 
             Template ret = getTemplate(templateId);
@@ -128,15 +128,13 @@ public class TemplateResource {
             int update = templateDAO.update(templateId,
                     template.title,
                     template.message,
-                    template.category,
                     template.severity,
-                    template.contact,
-                    template.responses);
+                    template.contact);
 
-            templateDAO.removeAllGroups(templateId);
+            templateDAO.removeAllResponses(templateId);
 
-            for (Integer groupId : template.groups) {
-                templateDAO.addGroup(templateId, groupId);
+            for (String response : template.responses) {
+                templateDAO.addResponse(templateId, response);
             }
 
             Template ret = getTemplate(templateId);
@@ -163,7 +161,7 @@ public class TemplateResource {
     public Response delete(@ApiParam @PathParam("templateId") int templateId) {
         try {
             int del = templateDAO.delete(templateId);
-            int deleteGroup = templateDAO.removeAllGroups(templateId);
+            templateDAO.removeAllResponses(templateId);
 
             if (del == 0) {
                 return Response.
@@ -190,9 +188,7 @@ public class TemplateResource {
         if (ret == null)
             return null;
 
-        List<Group> groups = groupsDAO.selectGroups(templateId);
-        for (Group group : groups)
-            ret.groups.add(group.id);
+        ret.responses = templateDAO.selectResponses(templateId);
         return ret;
     }
 }

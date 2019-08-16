@@ -1,5 +1,6 @@
 package com.wire.bots.ealarming.DAO;
 
+import com.wire.bots.ealarming.DAO.mappers.UserMapper;
 import com.wire.bots.ealarming.model.User;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;

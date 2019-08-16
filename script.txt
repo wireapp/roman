@@ -18,10 +18,8 @@ CREATE TABLE Template (
  created TIMESTAMP NOT NULL,
  title VARCHAR NOT NULL,
  message VARCHAR NOT NULL,
- category VARCHAR,
  severity INTEGER,
  contact UUID,
- responses VARCHAR NOT NULL
 );
 
 CREATE TABLE Alert2User (
@@ -41,10 +39,10 @@ CREATE TABLE Alert2Group (
  PRIMARY KEY(alert_id, group_id)
 );
 
-CREATE TABLE Template2Group (
+CREATE TABLE Template2Response (
  template_id INTEGER NOT NULL,
- group_id INTEGER NOT NULL,
- PRIMARY KEY(template_id, group_id)
+ response VARCHAR NOT NULL,
+ PRIMARY KEY(template_id, response)
 );
 
 CREATE TABLE User2Bot (

@@ -1,5 +1,6 @@
 package com.wire.bots.ealarming.DAO;
 
+import com.wire.bots.ealarming.DAO.mappers.TemplateMapper;
 import com.wire.bots.ealarming.model.Template;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
@@ -12,25 +13,21 @@ import java.util.List;
 import java.util.UUID;
 
 public interface TemplateDAO {
-    @SqlUpdate("INSERT INTO Template (title, message, category, severity, contact, responses, created) " +
-            "VALUES (:title, :message, :category, :severity, :contact, :responses, CURRENT_TIMESTAMP)")
+    @SqlUpdate("INSERT INTO Template (title, message, severity, contact, created) " +
+            "VALUES (:title, :message, :severity, :contact, CURRENT_TIMESTAMP)")
     @GetGeneratedKeys
     int insert(@Bind("title") String title,
                @Bind("message") String message,
-               @Bind("category") String category,
                @Bind("severity") int severity,
-               @Bind("contact") @Nullable UUID contact,
-               @Bind("responses") String responses);
+               @Bind("contact") @Nullable UUID contact);
 
-    @SqlUpdate("UPDATE Template SET title = :title, message = :message, category = :category, severity = :severity," +
-            " contact = :contact, responses = :responses WHERE id = :id")
+    @SqlUpdate("UPDATE Template SET title = :title, message = :message, severity = :severity," +
+            " contact = :contact WHERE id = :id")
     int update(@Bind("id") int id,
                @Bind("title") String title,
                @Bind("message") String message,
-               @Bind("category") String category,
                @Bind("severity") int severity,
-               @Bind("contact") UUID contact,
-               @Bind("responses") String responses);
+               @Bind("contact") UUID contact);
 
     @SqlUpdate("DELETE FROM Template WHERE id = :id")
     int delete(@Bind("id") int id);
@@ -43,14 +40,17 @@ public interface TemplateDAO {
     @RegisterMapper(TemplateMapper.class)
     List<Template> select();
 
-    @SqlUpdate("INSERT INTO Template2Group (template_id, group_id) VALUES (:templateId, :groupId)")
-    int addGroup(@Bind("templateId") int templateId,
-                 @Bind("groupId") int groupId);
+    @SqlUpdate("INSERT INTO Template2Response (template_id, response) VALUES (:templateId, :response)")
+    int addResponse(@Bind("templateId") int templateId,
+                    @Bind("response") String response);
 
-    @SqlUpdate("DELETE FROM Template2Group WHERE template_id = :templateId AND group_id = :groupId")
-    int removeGroup(@Bind("templateId") int templateId,
-                    @Bind("groupId") int groupId);
+    @SqlQuery("SELECT response FROM Template2Response WHERE template_id = :templateId")
+    List<String> selectResponses(@Bind("templateId") int templateId);
 
-    @SqlUpdate("DELETE FROM Template2Group WHERE template_id = :templateId")
-    int removeAllGroups(@Bind("templateId") int templateId);
+    @SqlUpdate("DELETE FROM Template2Response WHERE template_id = :templateId AND response = :response")
+    int removeResponse(@Bind("templateId") int templateId,
+                       @Bind("response") String response);
+
+    @SqlUpdate("DELETE FROM Template2Response WHERE template_id = :templateId")
+    int removeAllResponses(@Bind("templateId") int templateId);
 }
