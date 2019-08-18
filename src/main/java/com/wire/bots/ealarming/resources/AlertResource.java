@@ -45,7 +45,10 @@ public class AlertResource {
                     payload.severity);
 
             for (String response : payload.responses) {
-                alertDAO.addResponse(alertId, response);
+                int insert = alertDAO.addResponse(alertId, response);
+                if (insert == 0)
+                    Logger.warning("AlertResource.post: addResponse: alert: %s, response: %s. insert: %s",
+                            alertId, response, insert);
             }
 
             List<Integer> groups = payload.groups;
@@ -56,7 +59,7 @@ public class AlertResource {
                     if (!payload.exclude.contains(user.userId)) {
                         int insert = alert2UserDAO.insertUser(alertId, user.userId);
                         if (insert == 0)
-                            Logger.warning("AlertResource.post: alert: %s, user: %s. insert: %s",
+                            Logger.warning("AlertResource.post: insertUser: alert: %s, user: %s. insert: %s",
                                     alertId, user.userId, insert);
                     }
                 }
@@ -66,14 +69,16 @@ public class AlertResource {
             for (UUID userId : userIds) {
                 int insert = alert2UserDAO.insertUser(alertId, userId);
                 if (insert == 0)
-                    Logger.warning("AlertResource.post: alert: %s, user: %s. insert: %s",
+                    Logger.warning("AlertResource.post: insertUser: alert: %s, user: %s. insert: %s",
                             alertId, userId, insert);
             }
 
             AlertResult result = new AlertResult();
             result.alert = alertDAO.get(alertId);
             result.groups = alertDAO.selectGroups(alertId);
+            result.alert.responses = alertDAO.selectResponses(alertId);
 
+            Logger.info("AlertResource.post: alert: %s, title: %s", alertId, payload.title);
             return Response.
                     ok(result).
                     build();
@@ -103,7 +108,6 @@ public class AlertResource {
             }
 
             result.alert.responses = alertDAO.selectResponses(alertId);
-
             result.groups = alertDAO.selectGroups(alertId);
 
             return Response.

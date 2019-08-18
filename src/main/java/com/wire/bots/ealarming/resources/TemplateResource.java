@@ -91,10 +91,15 @@ public class TemplateResource {
                     template.contact);
 
             for (String response : template.responses) {
-                templateDAO.addResponse(templateId, response);
+                int insert = templateDAO.addResponse(templateId, response);
+                if (insert == 0)
+                    Logger.warning("TemplateResource.insert: addResponse: template: %d, response: %s. insert: %s",
+                            templateId, response, insert);
             }
 
             Template ret = getTemplate(templateId);
+
+            Logger.info("TemplateResource.insert: template: %d, title: %s", templateId, template.title);
 
             return Response.
                     ok(ret).
