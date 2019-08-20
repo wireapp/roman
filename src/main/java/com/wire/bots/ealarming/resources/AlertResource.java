@@ -42,7 +42,8 @@ public class AlertResource {
             int alertId = alertDAO.insert(
                     payload.title,
                     payload.message,
-                    payload.severity);
+                    payload.severity,
+                    payload.attachment);
 
             for (String response : payload.responses) {
                 int insert = alertDAO.addResponse(alertId, response);
@@ -76,6 +77,9 @@ public class AlertResource {
             AlertResult result = new AlertResult();
             result.alert = alertDAO.get(alertId);
             result.groups = alertDAO.selectGroups(alertId);
+            for (Group group : result.groups) {
+                group.size = groupsDAO.size(group.id);
+            }
             result.alert.responses = alertDAO.selectResponses(alertId);
 
             Logger.info("AlertResource.post: alert: %s, title: %s", alertId, payload.title);
@@ -109,6 +113,9 @@ public class AlertResource {
 
             result.alert.responses = alertDAO.selectResponses(alertId);
             result.groups = alertDAO.selectGroups(alertId);
+            for (Group group : result.groups) {
+                group.size = groupsDAO.size(group.id);
+            }
 
             return Response.
                     ok(result).

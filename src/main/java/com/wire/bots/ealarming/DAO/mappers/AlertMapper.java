@@ -26,6 +26,8 @@ public class AlertMapper implements ResultSetMapper<Alert> {
             alert.starting = rs.getString("starting");
             alert.ending = rs.getString("ending");
             alert.status = rs.getInt("status");
+            alert.attachmentId = rs.getInt("attachment");
+
             return alert;
         } catch (SQLException e) {
             Logger.error("AlertResultSetMapper: i: %d, e: %s", i, e);

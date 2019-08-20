@@ -35,4 +35,5 @@ public class AlertPayload {
     @NotNull
     public List<UUID> include;
 
+    public Integer attachment;
 }
