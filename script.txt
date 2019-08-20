@@ -8,7 +8,8 @@ CREATE TABLE Alert (
  contact UUID,
  starting TIMESTAMP NOT NULL,
  ending TIMESTAMP NOT NULL,
- status INTEGER NOT NULL
+ status INTEGER NOT NULL,
+ attachment INTEGER
 );
 
 CREATE TABLE Template (
@@ -52,6 +53,13 @@ CREATE TABLE Template2Response (
 CREATE TABLE User2Bot (
  user_id UUID PRIMARY KEY,
  bot_id UUID NOT NULL
+);
+
+CREATE TABLE Attachment (
+ id SERIAL PRIMARY KEY,
+ filename VARCHAR NOT NULL,
+ mime_type VARCHAR NOT NULL,
+ data bytea NOT NULL
 );
 
 ------------------------------------------------

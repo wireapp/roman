@@ -39,4 +39,5 @@ public class Alert {
     public UUID contact;
     public String starting;
     public String ending;
+    public Integer attachmentId;
 }
