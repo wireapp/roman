@@ -2,6 +2,7 @@ package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.DAO.UserDAO;
+import com.wire.bots.ealarming.model.Group;
 import com.wire.bots.ealarming.model.SearchResult;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
@@ -38,7 +39,9 @@ public class SearchResource {
             SearchResult result = new SearchResult();
             result.users = userDAO.search(keyword);
             result.groups = groupsDAO.search(keyword);
-
+            for (Group group : result.groups) {
+                group.size = groupsDAO.size(group.id);
+            }
             return Response.
                     ok(result).
                     build();

@@ -2,19 +2,16 @@ package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.model.Group;
+import com.wire.bots.ealarming.model.Result;
 import com.wire.bots.ealarming.model.User;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 @Api
 @Path("/groups")
@@ -30,15 +27,18 @@ public class GroupsResource {
 
     @GET
     @Path("{groupId}")
-    @ApiOperation(value = "Get Users in the group")
+    @ApiOperation(value = "Get Users in the group", response = Result.class)
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong"),
             @ApiResponse(code = 200, message = "Group")})
     public Response get(@ApiParam @PathParam("groupId") int groupId) {
         try {
-            List<User> list = groupsDAO.selectUsers(groupId);
+            Result<User> result = new Result<>();
+            result.items = groupsDAO.selectUsers(groupId);
+            result.size = result.items.size();
+            result.page = 1;
             return Response.
-                    ok(list).
+                    ok(result).
                     build();
         } catch (Exception e) {
             Logger.error("GroupsResource.get(%d): %s", groupId, e);
@@ -50,15 +50,25 @@ public class GroupsResource {
     }
 
     @GET
-    @ApiOperation(value = "Get all groups")
+    @ApiOperation(value = "Get all groups", response = Result.class)
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong"),
             @ApiResponse(code = 200, message = "Groups")})
-    public Response list() {
+    public Response list(@ApiParam @QueryParam("type") Integer type) {
         try {
-            List<Group> list = groupsDAO.list();
+            Result<Group> result = new Result<>();
+
+            result.items = type == null
+                    ? groupsDAO.list()
+                    : groupsDAO.list(type);
+            result.size = result.items.size();
+            result.page = 1;
+
+            for (Group group : result.items) {
+                group.size = groupsDAO.size(group.id);
+            }
             return Response.
-                    ok(list).
+                    ok(result).
                     build();
         } catch (Exception e) {
             Logger.error("GroupsResource.list: %s", e);

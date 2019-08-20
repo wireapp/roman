@@ -1,5 +1,6 @@
 package com.wire.bots.ealarming.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.validation.constraints.NotNull;
@@ -12,6 +13,9 @@ public class Group {
     public String name;
     @NotNull
     public Integer type;
-    @NotNull
+    @JsonIgnore
     public Integer deleted;
+    @NotNull
+    public Integer size;
+
 }
