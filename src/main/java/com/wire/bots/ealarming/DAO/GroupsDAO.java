@@ -24,7 +24,7 @@ public interface GroupsDAO {
     @RegisterMapper(GroupsMapper.class)
     List<Group> list(@Bind("type") int type);
 
-    @SqlQuery("SELECT U.* FROM User2Group AS UG, Users AS U WHERE UG.group_id = :groupId AND UG.user_id = U.id ORDER BY U.firstname")
+    @SqlQuery("SELECT U.* FROM User2Group AS UG, Users AS U WHERE UG.group_id = :groupId AND UG.user_id = U.id ORDER BY U.surname")
     @RegisterMapper(UserMapper.class)
     List<User> selectUsers(@Bind("groupId") int groupId);
 
