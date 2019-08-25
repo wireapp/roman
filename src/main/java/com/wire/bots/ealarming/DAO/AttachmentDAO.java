@@ -19,4 +19,7 @@ public interface AttachmentDAO {
     @SqlQuery("SELECT * FROM Attachment WHERE id = :id")
     @RegisterMapper(AttachmentMapper.class)
     Attachment get(@Bind("id") int id);
+
+    @SqlQuery("SELECT data FROM Attachment WHERE id = :id")
+    byte[] getData(@Bind("id") int id);
 }

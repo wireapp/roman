@@ -10,9 +10,7 @@ import org.postgresql.util.Base64;
 import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -45,7 +43,6 @@ public class AttachmentsResource {
                     attachment.mimeType);
 
             Attachment result = attachmentDAO.get(attachmentId);
-            result.data = null;
 
             return Response.
                     ok(result).
@@ -53,6 +50,38 @@ public class AttachmentsResource {
         } catch (Exception e) {
             e.printStackTrace();
             Logger.error("AssetsResource.insert: %s", e);
+            return Response
+                    .ok(new ErrorMessage(e.getMessage()))
+                    .status(500)
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("{attachmentId}")
+    @ApiOperation(value = "Get Attachment", response = Attachment.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
+    public Response get(@ApiParam @PathParam("attachmentId") int attachmentId) {
+        try {
+            Attachment attachment = attachmentDAO.get(attachmentId);
+            if (attachment == null) {
+                return Response.
+                        ok(new ErrorMessage("Attachment not found")).
+                        status(404).
+                        build();
+            }
+            byte[] data = attachmentDAO.getData(attachmentId);
+
+            String encode = java.util.Base64.getEncoder().encodeToString(data);
+            attachment.data = encode;
+
+            return Response.
+                    ok(attachment).
+                    build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("AssetsResource.get(%d): %s", attachmentId, e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
