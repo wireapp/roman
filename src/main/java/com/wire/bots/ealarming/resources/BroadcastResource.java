@@ -3,10 +3,7 @@ package com.wire.bots.ealarming.resources;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.wire.bots.ealarming.DAO.Alert2UserDAO;
-import com.wire.bots.ealarming.DAO.AlertDAO;
-import com.wire.bots.ealarming.DAO.GroupsDAO;
-import com.wire.bots.ealarming.DAO.User2BotDAO;
+import com.wire.bots.ealarming.DAO.*;
 import com.wire.bots.ealarming.model.Alert;
 import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.ealarming.model.Group;
@@ -17,6 +14,7 @@ import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
+import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -43,17 +41,15 @@ public class BroadcastResource {
     private final User2BotDAO user2BotDAO;
     private final ClientRepo clientRepo;
     private final AuthValidator validator;
+    private final AttachmentDAO attachmentDAO;
 
-    public BroadcastResource(AlertDAO alertDAO,
-                             Alert2UserDAO alert2UserDAO,
-                             GroupsDAO groupsDAO,
-                             User2BotDAO user2BotDAO,
-                             ClientRepo clientRepo,
-                             AuthValidator validator) {
-        this.alertDAO = alertDAO;
-        this.alert2UserDAO = alert2UserDAO;
-        this.groupsDAO = groupsDAO;
-        this.user2BotDAO = user2BotDAO;
+    public BroadcastResource(DBI jdbi, ClientRepo clientRepo, AuthValidator validator) {
+        this.alertDAO = jdbi.onDemand(AlertDAO.class);
+        this.alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
+        this.groupsDAO = jdbi.onDemand(GroupsDAO.class);
+        this.user2BotDAO = jdbi.onDemand(User2BotDAO.class);
+        this.attachmentDAO = jdbi.onDemand(AttachmentDAO.class);
+
         this.clientRepo = clientRepo;
         this.validator = validator;
     }
@@ -71,6 +67,7 @@ public class BroadcastResource {
 
             _Result result = new _Result();
             result.sent = sendAlert(alert, users);
+
             return Response.
                     ok(result).
                     build();

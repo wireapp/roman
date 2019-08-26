@@ -20,6 +20,5 @@ public class Alert2User {
     public UUID userId;
     public Integer messageStatus;
     public String escalated;
-    public Integer responseId;
     public String response;
 }

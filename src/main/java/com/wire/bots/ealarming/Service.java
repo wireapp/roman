@@ -17,7 +17,10 @@
 
 package com.wire.bots.ealarming;
 
-import com.wire.bots.ealarming.DAO.*;
+import com.wire.bots.ealarming.DAO.Alert2UserDAO;
+import com.wire.bots.ealarming.DAO.GroupsDAO;
+import com.wire.bots.ealarming.DAO.TemplateDAO;
+import com.wire.bots.ealarming.DAO.UserDAO;
 import com.wire.bots.ealarming.model.Config;
 import com.wire.bots.ealarming.resources.*;
 import com.wire.bots.sdk.MessageHandlerBase;
@@ -71,12 +74,10 @@ public class Service extends Server<Config> {
 
     @Override
     protected void onRun(Config config, Environment env) {
-        final AlertDAO alertDAO = jdbi.onDemand(AlertDAO.class);
         final TemplateDAO templateDAO = jdbi.onDemand(TemplateDAO.class);
         final Alert2UserDAO alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
         final UserDAO userDAO = jdbi.onDemand(UserDAO.class);
         final GroupsDAO groupsDAO = jdbi.onDemand(GroupsDAO.class);
-        final User2BotDAO user2BotDAO = jdbi.onDemand(User2BotDAO.class);
 
         AuthValidator validator = new AuthValidator(config.auth);
 
@@ -85,7 +86,7 @@ public class Service extends Server<Config> {
         addResource(new UsersResource(alert2UserDAO, userDAO, validator), env);
         addResource(new SearchResource(userDAO, groupsDAO, validator), env);
         addResource(new GroupsResource(groupsDAO, validator), env);
-        addResource(new BroadcastResource(alertDAO, alert2UserDAO, groupsDAO, user2BotDAO, getRepo(), validator), env);
+        addResource(new BroadcastResource(jdbi, getRepo(), validator), env);
         addResource(new ReportResource(alert2UserDAO, validator), env);
         addResource(new AttachmentsResource(jdbi, validator), env);
 

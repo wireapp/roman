@@ -20,10 +20,6 @@ public class Alert2UserMapper implements ResultSetMapper<Alert2User> {
             ret.userId = (UUID) rs.getObject("user_id");
             ret.messageStatus = rs.getInt("message_status");
             ret.escalated = rs.getString("escalated");
-            Object responseId = rs.getObject("response_id");
-            if (responseId != null)
-                ret.responseId = (Integer) responseId;
-
             ret.response = rs.getString("response");
             return ret;
         } catch (SQLException e) {

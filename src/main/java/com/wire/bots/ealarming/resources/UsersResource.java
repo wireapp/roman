@@ -55,7 +55,6 @@ public class UsersResource {
                 user.userId = alert2User.userId;
                 user.alertId = alert2User.alertId;
                 user.messageStatus = alert2User.messageStatus;
-                user.responseId = alert2User.responseId;
                 user.escalated = alert2User.escalated;
                 user.response = alert2User.response;
 

@@ -6,13 +6,13 @@ import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
-import org.postgresql.util.Base64;
 import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Base64;
 
 @Api
 @Path("/attachments")
@@ -35,7 +35,7 @@ public class AttachmentsResource {
         try {
             int attachmentId = attachmentDAO.insert(attachment.filename,
                     attachment.mimeType,
-                    Base64.decode(attachment.data));
+                    Base64.getDecoder().decode(attachment.data));
 
             Logger.info("AssetsResource.insert: attachment: %d, filename: %s, mime: %s",
                     attachmentId,
@@ -71,10 +71,9 @@ public class AttachmentsResource {
                         status(404).
                         build();
             }
-            byte[] data = attachmentDAO.getData(attachmentId);
 
-            String encode = java.util.Base64.getEncoder().encodeToString(data);
-            attachment.data = encode;
+            byte[] data = attachmentDAO.getData(attachmentId);
+            attachment.data = Base64.getEncoder().encodeToString(data);
 
             return Response.
                     ok(attachment).
