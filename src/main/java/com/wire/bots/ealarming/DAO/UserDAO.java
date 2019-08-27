@@ -14,9 +14,9 @@ public interface UserDAO {
     @SqlQuery("SELECT * FROM Users WHERE firstname ~* :keyword OR " +
             "surname ~* :keyword OR " +
             "department ~* :keyword OR " +
-            "location ~* :keyword ORDER BY surname")
+            "location ~* :keyword ORDER BY surname LIMIT :size")
     @RegisterMapper(UserMapper.class)
-    List<User> search(@Bind("keyword") String keyword);
+    List<User> search(@Bind("keyword") String keyword, @Bind("size") int size);
 
     @SqlQuery("SELECT * FROM Users WHERE id = :userId")
     @RegisterMapper(UserMapper.class)

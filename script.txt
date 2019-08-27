@@ -24,11 +24,12 @@ CREATE TABLE Template (
 CREATE TABLE Alert2User (
  alert_id INTEGER NOT NULL,
  user_id UUID NOT NULL,
- message_status INTEGER,
+ message_status INTEGER NOT NULL,
  message_id UUID,
- escalated TIMESTAMP,
+ escalated INTEGER,
  response VARCHAR,
- PRIMARY KEY(alert_id, user_id)
+ created TIMESTAMP NOT NULL,
+ PRIMARY KEY(alert_id, user_id, message_status)
 );
 
 CREATE TABLE Alert2Group (

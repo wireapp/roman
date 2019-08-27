@@ -12,32 +12,20 @@ import java.util.List;
 import java.util.UUID;
 
 public interface Alert2UserDAO {
+    @SqlUpdate("INSERT INTO Alert2User (alert_id, user_id, message_status, message_id, response, created) " +
+            "VALUES (:alertId, :userId, :status, :messageId, :response, CURRENT_TIMESTAMP)")
+    int insertStatus(@Bind("alertId") int alertId,
+                     @Bind("userId") UUID userId,
+                     @Bind("status") int status,
+                     @Bind("messageId") UUID messageId,
+                     @Bind("response") String response);
+
+    @SqlQuery("SELECT alert_id FROM Alert2User WHERE message_id =: messageId")
+    int getAlertId(@Bind("messageId") UUID messageId);
 
     @SqlQuery("SELECT * FROM Alert2User WHERE alert_id = :alertId")
     @RegisterMapper(Alert2UserMapper.class)
-    List<Alert2User> selectUsers(@Bind("alertId") int alertId);
-
-    @SqlUpdate("INSERT INTO Alert2User (alert_id, user_id) " +
-            "VALUES (:alertId, :userId) ON CONFLICT(alert_id,user_id) DO NOTHING")
-    int insertUser(@Bind("alertId") int alertId,
-                   @Bind("userId") UUID userId);
-
-    @SqlUpdate("UPDATE Alert2User SET message_status = :status, message_id = :messageId WHERE alert_id = :alertId AND user_id = :userId")
-    int insertStatus(@Bind("alertId") int alertId,
-                     @Bind("userId") UUID userId,
-                     @Bind("messageId") UUID messageId,
-                     @Bind("status") int status);
-
-    @SqlQuery("SELECT * FROM Alert2User WHERE user_id = :userId AND message_id =: messageId")
-    @RegisterMapper(Alert2UserMapper.class)
-    Alert2User getStatus(@Bind("userId") UUID userId,
-                         @Bind("messageId") UUID messageId);
-
-    @SqlUpdate("UPDATE Alert2User SET message_status = :status, response = :response WHERE message_id = :messageId AND user_id = :userId")
-    int updateStatus(@Bind("userId") UUID userId,
-                     @Bind("messageId") UUID messageId,
-                     @Bind("response") String response,
-                     @Bind("status") int status);
+    List<Alert2User> listUsers(@Bind("alertId") int alertId);
 
     @SqlQuery("SELECT count(*) AS count, message_status FROM Alert2User WHERE alert_id = :alertId GROUP BY message_status")
     @RegisterMapper(ReportMapper.class)

@@ -18,7 +18,9 @@ public class Alert2User {
 
     public Integer alertId;
     public UUID userId;
-    public Integer messageStatus;
-    public String escalated;
+    public Type status;
+    public UUID messageId;
     public String response;
+    public Integer escalated;
+    public String created;
 }

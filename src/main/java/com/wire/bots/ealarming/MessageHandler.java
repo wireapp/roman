@@ -88,37 +88,30 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onText(WireClient client, TextMessage msg) {
+        if (msg.getQuotedMessageId() == null)
+            return;
+
         UUID userId = msg.getUserId();
         UUID messageId = msg.getQuotedMessageId();
         String text = msg.getText().trim();
-
-        if (messageId == null)
-            return;
-
-        Alert2User old = alert2UserDAO.getStatus(userId, messageId);
         Alert2User.Type status = Alert2User.Type.RESPONDED;
 
-        if (old.messageStatus < status.ordinal()) {
-            int update = alert2UserDAO.updateStatus(userId, messageId, text, status.ordinal());
-            if (update == 0)
-                Logger.warning("onConfirmation: user: %s, msgId: %s, %s. update: %s",
-                        userId, messageId, status, update);
-        }
+        int alertId = alert2UserDAO.getAlertId(messageId);
+        int update = alert2UserDAO.insertStatus(alertId, userId, status.ordinal(), messageId, text);
+        if (update == 0)
+            Logger.warning("onConfirmation: user: %s, msgId: %s, %s. update: %s",
+                    userId, messageId, status, update);
     }
 
     public void onConfirmation(WireClient client, ConfirmationMessage msg) {
         UUID userId = msg.getUserId();
         UUID messageId = msg.getConfirmationMessageId();
+        Alert2User.Type status = getType(msg.getType());
 
-        Alert2User old = alert2UserDAO.getStatus(userId, messageId);
-
-        Alert2User.Type newStatus = getType(msg.getType());
-        if (old.messageStatus < newStatus.ordinal()) {
-            int update = alert2UserDAO.updateStatus(userId, messageId, null, newStatus.ordinal());
-            if (update == 0)
-                Logger.warning("onConfirmation: user: %s, msgId: %s, %s. update: %s",
-                        userId, messageId, newStatus, update);
-        }
+        int alertId = alert2UserDAO.getAlertId(messageId);
+        int update = alert2UserDAO.insertStatus(alertId, userId, status.ordinal(), messageId, null);
+        if (update == 0)
+            Logger.warning("onConfirmation: user: %s, msgId: %s, %s. update: %s", userId, messageId, status, update);
     }
 
     private Alert2User.Type getType(ConfirmationMessage.Type type) {

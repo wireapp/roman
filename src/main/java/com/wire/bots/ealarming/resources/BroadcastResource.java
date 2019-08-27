@@ -94,7 +94,7 @@ public class BroadcastResource {
             try (WireClient client = clientRepo.getClient(task.botId)) {
                 UUID messageId = client.sendText(text);
                 Alert2User.Type status = Alert2User.Type.SENT;
-                int insert = alert2UserDAO.insertStatus(alert.id, task.userId, messageId, status.ordinal());
+                int insert = alert2UserDAO.insertStatus(alert.id, task.userId, status.ordinal(), messageId, null);
                 if (insert == 0)
                     Logger.warning("sendAlert: alert: %d, user: %s, msgId: %s, %s. insert: %s",
                             alert.id, task.userId, messageId, status, insert);
@@ -121,7 +121,7 @@ public class BroadcastResource {
 
     private HashSet<_Task> extractUsers(int alertId) {
         HashSet<_Task> tasks = new HashSet<>();
-        List<Alert2User> users = alert2UserDAO.selectUsers(alertId);
+        List<Alert2User> users = alert2UserDAO.listUsers(alertId);
         for (Alert2User user : users) {
             UUID userId = user.userId;
             UUID botId = user2BotDAO.get(userId);

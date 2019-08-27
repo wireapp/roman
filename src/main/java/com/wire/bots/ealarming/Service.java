@@ -83,7 +83,7 @@ public class Service extends Server<Config> {
 
         addResource(new AlertResource(jdbi, validator), env);
         addResource(new TemplateResource(templateDAO, groupsDAO, validator), env);
-        addResource(new UsersResource(alert2UserDAO, userDAO, validator), env);
+        addResource(new UsersResource(alert2UserDAO, validator), env);
         addResource(new SearchResource(userDAO, groupsDAO, validator), env);
         addResource(new GroupsResource(groupsDAO, validator), env);
         addResource(new BroadcastResource(jdbi, getRepo(), validator), env);

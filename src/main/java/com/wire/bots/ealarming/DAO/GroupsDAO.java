@@ -12,9 +12,9 @@ import java.util.List;
 
 
 public interface GroupsDAO {
-    @SqlQuery("SELECT * FROM Groups WHERE name ~* :keyword ORDER BY name")
+    @SqlQuery("SELECT * FROM Groups WHERE name ~* :keyword ORDER BY name LIMIT :size")
     @RegisterMapper(GroupsMapper.class)
-    List<Group> search(@Bind("keyword") String keyword);
+    List<Group> search(@Bind("keyword") String keyword, @Bind("size") int size);
 
     @SqlQuery("SELECT * FROM Groups ORDER BY name")
     @RegisterMapper(GroupsMapper.class)

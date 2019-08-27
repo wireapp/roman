@@ -34,11 +34,15 @@ public class SearchResource {
     @ApiOperation(value = "Search users by the keyword", response = SearchResult.class)
     @ApiResponses(value = {
             @ApiResponse(code = 500, message = "Something went wrong")})
-    public Response search(@ApiParam @QueryParam("q") String keyword) {
+    public Response search(@ApiParam @QueryParam("q") String keyword,
+                           @ApiParam @QueryParam("size") int size) {
         try {
+            if (size == 0)
+                size = 10;
+
             SearchResult result = new SearchResult();
-            result.users = userDAO.search(keyword);
-            result.groups = groupsDAO.search(keyword);
+            result.users = userDAO.search(keyword, size);
+            result.groups = groupsDAO.search(keyword, size);
             for (Group group : result.groups) {
                 group.size = groupsDAO.size(group.id);
             }
