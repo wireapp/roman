@@ -62,6 +62,12 @@ CREATE TABLE Attachment (
  data bytea NOT NULL
 );
 
+CREATE TABLE Admins (
+ id SERIAL,
+ email VARCHAR NOT NULL PRIMARY KEY,
+ password VARCHAR NOT NULL
+);
+
 ------------------------------------------------
 
 CREATE TABLE Groups (

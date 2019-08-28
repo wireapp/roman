@@ -3,7 +3,6 @@ package com.wire.bots.ealarming.resources;
 import com.wire.bots.ealarming.DAO.AttachmentDAO;
 import com.wire.bots.ealarming.model.Attachment;
 import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
@@ -19,12 +18,10 @@ import java.util.Base64;
 @Produces(MediaType.APPLICATION_JSON)
 public class AttachmentsResource {
     private final AttachmentDAO attachmentDAO;
-    private final AuthValidator validator;
 
-    public AttachmentsResource(DBI jdbi, AuthValidator validator) {
+    public AttachmentsResource(DBI jdbi) {
         this.attachmentDAO = jdbi.onDemand(AttachmentDAO.class);
 
-        this.validator = validator;
     }
 
     @POST

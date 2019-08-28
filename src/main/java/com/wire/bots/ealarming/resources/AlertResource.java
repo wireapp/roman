@@ -5,7 +5,6 @@ import com.wire.bots.ealarming.DAO.AlertDAO;
 import com.wire.bots.ealarming.DAO.GroupsDAO;
 import com.wire.bots.ealarming.model.*;
 import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
@@ -24,13 +23,11 @@ public class AlertResource {
     private final AlertDAO alertDAO;
     private final Alert2UserDAO alert2UserDAO;
     private final GroupsDAO groupsDAO;
-    private final AuthValidator validator;
 
-    public AlertResource(DBI jdbi, AuthValidator validator) {
+    public AlertResource(DBI jdbi) {
         this.alertDAO = jdbi.onDemand(AlertDAO.class);
         this.alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
         this.groupsDAO = jdbi.onDemand(GroupsDAO.class);
-        this.validator = validator;
     }
 
     @POST

@@ -11,7 +11,6 @@ import com.wire.bots.ealarming.model.User;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
@@ -40,10 +39,9 @@ public class BroadcastResource {
     private final GroupsDAO groupsDAO;
     private final User2BotDAO user2BotDAO;
     private final ClientRepo clientRepo;
-    private final AuthValidator validator;
     private final AttachmentDAO attachmentDAO;
 
-    public BroadcastResource(DBI jdbi, ClientRepo clientRepo, AuthValidator validator) {
+    public BroadcastResource(DBI jdbi, ClientRepo clientRepo) {
         this.alertDAO = jdbi.onDemand(AlertDAO.class);
         this.alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
         this.groupsDAO = jdbi.onDemand(GroupsDAO.class);
@@ -51,7 +49,6 @@ public class BroadcastResource {
         this.attachmentDAO = jdbi.onDemand(AttachmentDAO.class);
 
         this.clientRepo = clientRepo;
-        this.validator = validator;
     }
 
     @POST

@@ -25,20 +25,25 @@ import com.wire.bots.ealarming.model.Config;
 import com.wire.bots.ealarming.resources.*;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
-import com.wire.bots.sdk.tools.AuthValidator;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.skife.jdbi.v2.DBI;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import java.security.Key;
 import java.util.EnumSet;
 
 public class Service extends Server<Config> {
-    static Service instance;
-    DBI jdbi;
+    public static Service instance;
+    public Config config;
+    public Key key;
+
+    private DBI jdbi;
 
     public static void main(String[] args) throws Exception {
         Service instance = new Service();
@@ -53,7 +58,9 @@ public class Service extends Server<Config> {
 
     @Override
     protected void initialize(Config config, Environment env) {
-        jdbi = new DBIFactory().build(environment, config.database, "postgresql");
+        this.jdbi = new DBIFactory().build(environment, config.database, "postgresql");
+        this.config = config;
+        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
         // Enable CORS headers
         final FilterRegistration.Dynamic cors = environment.servlets().addFilter("CORS", CrossOriginFilter.class);
@@ -79,16 +86,14 @@ public class Service extends Server<Config> {
         final UserDAO userDAO = jdbi.onDemand(UserDAO.class);
         final GroupsDAO groupsDAO = jdbi.onDemand(GroupsDAO.class);
 
-        AuthValidator validator = new AuthValidator(config.auth);
-
-        addResource(new AlertResource(jdbi, validator), env);
-        addResource(new TemplateResource(templateDAO, groupsDAO, validator), env);
-        addResource(new UsersResource(alert2UserDAO, validator), env);
-        addResource(new SearchResource(userDAO, groupsDAO, validator), env);
-        addResource(new GroupsResource(groupsDAO, validator), env);
-        addResource(new BroadcastResource(jdbi, getRepo(), validator), env);
-        addResource(new ReportResource(alert2UserDAO, validator), env);
-        addResource(new AttachmentsResource(jdbi, validator), env);
-
+        addResource(new AlertResource(jdbi), env);
+        addResource(new TemplateResource(templateDAO), env);
+        addResource(new UsersResource(alert2UserDAO), env);
+        addResource(new SearchResource(userDAO, groupsDAO), env);
+        addResource(new GroupsResource(groupsDAO), env);
+        addResource(new BroadcastResource(jdbi, getRepo()), env);
+        addResource(new ReportResource(alert2UserDAO), env);
+        addResource(new AttachmentsResource(jdbi), env);
+        addResource(new SigninResource(jdbi), env);
     }
 }

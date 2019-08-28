@@ -5,7 +5,6 @@ import com.wire.bots.ealarming.DAO.UserDAO;
 import com.wire.bots.ealarming.model.Group;
 import com.wire.bots.ealarming.model.SearchResult;
 import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
 
@@ -21,13 +20,11 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class SearchResource {
     private final GroupsDAO groupsDAO;
-    private final AuthValidator validator;
     private final UserDAO userDAO;
 
-    public SearchResource(UserDAO userDAO, GroupsDAO groupsDAO, AuthValidator validator) {
+    public SearchResource(UserDAO userDAO, GroupsDAO groupsDAO) {
         this.userDAO = userDAO;
         this.groupsDAO = groupsDAO;
-        this.validator = validator;
     }
 
     @GET

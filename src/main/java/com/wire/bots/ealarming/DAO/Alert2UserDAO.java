@@ -20,7 +20,7 @@ public interface Alert2UserDAO {
                      @Bind("messageId") UUID messageId,
                      @Bind("response") String response);
 
-    @SqlQuery("SELECT alert_id FROM Alert2User WHERE message_id =: messageId")
+    @SqlQuery("SELECT alert_id FROM Alert2User WHERE message_id = :messageId")
     int getAlertId(@Bind("messageId") UUID messageId);
 
     @SqlQuery("SELECT * FROM Alert2User WHERE alert_id = :alertId")

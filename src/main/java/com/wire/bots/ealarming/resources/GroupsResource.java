@@ -5,7 +5,6 @@ import com.wire.bots.ealarming.model.Group;
 import com.wire.bots.ealarming.model.Result;
 import com.wire.bots.ealarming.model.User;
 import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
 
@@ -17,12 +16,10 @@ import javax.ws.rs.core.Response;
 @Path("/groups")
 @Produces(MediaType.APPLICATION_JSON)
 public class GroupsResource {
-    private final AuthValidator validator;
     private final GroupsDAO groupsDAO;
 
-    public GroupsResource(GroupsDAO groupsDAO, AuthValidator validator) {
+    public GroupsResource(GroupsDAO groupsDAO) {
         this.groupsDAO = groupsDAO;
-        this.validator = validator;
     }
 
     @GET

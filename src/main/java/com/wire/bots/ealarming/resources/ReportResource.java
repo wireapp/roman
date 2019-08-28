@@ -3,7 +3,6 @@ package com.wire.bots.ealarming.resources;
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.model.Report;
 import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.tools.AuthValidator;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
 
@@ -19,12 +18,10 @@ import java.util.List;
 @Path("/report/{alertId}")
 @Produces(MediaType.APPLICATION_JSON)
 public class ReportResource {
-    private final AuthValidator validator;
     private final Alert2UserDAO alert2UserDAO;
 
-    public ReportResource(Alert2UserDAO alert2UserDAO, AuthValidator validator) {
+    public ReportResource(Alert2UserDAO alert2UserDAO) {
         this.alert2UserDAO = alert2UserDAO;
-        this.validator = validator;
     }
 
     @GET
