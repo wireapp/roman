@@ -9,6 +9,7 @@ import com.wire.bots.sdk.tools.Logger;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureException;
 import io.swagger.annotations.*;
+import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -20,8 +21,8 @@ import javax.ws.rs.core.Response;
 public class UsersResource {
     private final Alert2UserDAO alert2UserDAO;
 
-    public UsersResource(Alert2UserDAO alert2UserDAO) {
-        this.alert2UserDAO = alert2UserDAO;
+    public UsersResource(DBI jdbi) {
+        this.alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
     }
 
     @GET
@@ -35,7 +36,7 @@ public class UsersResource {
 
         try {
             String subject = Jwts.parser()
-                    .setSigningKey(Service.instance.key)
+                    .setSigningKey(Service.getKey())
                     .parseClaimsJws(auth)
                     .getBody()
                     .getSubject();

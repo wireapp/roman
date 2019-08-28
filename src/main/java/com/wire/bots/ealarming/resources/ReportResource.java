@@ -5,6 +5,7 @@ import com.wire.bots.ealarming.model.Report;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
+import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -20,8 +21,8 @@ import java.util.List;
 public class ReportResource {
     private final Alert2UserDAO alert2UserDAO;
 
-    public ReportResource(Alert2UserDAO alert2UserDAO) {
-        this.alert2UserDAO = alert2UserDAO;
+    public ReportResource(DBI jdbi) {
+        this.alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
     }
 
     @GET

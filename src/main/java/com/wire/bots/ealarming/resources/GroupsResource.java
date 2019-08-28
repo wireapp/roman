@@ -7,6 +7,7 @@ import com.wire.bots.ealarming.model.User;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
+import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -18,8 +19,8 @@ import javax.ws.rs.core.Response;
 public class GroupsResource {
     private final GroupsDAO groupsDAO;
 
-    public GroupsResource(GroupsDAO groupsDAO) {
-        this.groupsDAO = groupsDAO;
+    public GroupsResource(DBI jdbi) {
+        this.groupsDAO = jdbi.onDemand(GroupsDAO.class);
     }
 
     @GET

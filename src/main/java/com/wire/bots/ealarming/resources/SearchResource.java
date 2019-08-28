@@ -7,6 +7,7 @@ import com.wire.bots.ealarming.model.SearchResult;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
+import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -22,9 +23,9 @@ public class SearchResource {
     private final GroupsDAO groupsDAO;
     private final UserDAO userDAO;
 
-    public SearchResource(UserDAO userDAO, GroupsDAO groupsDAO) {
-        this.userDAO = userDAO;
-        this.groupsDAO = groupsDAO;
+    public SearchResource(DBI jdbi) {
+        this.userDAO = jdbi.onDemand(UserDAO.class);
+        this.groupsDAO = jdbi.onDemand(GroupsDAO.class);
     }
 
     @GET

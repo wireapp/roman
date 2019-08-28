@@ -17,10 +17,7 @@
 
 package com.wire.bots.ealarming;
 
-import com.wire.bots.ealarming.DAO.Alert2UserDAO;
-import com.wire.bots.ealarming.DAO.GroupsDAO;
-import com.wire.bots.ealarming.DAO.TemplateDAO;
-import com.wire.bots.ealarming.DAO.UserDAO;
+import com.wire.bots.ealarming.commands.SignUpCommand;
 import com.wire.bots.ealarming.model.Config;
 import com.wire.bots.ealarming.resources.*;
 import com.wire.bots.sdk.MessageHandlerBase;
@@ -39,28 +36,36 @@ import java.security.Key;
 import java.util.EnumSet;
 
 public class Service extends Server<Config> {
-    public static Service instance;
-    public Config config;
-    public Key key;
+    private static Service instance;
 
+    private Key key;
     private DBI jdbi;
 
     public static void main(String[] args) throws Exception {
-        Service instance = new Service();
-        instance.run(args);
+        new Service().run(args);
+    }
+
+    public static Key getKey() {
+        return instance.key;
     }
 
     @Override
     public void initialize(Bootstrap<Config> bootstrap) {
         super.initialize(bootstrap);
         instance = (Service) bootstrap.getApplication();
+
+        bootstrap.addCommand(new SignUpCommand());
+    }
+
+    @Override
+    protected MessageHandlerBase createHandler(Config config, Environment env) {
+        return new MessageHandler(jdbi);
     }
 
     @Override
     protected void initialize(Config config, Environment env) {
-        this.jdbi = new DBIFactory().build(environment, config.database, "postgresql");
-        this.config = config;
         this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        this.jdbi = new DBIFactory().build(environment, config.database, "postgresql");
 
         // Enable CORS headers
         final FilterRegistration.Dynamic cors = environment.servlets().addFilter("CORS", CrossOriginFilter.class);
@@ -75,24 +80,14 @@ public class Service extends Server<Config> {
     }
 
     @Override
-    protected MessageHandlerBase createHandler(Config config, Environment env) {
-        return new MessageHandler(jdbi);
-    }
-
-    @Override
     protected void onRun(Config config, Environment env) {
-        final TemplateDAO templateDAO = jdbi.onDemand(TemplateDAO.class);
-        final Alert2UserDAO alert2UserDAO = jdbi.onDemand(Alert2UserDAO.class);
-        final UserDAO userDAO = jdbi.onDemand(UserDAO.class);
-        final GroupsDAO groupsDAO = jdbi.onDemand(GroupsDAO.class);
-
         addResource(new AlertResource(jdbi), env);
-        addResource(new TemplateResource(templateDAO), env);
-        addResource(new UsersResource(alert2UserDAO), env);
-        addResource(new SearchResource(userDAO, groupsDAO), env);
-        addResource(new GroupsResource(groupsDAO), env);
+        addResource(new TemplateResource(jdbi), env);
+        addResource(new UsersResource(jdbi), env);
+        addResource(new SearchResource(jdbi), env);
+        addResource(new GroupsResource(jdbi), env);
         addResource(new BroadcastResource(jdbi, getRepo()), env);
-        addResource(new ReportResource(alert2UserDAO), env);
+        addResource(new ReportResource(jdbi), env);
         addResource(new AttachmentsResource(jdbi), env);
         addResource(new SigninResource(jdbi), env);
     }

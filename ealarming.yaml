@@ -26,15 +26,16 @@ auth: ${E_ALARMING_SERVICE_TOKEN}
 
 db:
   driver: postgresql
-  host: localhost
+  host: ${POSTGRES_HOST}
   user: postgres
   password: ${POSTGRES_PASSWORD}
-
+  port: 5432
+  
 database:
   driverClass: org.postgresql.Driver
   user: postgres
   password: ${POSTGRES_PASSWORD}
-  url: jdbc:postgresql://localhost/ealarming
+  url: ${POSTGRES_URL}
   properties:
     charSet: UTF-8
   maxWaitForConnection: 1s

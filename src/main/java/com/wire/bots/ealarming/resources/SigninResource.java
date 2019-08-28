@@ -45,7 +45,7 @@ public class SigninResource {
             String jwt = Jwts.builder()
                     .setIssuer("https://wire.com/")
                     .setSubject("" + adminsDAO.getUserId(signIn.email))
-                    .signWith(Service.instance.key)
+                    .signWith(Service.getKey())
                     .compact();
 
             return Response.

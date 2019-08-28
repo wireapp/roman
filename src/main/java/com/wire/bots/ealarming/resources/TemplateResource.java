@@ -5,6 +5,7 @@ import com.wire.bots.ealarming.model.Template;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import io.swagger.annotations.*;
+import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -18,8 +19,9 @@ import java.util.List;
 public class TemplateResource {
     private final TemplateDAO templateDAO;
 
-    public TemplateResource(TemplateDAO templateDAO) {
-        this.templateDAO = templateDAO;
+    public TemplateResource(DBI jdbi) {
+        this.templateDAO = jdbi.onDemand(TemplateDAO.class);
+        ;
     }
 
     @GET
