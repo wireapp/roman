@@ -23,9 +23,21 @@ public interface Alert2UserDAO {
     @SqlQuery("SELECT alert_id FROM Alert2User WHERE message_id = :messageId")
     int getAlertId(@Bind("messageId") UUID messageId);
 
-    @SqlQuery("SELECT * FROM Alert2User WHERE alert_id = :alertId")
+    @SqlQuery("WITH t AS\n" +
+            "(\n" +
+            "SELECT *,\n" +
+            "ROW_NUMBER() OVER (PARTITION BY alert_id, user_id ORDER BY created DESC) AS rownumber\n" +
+            "FROM Alert2User\n" +
+            ")\n" +
+            "SELECT *\n" +
+            "FROM t\n" +
+            "WHERE rownumber = 1 AND alert_id = :alertId")
     @RegisterMapper(Alert2UserMapper.class)
     List<Alert2User> listUsers(@Bind("alertId") int alertId);
+
+    @SqlQuery("SELECT * FROM Alert2User WHERE alert_id = :alertId AND user_id = :userId")
+    @RegisterMapper(Alert2UserMapper.class)
+    List<Alert2User> listStatuses(@Bind("alertId") int alertId, @Bind("userId") UUID userId);
 
     @SqlQuery("SELECT count(*) AS count, message_status FROM Alert2User WHERE alert_id = :alertId GROUP BY message_status")
     @RegisterMapper(ReportMapper.class)

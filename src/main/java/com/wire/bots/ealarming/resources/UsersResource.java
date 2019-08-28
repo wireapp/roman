@@ -14,6 +14,7 @@ import org.skife.jdbi.v2.DBI;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.UUID;
 
 @Api
 @Path("/users/{alertId}")
@@ -26,27 +27,29 @@ public class UsersResource {
     }
 
     @GET
-    @ApiOperation(value = "Get all Users for this Alert", response = Result.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong")})
-    public Response get(@CookieParam("Authorization") String auth,
-                        @ApiParam @PathParam("alertId") int alertId,
-                        @ApiParam @QueryParam("size") int size,
-                        @ApiParam @QueryParam("page") int page) {
+    @ApiOperation(value = "Get Delivery Statuses for this Alert", response = Result.class)
+    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
+    public Response get(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
+                        @PathParam("alertId") int alertId,
+                        @ApiParam(defaultValue = "10") @QueryParam("size") int size,
+                        @ApiParam(defaultValue = "1") @QueryParam("page") int page,
+                        @QueryParam("user") UUID userId) {
 
         try {
             String subject = Jwts.parser()
                     .setSigningKey(Service.getKey())
-                    .parseClaimsJws(auth)
+                    .parseClaimsJws(token)
                     .getBody()
                     .getSubject();
 
             Result<Alert2User> ret = new Result<>();
-            ret.items = alert2UserDAO.listUsers(alertId);
+            ret.items = userId != null
+                    ? alert2UserDAO.listStatuses(alertId, userId)
+                    : alert2UserDAO.listUsers(alertId);
             ret.page = page;
             ret.size = ret.items.size();
 
-            Logger.info("UsersResource.get(%d) Admin: %s", alertId, subject);
+            Logger.info("UsersResource.get(%d, %s) Admin: %s", alertId, userId, subject);
 
             return Response.
                     ok(ret).
