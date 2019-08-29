@@ -33,4 +33,7 @@ public class Config extends Configuration {
     @JsonProperty
     public DataSourceFactory database = new DataSourceFactory();
 
+    @NotNull
+    @JsonProperty
+    public String key;
 }

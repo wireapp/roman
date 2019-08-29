@@ -3,9 +3,9 @@ package com.wire.bots.ealarming.resources;
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.Service;
 import com.wire.bots.ealarming.model.Alert2User;
-import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureException;
@@ -25,7 +25,7 @@ import java.util.UUID;
 
 @Api
 @Path("/response/{token}")
-@Produces(MediaType.TEXT_HTML)
+@Produces(MediaType.APPLICATION_JSON)
 public class ResponseResource {
     private final Alert2UserDAO alert2UserDAO;
 
@@ -67,14 +67,18 @@ public class ResponseResource {
         } catch (SignatureException e) {
             Logger.warning("ResponseResource.get: %s", e);
             return Response.
-                    ok(new ErrorMessage("Invalid token")).
+                    ok("Invalid token").
                     status(400).
+                    build();
+        } catch (ExpiredJwtException e) {
+            Logger.warning("ResponseResource.get: %s", e);
+            return Response.
+                    ok("Too late :-p").
                     build();
         } catch (Exception e) {
             e.printStackTrace();
             Logger.error("ResponseResource.get: %s", e);
             return Response
-                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }

@@ -11,6 +11,7 @@ import com.wire.bots.ealarming.model.Group;
 import com.wire.bots.ealarming.model.User;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
+import com.wire.bots.sdk.assets.MessageText;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import com.wire.bots.sdk.tools.Util;
@@ -25,10 +26,8 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.wire.bots.ealarming.Tools.validateToken;
 
@@ -98,7 +97,7 @@ public class BroadcastResource {
         }
     }
 
-    private int sendAlert(Alert alert, HashSet<_Task> tasks) throws IOException {
+    private int sendAlert(Alert alert, HashSet<_Task> tasks) {
         _Message message = new _Message();
         message.title = alert.title;
         message.body = alert.message;
@@ -111,29 +110,43 @@ public class BroadcastResource {
             try (WireClient client = clientRepo.getClient(task.botId)) {
 
                 UUID messageId = UUID.randomUUID();
-                message.responses = generateButtons(alert.id, task.userId, messageId, alert.responses);
+                long mills = TimeUnit.MINUTES.toMillis(15);
+                Date exp = new Date(new Date().getTime() + mills);
+
+                message.responses = generateButtons(alert.id, task.userId, messageId, alert.responses, exp);
 
                 String text = execute(message);
 
-                messageId = client.sendText(text);
+                MessageText messageText = MessageText.builder()
+                        .setMessageId(messageId)
+                        .setExpires(mills)
+                        .setText(text);
 
-                int insert = alert2UserDAO.insertStatus(alert.id, task.userId, Alert2User.Type.SENT.ordinal(), messageId, null);
+                client.send(messageText);
+
+                int insert = alert2UserDAO.insertStatus(alert.id,
+                        task.userId,
+                        Alert2User.Type.SENT.ordinal(),
+                        messageId,
+                        null);
+
                 if (insert == 0)
                     Logger.warning("sendAlert: alert: %d, user: %s, msgId: %s, %s. insert: %s",
                             alert.id, task.userId, messageId, Alert2User.Type.SENT, insert);
                 sent++;
-            } catch (Exception ignore) {
-
+            } catch (Exception e) {
+                Logger.warning("sendAlert: bot: %s, user: %s, e: %s", task.botId, task.userId, e);
             }
         }
         return sent;
     }
 
-    private List<String> generateButtons(Integer alertId, UUID userId, UUID messageId, List<String> responses) {
+    private List<String> generateButtons(Integer alertId, UUID userId, UUID messageId, List<String> responses, Date exp) {
         ArrayList<String> ret = new ArrayList<>();
         for (String response : responses) {
             String token = Jwts.builder()
                     .setIssuer("https://wire.com")
+                    .setExpiration(exp)
                     .setSubject("" + alertId)
                     .claim("alertId", alertId)
                     .claim("userId", userId)

@@ -25,7 +25,6 @@ import com.wire.bots.sdk.Server;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.skife.jdbi.v2.DBI;
@@ -64,7 +63,7 @@ public class Service extends Server<Config> {
 
     @Override
     protected void initialize(Config config, Environment env) {
-        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        this.key = Keys.hmacShaKeyFor(config.key.getBytes());
         this.jdbi = new DBIFactory().build(environment, config.database, "postgresql");
 
         // Enable CORS headers

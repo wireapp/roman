@@ -30,7 +30,9 @@ db:
   user: postgres
   password: ${POSTGRES_PASSWORD}
   port: 5432
-  
+
+key: ${E_ALARMING_KEY}
+
 database:
   driverClass: org.postgresql.Driver
   user: postgres
