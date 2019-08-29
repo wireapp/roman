@@ -55,8 +55,7 @@ public class TemplateResource {
 
     @GET
     @ApiOperation(value = "Get All Templates", response = Template.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
+    @ApiResponses(value = {@ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response getAll() {
         try {
             List<Template> templates = templateDAO.select();
@@ -77,8 +76,7 @@ public class TemplateResource {
 
     @POST
     @ApiOperation(value = "Create new Template", response = Template.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
+    @ApiResponses(value = {@ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
     public Response insert(@ApiParam @Valid Template template) {
         try {
             int templateId = templateDAO.insert(template.title,

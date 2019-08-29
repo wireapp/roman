@@ -1,6 +1,5 @@
 CREATE TABLE Alert (
  id SERIAL PRIMARY KEY,
- created TIMESTAMP NOT NULL,
  title VARCHAR NOT NULL,
  message VARCHAR NOT NULL,
  severity INTEGER NOT NULL,
@@ -9,16 +8,17 @@ CREATE TABLE Alert (
  starting TIMESTAMP NOT NULL,
  ending TIMESTAMP NOT NULL,
  status INTEGER NOT NULL,
- attachment INTEGER
+ attachment INTEGER,
+ created TIMESTAMP NOT NULL
 );
 
 CREATE TABLE Template (
  id SERIAL PRIMARY KEY,
- created TIMESTAMP NOT NULL,
  title VARCHAR NOT NULL,
  message VARCHAR NOT NULL,
  severity INTEGER,
  contact UUID,
+ created TIMESTAMP NOT NULL
 );
 
 CREATE TABLE Alert2User (

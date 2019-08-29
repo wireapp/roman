@@ -1,12 +1,10 @@
 package com.wire.bots.ealarming.resources;
 
 import com.wire.bots.ealarming.DAO.Alert2UserDAO;
-import com.wire.bots.ealarming.Service;
 import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.ealarming.model.Result;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
-import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureException;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
@@ -15,6 +13,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
+
+import static com.wire.bots.ealarming.Tools.validateToken;
 
 @Api
 @Path("/users/{alertId}")
@@ -36,11 +36,7 @@ public class UsersResource {
                         @QueryParam("user") UUID userId) {
 
         try {
-            String subject = Jwts.parser()
-                    .setSigningKey(Service.getKey())
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
+            String subject = validateToken(token);
 
             Result<Alert2User> ret = new Result<>();
             ret.items = userId != null
@@ -55,7 +51,7 @@ public class UsersResource {
                     ok(ret).
                     build();
         } catch (SignatureException e) {
-            Logger.warning("UsersResource.get(%d) %s", alertId, e);
+            Logger.warning("UsersResource.get(%d, %s) %s", alertId, userId, e);
             return Response.
                     ok(new ErrorMessage("Not authenticated")).
                     status(403).

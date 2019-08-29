@@ -4,6 +4,7 @@ import com.wire.bots.ealarming.DAO.AttachmentDAO;
 import com.wire.bots.ealarming.model.Attachment;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
+import io.jsonwebtoken.security.SignatureException;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
 
@@ -12,6 +13,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Base64;
+
+import static com.wire.bots.ealarming.Tools.validateToken;
 
 @Api
 @Path("/attachments")
@@ -26,15 +29,17 @@ public class AttachmentsResource {
 
     @POST
     @ApiOperation(value = "Upload Attachment", response = Attachment.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
-    public Response insert(@ApiParam @Valid Attachment attachment) {
+    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
+    public Response insert(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
+                           @ApiParam @Valid Attachment attachment) {
         try {
+            String subject = validateToken(token);
+
             int attachmentId = attachmentDAO.insert(attachment.filename,
                     attachment.mimeType,
                     Base64.getDecoder().decode(attachment.data));
 
-            Logger.info("AssetsResource.insert: attachment: %d, filename: %s, mime: %s",
+            Logger.info("AttachmentsResource.insert: attachment: %d, filename: %s, mime: %s",
                     attachmentId,
                     attachment.filename,
                     attachment.mimeType);
@@ -44,9 +49,15 @@ public class AttachmentsResource {
             return Response.
                     ok(result).
                     build();
+        } catch (SignatureException e) {
+            Logger.warning("AttachmentsResource.insert %s", e);
+            return Response.
+                    ok(new ErrorMessage("Not authenticated")).
+                    status(403).
+                    build();
         } catch (Exception e) {
             e.printStackTrace();
-            Logger.error("AssetsResource.insert: %s", e);
+            Logger.error("AttachmentsResource.insert: %s", e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
@@ -57,9 +68,9 @@ public class AttachmentsResource {
     @GET
     @Path("{attachmentId}")
     @ApiOperation(value = "Get Attachment", response = Attachment.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
-    public Response get(@ApiParam @PathParam("attachmentId") int attachmentId) {
+    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
+    public Response get(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
+                        @ApiParam @PathParam("attachmentId") int attachmentId) {
         try {
             Attachment attachment = attachmentDAO.get(attachmentId);
             if (attachment == null) {
@@ -74,6 +85,12 @@ public class AttachmentsResource {
 
             return Response.
                     ok(attachment).
+                    build();
+        } catch (SignatureException e) {
+            Logger.warning("AttachmentsResource.get(%d) %s", attachmentId, e);
+            return Response.
+                    ok(new ErrorMessage("Not authenticated")).
+                    status(403).
                     build();
         } catch (Exception e) {
             e.printStackTrace();

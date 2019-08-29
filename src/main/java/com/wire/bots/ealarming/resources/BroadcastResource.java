@@ -12,13 +12,11 @@ import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
+import io.jsonwebtoken.security.SignatureException;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -27,6 +25,8 @@ import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+
+import static com.wire.bots.ealarming.Tools.validateToken;
 
 @Api
 @Path("/broadcast")
@@ -53,11 +53,13 @@ public class BroadcastResource {
 
     @POST
     @Path("{alertId}")
-    @ApiOperation(value = "Broadcast Alert", response = _Result.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Something went wrong", response = ErrorMessage.class)})
-    public Response post(@ApiParam @PathParam("alertId") int alertId) {
+    @ApiOperation(value = "Broadcast an Alert", response = _Result.class)
+    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
+    public Response post(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
+                         @ApiParam @PathParam("alertId") int alertId) {
         try {
+            String subject = validateToken(token);
+
             Alert alert = alertDAO.get(alertId);
 
             HashSet<_Task> users = extractUsers(alertId);
@@ -68,8 +70,14 @@ public class BroadcastResource {
             return Response.
                     ok(result).
                     build();
+        } catch (SignatureException e) {
+            Logger.warning("BroadcastResource.post(%d) %s", alertId, e);
+            return Response.
+                    ok(new ErrorMessage("Not authenticated")).
+                    status(403).
+                    build();
         } catch (Exception e) {
-            Logger.error("AlertResource.post: %s", e);
+            Logger.error("BroadcastResource.post(%d): %s", alertId, e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
