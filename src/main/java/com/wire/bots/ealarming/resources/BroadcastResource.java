@@ -4,6 +4,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.wire.bots.ealarming.DAO.*;
+import com.wire.bots.ealarming.Service;
 import com.wire.bots.ealarming.model.Alert;
 import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.ealarming.model.Group;
@@ -12,6 +13,8 @@ import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
+import com.wire.bots.sdk.tools.Util;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureException;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
@@ -22,6 +25,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -102,22 +106,50 @@ public class BroadcastResource {
         message.contact = alert.contact;
         message.responses = alert.responses;
 
-        String text = execute(message);
         int sent = 0;
         for (_Task task : tasks) {
             try (WireClient client = clientRepo.getClient(task.botId)) {
-                UUID messageId = client.sendText(text);
-                Alert2User.Type status = Alert2User.Type.SENT;
-                int insert = alert2UserDAO.insertStatus(alert.id, task.userId, status.ordinal(), messageId, null);
+
+                UUID messageId = UUID.randomUUID();
+                message.responses = generateButtons(alert.id, task.userId, messageId, alert.responses);
+
+                String text = execute(message);
+
+                messageId = client.sendText(text);
+
+                int insert = alert2UserDAO.insertStatus(alert.id, task.userId, Alert2User.Type.SENT.ordinal(), messageId, null);
                 if (insert == 0)
                     Logger.warning("sendAlert: alert: %d, user: %s, msgId: %s, %s. insert: %s",
-                            alert.id, task.userId, messageId, status, insert);
+                            alert.id, task.userId, messageId, Alert2User.Type.SENT, insert);
                 sent++;
             } catch (Exception ignore) {
 
             }
         }
         return sent;
+    }
+
+    private List<String> generateButtons(Integer alertId, UUID userId, UUID messageId, List<String> responses) {
+        ArrayList<String> ret = new ArrayList<>();
+        for (String response : responses) {
+            String token = Jwts.builder()
+                    .setIssuer("https://wire.com")
+                    .setSubject("" + alertId)
+                    .claim("alertId", alertId)
+                    .claim("userId", userId)
+                    .claim("messageId", messageId)
+                    .claim("response", response)
+                    .signWith(Service.getKey())
+                    .compact();
+
+            String btn = String.format("[%s](https://services.%s/ealarming/response/%s)",
+                    response,
+                    Util.getDomain(),
+                    token);
+
+            ret.add(btn);
+        }
+        return ret;
     }
 
     private String severity(Integer severity) {

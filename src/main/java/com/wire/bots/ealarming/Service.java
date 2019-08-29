@@ -90,5 +90,7 @@ public class Service extends Server<Config> {
         addResource(new ReportResource(jdbi), env);
         addResource(new AttachmentsResource(jdbi), env);
         addResource(new SigninResource(jdbi), env);
+        addResource(new ResponseResource(jdbi), env);
+
     }
 }

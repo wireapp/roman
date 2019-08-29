@@ -39,7 +39,8 @@ public class AttachmentsResource {
                     attachment.mimeType,
                     Base64.getDecoder().decode(attachment.data));
 
-            Logger.info("AttachmentsResource.insert: attachment: %d, filename: %s, mime: %s",
+            Logger.info("AttachmentsResource.insert: user: %s, attachment: %d, filename: %s, mime: %s",
+                    subject,
                     attachmentId,
                     attachment.filename,
                     attachment.mimeType);
@@ -72,6 +73,8 @@ public class AttachmentsResource {
     public Response get(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
                         @ApiParam @PathParam("attachmentId") int attachmentId) {
         try {
+            String subject = validateToken(token);
+
             Attachment attachment = attachmentDAO.get(attachmentId);
             if (attachment == null) {
                 return Response.
@@ -82,6 +85,12 @@ public class AttachmentsResource {
 
             byte[] data = attachmentDAO.getData(attachmentId);
             attachment.data = Base64.getEncoder().encodeToString(data);
+
+            Logger.info("AttachmentsResource.get: user: %s, attachment: %d, filename: %s, mime: %s",
+                    subject,
+                    attachmentId,
+                    attachment.filename,
+                    attachment.mimeType);
 
             return Response.
                     ok(attachment).
