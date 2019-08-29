@@ -43,6 +43,7 @@ public class BroadcastResource {
     private final User2BotDAO user2BotDAO;
     private final ClientRepo clientRepo;
     private final AttachmentDAO attachmentDAO;
+    private final UserDAO userDAO;
 
     public BroadcastResource(DBI jdbi, ClientRepo clientRepo) {
         this.alertDAO = jdbi.onDemand(AlertDAO.class);
@@ -50,6 +51,7 @@ public class BroadcastResource {
         this.groupsDAO = jdbi.onDemand(GroupsDAO.class);
         this.user2BotDAO = jdbi.onDemand(User2BotDAO.class);
         this.attachmentDAO = jdbi.onDemand(AttachmentDAO.class);
+        this.userDAO = jdbi.onDemand(UserDAO.class);
 
         this.clientRepo = clientRepo;
     }
@@ -102,7 +104,7 @@ public class BroadcastResource {
         message.title = alert.title;
         message.body = alert.message;
         message.severity = severity(alert.severity);
-        message.contact = alert.contact;
+        message.contact = toUser(alert.contact);
         message.responses = alert.responses;
 
         int sent = 0;
@@ -139,6 +141,12 @@ public class BroadcastResource {
             }
         }
         return sent;
+    }
+
+    private User toUser(UUID userId) {
+        if (userId == null)
+            return null;
+        return userDAO.get(userId);
     }
 
     private List<String> generateButtons(Integer alertId, UUID userId, UUID messageId, List<String> responses, Date exp) {
@@ -233,7 +241,7 @@ public class BroadcastResource {
     class _Message {
         String title;
         String body;
-        UUID contact;
+        User contact;
         String severity;
         List<String> responses;
     }

@@ -1,13 +1,11 @@
-{{severity}} **{{ title }}**
+{{severity}} **{{title}}**
 
-{{ body }}
+{{body}}
 
-{{#responses}}
-{{.}}
-{{/responses}}
+{{#responses}} **{{.}}** {{/responses}}
 
 {{#contact}}
-[contact](wire://users/{{ contact }})
+Contact: [{{firstname}} {{surname}}](wire://users/{{userId}})
 {{/contact}}
 __
 
