@@ -2,11 +2,12 @@
 
 {{ body }}
 
-{{ responses }}
+{{#responses}}
+- {{.}}
+{{/responses}}
 
 {{#contact}}
 [contact](wire://users/{{ contact }})
 {{/contact}}
-
 __
 

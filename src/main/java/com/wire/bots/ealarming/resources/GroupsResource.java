@@ -20,6 +20,7 @@ public class GroupsResource {
     private final GroupsDAO groupsDAO;
 
     public GroupsResource(DBI jdbi) {
+
         this.groupsDAO = jdbi.onDemand(GroupsDAO.class);
     }
 

@@ -13,7 +13,8 @@ import java.util.UUID;
 
 public interface Alert2UserDAO {
     @SqlUpdate("INSERT INTO Alert2User (alert_id, user_id, message_status, message_id, response, created) " +
-            "VALUES (:alertId, :userId, :status, :messageId, :response, CURRENT_TIMESTAMP)")
+            "VALUES (:alertId, :userId, :status, :messageId, :response, CURRENT_TIMESTAMP) " +
+            "ON CONFLICT(alert_id, user_id, message_status) DO NOTHING")
     int insertStatus(@Bind("alertId") int alertId,
                      @Bind("userId") UUID userId,
                      @Bind("status") int status,

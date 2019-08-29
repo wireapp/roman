@@ -36,4 +36,6 @@ public class AlertPayload {
     public List<UUID> include;
 
     public Integer attachment;
+
+    public UUID contact;
 }

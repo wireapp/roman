@@ -54,13 +54,22 @@ public class BroadcastResource {
     @POST
     @Path("{alertId}")
     @ApiOperation(value = "Broadcast an Alert", response = _Result.class)
-    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
+    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated"),
+            @ApiResponse(code = 404, message = "Unknown Alert ID")})
     public Response post(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
                          @ApiParam @PathParam("alertId") int alertId) {
         try {
             String subject = validateToken(token);
 
             Alert alert = alertDAO.get(alertId);
+
+            if (alert == null) {
+                return Response.
+                        status(404).
+                        build();
+            }
+
+            alert.responses = alertDAO.selectResponses(alertId);
 
             HashSet<_Task> users = extractUsers(alertId);
 

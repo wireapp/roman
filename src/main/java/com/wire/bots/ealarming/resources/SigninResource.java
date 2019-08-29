@@ -30,8 +30,7 @@ public class SigninResource {
 
     @POST
     @ApiOperation(value = "Signin")
-    @ApiResponses(value = {
-            @ApiResponse(code = 403, message = "Wrong email or password", response = ErrorMessage.class)})
+    @ApiResponses(value = {@ApiResponse(code = 403, message = "Wrong email or password")})
     public Response signin(@ApiParam @Valid SignIn signIn) {
         try {
             String hashed = adminsDAO.getHash(signIn.email);
