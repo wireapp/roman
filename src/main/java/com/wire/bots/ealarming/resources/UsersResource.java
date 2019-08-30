@@ -5,10 +5,11 @@ import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.ealarming.model.Result;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
-import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.JwtException;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -29,7 +30,7 @@ public class UsersResource {
     @GET
     @ApiOperation(value = "Get Delivery Statuses for this Alert", response = Result.class)
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
-    public Response get(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
+    public Response get(@ApiParam(hidden = true) @NotNull @CookieParam("Authorization") String token,
                         @PathParam("alertId") int alertId,
                         @ApiParam(defaultValue = "10") @QueryParam("size") int size,
                         @ApiParam(defaultValue = "1") @QueryParam("page") int page,
@@ -50,10 +51,10 @@ public class UsersResource {
             return Response.
                     ok(ret).
                     build();
-        } catch (SignatureException e) {
+        } catch (JwtException e) {
             Logger.warning("UsersResource.get(%d, %s) %s", alertId, userId, e);
             return Response.
-                    ok(new ErrorMessage("Not authenticated")).
+                    ok(new ErrorMessage(e.getMessage())).
                     status(403).
                     build();
         }

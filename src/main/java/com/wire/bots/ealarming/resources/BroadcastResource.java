@@ -15,11 +15,12 @@ import com.wire.bots.sdk.assets.MessageText;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import com.wire.bots.sdk.tools.Util;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureException;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -61,7 +62,7 @@ public class BroadcastResource {
     @ApiOperation(value = "Broadcast an Alert", response = _Result.class)
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated"),
             @ApiResponse(code = 404, message = "Unknown Alert ID")})
-    public Response post(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
+    public Response post(@ApiParam(hidden = true) @NotNull @CookieParam("Authorization") String token,
                          @ApiParam @PathParam("alertId") int alertId) {
         try {
             String subject = validateToken(token);
@@ -84,10 +85,10 @@ public class BroadcastResource {
             return Response.
                     ok(result).
                     build();
-        } catch (SignatureException e) {
+        } catch (JwtException e) {
             Logger.warning("BroadcastResource.post(%d) %s", alertId, e);
             return Response.
-                    ok(new ErrorMessage("Not authenticated")).
+                    ok(new ErrorMessage(e.getMessage())).
                     status(403).
                     build();
         } catch (Exception e) {

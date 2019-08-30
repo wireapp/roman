@@ -4,11 +4,12 @@ import com.wire.bots.ealarming.DAO.AttachmentDAO;
 import com.wire.bots.ealarming.model.Attachment;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
-import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.JwtException;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -30,7 +31,7 @@ public class AttachmentsResource {
     @POST
     @ApiOperation(value = "Upload Attachment", response = Attachment.class)
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
-    public Response insert(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
+    public Response insert(@ApiParam(hidden = true) @NotNull @CookieParam("Authorization") String token,
                            @ApiParam @Valid Attachment attachment) {
         try {
             String subject = validateToken(token);
@@ -50,17 +51,16 @@ public class AttachmentsResource {
             return Response.
                     ok(result).
                     build();
-        } catch (SignatureException e) {
+        } catch (JwtException e) {
             Logger.warning("AttachmentsResource.insert %s", e);
             return Response.
-                    ok(new ErrorMessage("Not authenticated")).
+                    ok(new ErrorMessage(e.getMessage())).
                     status(403).
                     build();
         } catch (Exception e) {
             e.printStackTrace();
             Logger.error("AttachmentsResource.insert: %s", e);
             return Response
-                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }
@@ -70,7 +70,7 @@ public class AttachmentsResource {
     @Path("{attachmentId}")
     @ApiOperation(value = "Get Attachment", response = Attachment.class)
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
-    public Response get(@ApiParam(hidden = true) @CookieParam("Authorization") String token,
+    public Response get(@ApiParam(hidden = true) @NotNull @CookieParam("Authorization") String token,
                         @ApiParam @PathParam("attachmentId") int attachmentId) {
         try {
             String subject = validateToken(token);
@@ -95,17 +95,16 @@ public class AttachmentsResource {
             return Response.
                     ok(attachment).
                     build();
-        } catch (SignatureException e) {
+        } catch (JwtException e) {
             Logger.warning("AttachmentsResource.get(%d) %s", attachmentId, e);
             return Response.
-                    ok(new ErrorMessage("Not authenticated")).
+                    ok(new ErrorMessage(e.getMessage())).
                     status(403).
                     build();
         } catch (Exception e) {
             e.printStackTrace();
             Logger.error("AssetsResource.get(%d): %s", attachmentId, e);
             return Response
-                    .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
         }

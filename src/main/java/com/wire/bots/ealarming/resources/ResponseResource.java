@@ -4,11 +4,7 @@ import com.wire.bots.ealarming.DAO.Alert2UserDAO;
 import com.wire.bots.ealarming.Service;
 import com.wire.bots.ealarming.model.Alert2User;
 import com.wire.bots.sdk.tools.Logger;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -64,16 +60,16 @@ public class ResponseResource {
             return Response.
                     ok(response).
                     build();
-        } catch (SignatureException e) {
-            Logger.warning("ResponseResource.get: %s", e);
-            return Response.
-                    ok("Invalid token").
-                    status(400).
-                    build();
         } catch (ExpiredJwtException e) {
             Logger.warning("ResponseResource.get: %s", e);
             return Response.
                     ok("Too late :-p").
+                    build();
+        } catch (JwtException e) {
+            Logger.warning("ResponseResource.get: %s", e);
+            return Response.
+                    ok(e.getMessage()).
+                    status(400).
                     build();
         } catch (Exception e) {
             e.printStackTrace();
