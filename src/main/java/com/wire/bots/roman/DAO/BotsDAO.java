@@ -17,5 +17,5 @@ public interface BotsDAO {
     String getUrl(@Bind("bot") UUID bot);
 
     @SqlQuery("SELECT token FROM Bots WHERE id = :bot")
-    String getToken(@Bind("bot") UUID bot);
+    String getServiceAuthorization(@Bind("bot") UUID bot);
 }

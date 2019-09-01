@@ -6,6 +6,7 @@ import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.models.TextMessage;
 import com.wire.bots.sdk.server.model.NewBot;
+import com.wire.bots.sdk.server.model.SystemMessage;
 import com.wire.bots.sdk.tools.Logger;
 import org.skife.jdbi.v2.DBI;
 
@@ -34,22 +35,10 @@ public class MessageHandler extends MessageHandlerBase {
         try {
             MessageIn message = new MessageIn();
             message.botId = botId;
-            message.convId = newBot.conversation.id;
             message.from = newBot.origin.id;
-            message.type = "conversation.bot_added";
-            message.token = generateToken(botId);
+            message.type = "conversation.bot_request";
 
-            String url = botsDAO.getUrl(botId);
-            String auth = botsDAO.getToken(botId);
-
-            Response post = jerseyClient.target(url)
-                    .request(MediaType.APPLICATION_JSON)
-                    .header("Authorization", "Bearer " + auth)
-                    .post(Entity.entity(message, MediaType.APPLICATION_JSON));
-
-            Logger.info("onNewBot: %s code: %d", url, post.getStatus());
-
-            return post.getStatus() == 200;
+            return send(message);
         } catch (Exception e) {
             Logger.error("onNewBot: %s, err: %s", botId, e);
             return false;
@@ -62,24 +51,45 @@ public class MessageHandler extends MessageHandlerBase {
         try {
             MessageIn message = new MessageIn();
             message.botId = botId;
-            message.convId = client.getConversationId();
             message.from = msg.getUserId();
             message.type = "conversation.new_text";
             message.text = msg.getText();
             message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
 
-            String token = botsDAO.getToken(botId);
-            String url = botsDAO.getUrl(botId);
-
-            Response post = jerseyClient.target(url)
-                    .request(MediaType.APPLICATION_JSON)
-                    .header("Authorization", "Bearer " + token)
-                    .post(Entity.entity(message, MediaType.APPLICATION_JSON));
-
-            Logger.info("onText: %s code: %d", url, post.getStatus());
+            send(message);
 
         } catch (Exception e) {
             Logger.error("onText: %s, err: %s", botId, e);
         }
+    }
+
+    @Override
+    public void onNewConversation(WireClient client, SystemMessage msg) {
+        UUID botId = client.getId();
+        try {
+            MessageIn message = new MessageIn();
+            message.botId = botId;
+            message.from = msg.from;
+            message.type = "conversation.new_conversation";
+            message.token = generateToken(botId);
+
+            send(message);
+
+        } catch (Exception e) {
+            Logger.error("onText: %s, err: %s", botId, e);
+        }
+    }
+
+    private boolean send(MessageIn message) {
+        String token = botsDAO.getServiceAuthorization(message.botId);
+        String url = botsDAO.getUrl(message.botId);
+
+        Response post = jerseyClient.target(url)
+                .request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON));
+
+        Logger.info("%s: %s code: %d", message.type, message.botId, post.getStatus());
+        return post.getStatus() == 200;
     }
 }

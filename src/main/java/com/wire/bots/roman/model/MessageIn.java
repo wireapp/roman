@@ -10,7 +10,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageIn {
     public UUID botId;
-    public UUID convId;
     public UUID from;
     public String type;
     public String text;
