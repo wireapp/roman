@@ -22,7 +22,7 @@ jerseyClient:
   keepAlive: 0ms
   retries: 3
 
-auth: ${E_ALARMING_SERVICE_TOKEN}
+auth: ${E_ROMAN_SERVICE_TOKEN}
 
 db:
   driver: postgresql
@@ -31,7 +31,7 @@ db:
   password: ${POSTGRES_PASSWORD}
   port: 5432
 
-key: ${E_ALARMING_KEY}
+key: ${E_ROMAN_KEY}
 
 database:
   driverClass: org.postgresql.Driver

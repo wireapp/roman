@@ -1,5 +1,6 @@
 package com.wire.bots.roman.DAO.mappers;
 
+import com.wire.bots.roman.model.Provider;
 import com.wire.bots.sdk.tools.Logger;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
@@ -9,27 +10,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class AlertMapper implements ResultSetMapper<Alert> {
+public class ProviderMapper implements ResultSetMapper<Provider> {
     @Override
     @Nullable
-    public Alert map(int i, ResultSet rs, StatementContext statementContext) {
-        Alert alert = new Alert();
+    public Provider map(int i, ResultSet rs, StatementContext statementContext) {
+        Provider ret = new Provider();
         try {
-            alert.id = rs.getInt("id");
-            alert.created = rs.getString("created");
-            alert.title = rs.getString("title");
-            alert.message = rs.getString("message");
-            alert.severity = rs.getInt("severity");
-            alert.creator = getUuid(rs, "creator");
-            alert.contact = getUuid(rs, "contact");
-            alert.starting = rs.getString("starting");
-            alert.ending = rs.getString("ending");
-            alert.status = rs.getInt("status");
-            alert.attachmentId = rs.getInt("attachment");
+            ret.id = getUuid(rs, "id");
+            ret.email = rs.getString("email");
+            ret.password = rs.getString("password");
+            ret.hash = rs.getString("hash");
 
-            return alert;
+            return ret;
         } catch (SQLException e) {
-            Logger.error("AlertResultSetMapper: i: %d, e: %s", i, e);
+            Logger.error("ProviderMapper: i: %d, e: %s", i, e);
             return null;
         }
     }

@@ -18,9 +18,14 @@
 package com.wire.bots.roman;
 
 import com.wire.bots.roman.model.Config;
+import com.wire.bots.roman.overrides.BotResource;
+import com.wire.bots.roman.overrides.InboundResource;
 import com.wire.bots.roman.resources.*;
+import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
+import com.wire.bots.sdk.factories.CryptoFactory;
+import com.wire.bots.sdk.factories.StorageFactory;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -29,14 +34,14 @@ import org.skife.jdbi.v2.DBI;
 
 import java.security.Key;
 
-public class Service extends Server<Config> {
-    private static Service instance;
+public class Application extends Server<Config> {
+    private static Application instance;
 
     private Key key;
     private DBI jdbi;
 
     public static void main(String[] args) throws Exception {
-        new Service().run(args);
+        new Application().run(args);
     }
 
     public static Key getKey() {
@@ -46,12 +51,12 @@ public class Service extends Server<Config> {
     @Override
     public void initialize(Bootstrap<Config> bootstrap) {
         super.initialize(bootstrap);
-        instance = (Service) bootstrap.getApplication();
+        instance = (Application) bootstrap.getApplication();
     }
 
     @Override
     protected MessageHandlerBase createHandler(Config config, Environment env) {
-        return new MessageHandler(jdbi);
+        return new MessageHandler(jdbi, getClient());
     }
 
     @Override
@@ -64,5 +69,19 @@ public class Service extends Server<Config> {
     protected void onRun(Config config, Environment env) {
         addResource(new ProviderResource(jdbi, getClient()), env);
         addResource(new ServiceResource(jdbi, getClient()), env);
+        addResource(new ConversationResource(getRepo()), env);
+    }
+
+    @Override
+    protected void messageResource(Config config, Environment env, MessageHandlerBase handler, ClientRepo repo) {
+        addResource(new InboundResource(handler, repo, jdbi), env);
+    }
+
+    @Override
+    protected void botResource(Config config, Environment env, MessageHandlerBase handler) {
+        StorageFactory storageFactory = getStorageFactory();
+        CryptoFactory cryptoFactory = getCryptoFactory();
+
+        addResource(new BotResource(handler, storageFactory, cryptoFactory, jdbi), env);
     }
 }

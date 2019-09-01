@@ -1,10 +1,17 @@
-package com.wire.bots.ealarming.resources;
+package com.wire.bots.roman.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lambdaworks.crypto.SCryptUtil;
-import com.wire.bots.ealarming.model.SignIn;
+import com.wire.bots.roman.Application;
+import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.model.Provider;
+import com.wire.bots.roman.model.SignIn;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import com.wire.bots.sdk.tools.Util;
+import io.jsonwebtoken.Jwts;
 import io.swagger.annotations.*;
 import org.skife.jdbi.v2.DBI;
 
@@ -17,7 +24,9 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import java.util.UUID;
 
 @Api
 @Path("/provider")
@@ -25,33 +34,50 @@ import javax.ws.rs.core.Response;
 public class ProviderResource {
 
     private final WebTarget provider;
+    private final ProvidersDAO providersDAO;
 
     public ProviderResource(DBI jdbi, Client jerseyClient) {
-        provider = jerseyClient.target(Util.getHost())
+        provider = jerseyClient
+                .target(Util.getHost())
                 .path("provider");
+        providersDAO = jdbi.onDemand(ProvidersDAO.class);
     }
 
     @POST
     @Path("/register")
-    @ApiOperation(value = "Register as Wire Bot Developer", response = Provider.class)
+    @ApiOperation(value = "Register as Wire Bot Developer")
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
-    public Response register(@ApiParam @Valid Provider payload) {
+    public Response register(@ApiParam @Valid _NewUser payload) {
         try {
-            String hash = SCryptUtil.scrypt(payload.password, 16384, 8, 1);
-
-            Provider p = new Provider();
-            p.name = payload.name;
-            p.email = payload.email;
-            p.password = hash;
-            p.description = "";
-            p.url = "https://";
+            _NewProvider newProvider = new _NewProvider();
+            newProvider.name = payload.name;
+            newProvider.email = payload.email;
+            newProvider.description = "Description";
+            newProvider.url = "https://wire.com";
 
             Response register = provider.path("register")
                     .request(MediaType.APPLICATION_JSON)
-                    .post(Entity.entity(p, MediaType.APPLICATION_JSON));
+                    .post(Entity.entity(newProvider, MediaType.APPLICATION_JSON));
+
+            Logger.debug("ProviderResource.register: login status %d", register.getStatus());
+
+            if (register.getStatus() >= 400) {
+                return Response.
+                        ok(register.readEntity(String.class)).
+                        status(register.getStatus()).
+                        build();
+            }
+
+            Provider provider = register.readEntity(Provider.class);
+
+            String hash = SCryptUtil.scrypt(payload.password, 16384, 8, 1);
+            UUID providerId = provider.id;
+            String email = payload.email;
+            String password = provider.password;
+            providersDAO.insert(providerId, email, hash, password);
 
             return Response.
-                    ok(register.getEntity()).
+                    ok().
                     status(register.getStatus()).
                     build();
         } catch (Exception e) {
@@ -65,19 +91,29 @@ public class ProviderResource {
 
     @POST
     @Path("/login")
-    @ApiOperation(value = "Register as Wire Bot Developer", response = SignIn.class)
+    @ApiOperation(value = "Login as Wire Bot Developer")
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
     public Response login(@ApiParam @Valid SignIn payload) {
         try {
-            Response login = provider.path("login")
-                    .request(MediaType.APPLICATION_JSON)
-                    .post(Entity.entity(payload, MediaType.APPLICATION_JSON));
+            Provider provider = providersDAO.get(payload.email);
+            if (provider == null || !SCryptUtil.check(payload.password, provider.hash)) {
+                return Response
+                        .ok(new ErrorMessage("Wrong email or password"))
+                        .status(403)
+                        .build();
+            }
+
+            String jwt = Jwts.builder()
+                    .setIssuer("https://wire.com")
+                    .setSubject(provider.id.toString())
+                    .signWith(Application.getKey())
+                    .compact();
 
             return Response.
-                    ok(login.getEntity()).
-                    status(login.getStatus()).
-                    cookie(login.getCookies().get("zprovider")).
+                    ok().
+                    cookie(new NewCookie("zroman", jwt)).
                     build();
+
         } catch (Exception e) {
             Logger.error("RegisterResource.login: %s", e);
             return Response
@@ -87,18 +123,40 @@ public class ProviderResource {
         }
     }
 
-    static class _Provider {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    static class _NewUser {
         @NotNull
-        String email;
+        @JsonProperty
+        public String name;
 
         @NotNull
-        String password;
+        @JsonProperty
+        public String email;
 
         @NotNull
-        String name;
+        @JsonProperty
+        public String password;
+    }
 
-        String url = "https://services.wire.com";
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    static class _NewProvider {
+        @NotNull
+        @JsonProperty
+        public String name;
 
-        String description = "Description";
+        @NotNull
+        @JsonProperty
+        public String email;
+
+        @NotNull
+        @JsonProperty
+        public String url;
+
+        @NotNull
+        @JsonProperty
+        public String description;
+
     }
 }

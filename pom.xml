@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>eAlarming</artifactId>
+    <artifactId>roman</artifactId>
     <groupId>com.wire.bots</groupId>
     <version>0.1.0</version>
 
@@ -39,11 +39,6 @@
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-jdbi</artifactId>
             <version>${dropwizard.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.spullara.mustache.java</groupId>
-            <artifactId>compiler</artifactId>
-            <version>0.9.6</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -98,7 +93,7 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.4.3</version>
                 <configuration>
-                    <finalName>ealarming</finalName>
+                    <finalName>roman</finalName>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <filters>
                         <filter>
@@ -123,7 +118,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.wire.bots.ealarming.Service</mainClass>
+                                    <mainClass>com.wire.bots.roman.Application</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

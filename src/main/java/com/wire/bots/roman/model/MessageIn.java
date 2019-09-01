@@ -8,10 +8,11 @@ import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Message {
+public class MessageIn {
     public UUID botId;
     public UUID convId;
+    public UUID from;
     public String type;
-    public UUID userId;
-    public String payload;
+    public String text;
+    public String token;
 }

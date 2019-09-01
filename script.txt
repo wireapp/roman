@@ -1,94 +1,15 @@
-CREATE TABLE Alert (
- id SERIAL PRIMARY KEY,
- title VARCHAR NOT NULL,
- message VARCHAR NOT NULL,
- severity INTEGER NOT NULL,
- creator UUID,
- contact UUID,
- starting TIMESTAMP NOT NULL,
- ending TIMESTAMP NOT NULL,
- status INTEGER NOT NULL,
- attachment INTEGER,
- created TIMESTAMP NOT NULL
-);
-
-CREATE TABLE Template (
- id SERIAL PRIMARY KEY,
- title VARCHAR NOT NULL,
- message VARCHAR NOT NULL,
- severity INTEGER,
- contact UUID,
- created TIMESTAMP NOT NULL
-);
-
-CREATE TABLE Alert2User (
- alert_id INTEGER NOT NULL,
- user_id UUID NOT NULL,
- message_status INTEGER NOT NULL,
- message_id UUID,
- escalated INTEGER,
- response VARCHAR,
- created TIMESTAMP NOT NULL,
- PRIMARY KEY(alert_id, user_id, message_status)
-);
-
-CREATE TABLE Alert2Group (
- alert_id INTEGER NOT NULL,
- group_id INTEGER NOT NULL,
- PRIMARY KEY(alert_id, group_id)
-);
-
-CREATE TABLE Alert2Response (
- alert_id INTEGER NOT NULL,
- response VARCHAR NOT NULL,
- PRIMARY KEY(alert_id, response)
-);
-
-CREATE TABLE Template2Response (
- template_id INTEGER NOT NULL,
- response VARCHAR NOT NULL,
- PRIMARY KEY(template_id, response)
-);
-
-CREATE TABLE User2Bot (
- user_id UUID PRIMARY KEY,
- bot_id UUID NOT NULL
-);
-
-CREATE TABLE Attachment (
- id SERIAL PRIMARY KEY,
- filename VARCHAR NOT NULL,
- mime_type VARCHAR NOT NULL,
- data bytea NOT NULL
-);
-
-CREATE TABLE Admins (
- id SERIAL,
+CREATE TABLE Providers (
+ id UUID NOT NULL,
  email VARCHAR NOT NULL PRIMARY KEY,
- password VARCHAR NOT NULL
+ hash VARCHAR NOT NULL,
+ password VARCHAR NOT NULL,
+ url VARCHAR,
+ service_auth VARCHAR
 );
 
-------------------------------------------------
-
-CREATE TABLE Groups (
- id INTEGER NOT NULL PRIMARY KEY,
- name VARCHAR NOT NULL,
- type INTEGER,
- deleted INTEGER
+CREATE TABLE Bots (
+ id UUID PRIMARY KEY,
+ url VARCHAR NOT NULL,
+ token VARCHAR NOT NULL
 );
 
-CREATE TABLE Users (
- id SERIAL PRIMARY KEY,
- firstname VARCHAR NOT NULL,
- surname VARCHAR NOT NULL,
- title VARCHAR NOT NULL,
- department VARCHAR NOT NULL,
- location VARCHAR NOT NULL,
- User_Id UUID
-);
-
-CREATE TABLE User2Group (
- group_id INTEGER NOT NULL,
- user_id INTEGER NOT NULL,
- PRIMARY KEY(user_id, group_id)
-);
