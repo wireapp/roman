@@ -12,7 +12,9 @@ import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import com.wire.bots.sdk.tools.Util;
 import io.jsonwebtoken.Jwts;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
@@ -33,11 +35,11 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class ProviderResource {
 
-    private final WebTarget provider;
+    private final WebTarget providerTarget;
     private final ProvidersDAO providersDAO;
 
     public ProviderResource(DBI jdbi, Client jerseyClient) {
-        provider = jerseyClient
+        providerTarget = jerseyClient
                 .target(Util.getHost())
                 .path("provider");
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
@@ -46,7 +48,6 @@ public class ProviderResource {
     @POST
     @Path("/register")
     @ApiOperation(value = "Register as Wire Bot Developer")
-    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
     public Response register(@ApiParam @Valid _NewUser payload) {
         try {
             _NewProvider newProvider = new _NewProvider();
@@ -55,7 +56,7 @@ public class ProviderResource {
             newProvider.description = "Description";
             newProvider.url = "https://wire.com";
 
-            Response register = provider.path("register")
+            Response register = providerTarget.path("register")
                     .request(MediaType.APPLICATION_JSON)
                     .post(Entity.entity(newProvider, MediaType.APPLICATION_JSON));
 
@@ -77,7 +78,7 @@ public class ProviderResource {
             providersDAO.insert(providerId, email, hash, password);
 
             return Response.
-                    ok().
+                    ok(new ErrorMessage("Email was sent to: " + payload.email)).
                     status(register.getStatus()).
                     build();
         } catch (Exception e) {
@@ -92,7 +93,6 @@ public class ProviderResource {
     @POST
     @Path("/login")
     @ApiOperation(value = "Login as Wire Bot Developer")
-    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
     public Response login(@ApiParam @Valid SignIn payload) {
         try {
             Provider provider = providersDAO.get(payload.email);
@@ -101,6 +101,23 @@ public class ProviderResource {
                         .ok(new ErrorMessage("Wrong email or password"))
                         .status(403)
                         .build();
+            }
+
+            SignIn signIn = new SignIn();
+            signIn.email = provider.email;
+            signIn.password = provider.password;
+
+            Response login = providerTarget.path("login")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.entity(signIn, MediaType.APPLICATION_JSON));
+
+            Logger.debug("RegisterResource.login: login status %d", login.getStatus());
+
+            if (login.getStatus() >= 400) {
+                return Response.
+                        ok(login.readEntity(String.class)).
+                        status(login.getStatus()).
+                        build();
             }
 
             String jwt = Jwts.builder()
