@@ -5,6 +5,7 @@ import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
+import io.jsonwebtoken.JwtException;
 import io.swagger.annotations.*;
 
 import javax.validation.Valid;
@@ -53,6 +54,12 @@ public class ConversationResource {
                         ok().
                         build();
             }
+        } catch (JwtException e) {
+            Logger.warning("ConversationResource.send %s", e);
+            return Response.
+                    ok(new ErrorMessage("Invalid Authorization token")).
+                    status(403).
+                    build();
         } catch (Exception e) {
             Logger.error("ConversationResource.send: %s", e);
             return Response

@@ -1,5 +1,6 @@
 package com.wire.bots.roman.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,10 +12,12 @@ import com.wire.bots.roman.model.SignIn;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import com.wire.bots.sdk.tools.Util;
+import io.dropwizard.validation.ValidationMethod;
 import io.jsonwebtoken.Jwts;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hibernate.validator.constraints.Length;
 import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
@@ -144,16 +147,25 @@ public class ProviderResource {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     static class _NewUser {
         @NotNull
+        @Length(min = 3, max = 128)
         @JsonProperty
         public String name;
 
         @NotNull
+        @Length(min = 8)
         @JsonProperty
         public String email;
 
         @NotNull
+        @Length(min = 6, max = 24)
         @JsonProperty
         public String password;
+
+        @JsonIgnore
+        @ValidationMethod(message = "Malformed email")
+        public boolean isEmail() {
+            return email.contains("@") && email.contains(".");
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

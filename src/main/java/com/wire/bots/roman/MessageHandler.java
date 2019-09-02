@@ -76,7 +76,7 @@ public class MessageHandler extends MessageHandlerBase {
             send(message);
 
         } catch (Exception e) {
-            Logger.error("onText: %s, err: %s", botId, e);
+            Logger.error("onNewConversation: %s, err: %s", botId, e);
         }
     }
 

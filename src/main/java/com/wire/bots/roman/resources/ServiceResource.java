@@ -1,5 +1,6 @@
 package com.wire.bots.roman.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,7 +11,9 @@ import com.wire.bots.roman.model.SignIn;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import com.wire.bots.sdk.tools.Util;
+import io.dropwizard.validation.ValidationMethod;
 import io.swagger.annotations.*;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.skife.jdbi.v2.DBI;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -28,6 +31,8 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Base64;
@@ -186,21 +191,35 @@ public class ServiceResource {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     static class _NewService {
         @NotNull
+        @NotEmpty
         @JsonProperty
         public String name;
 
         @NotNull
         @JsonProperty
         public String url;
+
+        @ValidationMethod(message = "Malformed URL")
+        @JsonIgnore
+        public boolean isUrl() {
+            try {
+                new URL(url);
+                if (!url.contains("."))
+                    return false;
+                return true;
+            } catch (MalformedURLException e) {
+                return false;
+            }
+        }
     }
 
     static class _Result {
         @NotNull
-        @JsonProperty
+        @JsonProperty("service_code")
         public String code;
 
         @NotNull
-        @JsonProperty("inbound_token")
+        @JsonProperty("service_authentication")
         public String token;
     }
 }
