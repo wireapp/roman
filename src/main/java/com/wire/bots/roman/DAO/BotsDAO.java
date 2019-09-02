@@ -7,8 +7,7 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import java.util.UUID;
 
 public interface BotsDAO {
-    @SqlUpdate("INSERT INTO Bots (id, url, token) " +
-            "VALUES (:bot, :url, :token)")
+    @SqlUpdate("INSERT INTO Bots (id, url, token) VALUES (:bot, :url, :token)")
     int insert(@Bind("bot") UUID bot,
                @Bind("url") String url,
                @Bind("token") String token);

@@ -102,7 +102,7 @@ public class ProviderResource {
             if (provider == null || !SCryptUtil.check(payload.password, provider.hash)) {
                 return Response
                         .ok(new ErrorMessage("Wrong email or password"))
-                        .status(403)
+                        .status(401)
                         .build();
             }
 

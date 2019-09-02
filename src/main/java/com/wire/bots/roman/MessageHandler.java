@@ -1,9 +1,10 @@
 package com.wire.bots.roman;
 
 import com.wire.bots.roman.DAO.BotsDAO;
-import com.wire.bots.roman.model.MessageIn;
+import com.wire.bots.roman.model.OutgoingMessage;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
+import com.wire.bots.sdk.models.ImageMessage;
 import com.wire.bots.sdk.models.TextMessage;
 import com.wire.bots.sdk.server.model.NewBot;
 import com.wire.bots.sdk.server.model.SystemMessage;
@@ -14,6 +15,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -32,55 +34,63 @@ public class MessageHandler extends MessageHandlerBase {
     @Override
     public boolean onNewBot(NewBot newBot) {
         UUID botId = newBot.id;
-        try {
-            MessageIn message = new MessageIn();
-            message.botId = botId;
-            message.from = newBot.origin.id;
-            message.type = "conversation.bot_request";
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.from = newBot.origin.id;
+        message.type = "conversation.bot_request";
 
-            return send(message);
-        } catch (Exception e) {
-            Logger.error("onNewBot: %s, err: %s", botId, e);
-            return false;
-        }
-    }
-
-    @Override
-    public void onText(WireClient client, TextMessage msg) {
-        UUID botId = client.getId();
-        try {
-            MessageIn message = new MessageIn();
-            message.botId = botId;
-            message.from = msg.getUserId();
-            message.type = "conversation.new_text";
-            message.text = msg.getText();
-            message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
-
-            send(message);
-
-        } catch (Exception e) {
-            Logger.error("onText: %s, err: %s", botId, e);
-        }
+        return send(message);
     }
 
     @Override
     public void onNewConversation(WireClient client, SystemMessage msg) {
         UUID botId = client.getId();
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.from = msg.from;
+        message.type = "conversation.new_conversation";
+        message.token = generateToken(botId);
+
+        send(message);
+    }
+
+    @Override
+    public void onText(WireClient client, TextMessage msg) {
+        UUID botId = client.getId();
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.from = msg.getUserId();
+        message.type = "conversation.new_text";
+        message.text = msg.getText();
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
+
+        send(message);
+    }
+
+    @Override
+    public void onImage(WireClient client, ImageMessage msg) {
+        UUID botId = client.getId();
+
         try {
-            MessageIn message = new MessageIn();
+            byte[] img = client.downloadAsset(msg.getAssetKey(),
+                    msg.getAssetToken(),
+                    msg.getSha256(),
+                    msg.getOtrKey());
+
+            OutgoingMessage message = new OutgoingMessage();
             message.botId = botId;
-            message.from = msg.from;
-            message.type = "conversation.new_conversation";
+            message.from = msg.getUserId();
+            message.type = "conversation.new_image";
+            message.image = Base64.getEncoder().encodeToString(img);
             message.token = generateToken(botId);
 
             send(message);
-
         } catch (Exception e) {
-            Logger.error("onNewConversation: %s, err: %s", botId, e);
+            Logger.error("onImage: %s %s", botId, e);
         }
     }
 
-    private boolean send(MessageIn message) {
+    private boolean send(OutgoingMessage message) {
         String token = botsDAO.getServiceAuthorization(message.botId);
         String url = botsDAO.getUrl(message.botId);
 

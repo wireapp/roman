@@ -7,6 +7,7 @@ import com.wire.bots.sdk.factories.CryptoFactory;
 import com.wire.bots.sdk.factories.StorageFactory;
 import com.wire.bots.sdk.server.model.NewBot;
 import com.wire.bots.sdk.server.resources.BotsResource;
+import com.wire.bots.sdk.tools.Logger;
 import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
@@ -40,8 +41,11 @@ public class BotResource extends BotsResource {
     protected boolean onNewBot(NewBot newBot, String auth) {
         auth = stripType(auth);
         String url = providersDAO.getUrl(auth);
-        botsDAO.insert(newBot.id, url, auth);
-
+        int insert = botsDAO.insert(newBot.id, url, auth);
+        if (insert == 0) {
+            Logger.error("Failed to insert `url` and `auth` to Bots table");
+            return false;
+        }
         return handler.onNewBot(newBot);
     }
 

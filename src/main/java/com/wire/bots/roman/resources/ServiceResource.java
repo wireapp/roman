@@ -12,7 +12,10 @@ import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import com.wire.bots.sdk.tools.Util;
 import io.dropwizard.validation.ValidationMethod;
-import io.swagger.annotations.*;
+import io.jsonwebtoken.JwtException;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.skife.jdbi.v2.DBI;
 
@@ -60,7 +63,6 @@ public class ServiceResource {
 
     @POST
     @ApiOperation(value = "Register new Service", response = _Result.class)
-    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
     public Response create(@ApiParam(hidden = true) @NotNull @CookieParam("zroman") String cookie,
                            @ApiParam @Valid _NewService payload) {
         try {
@@ -150,6 +152,12 @@ public class ServiceResource {
             return Response.
                     ok(result).
                     status(update.getStatus()).
+                    build();
+        } catch (JwtException e) {
+            Logger.warning("ServiceResource.create %s", e);
+            return Response.
+                    ok(new ErrorMessage("Invalid Authorization token")).
+                    status(401).
                     build();
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,8 +1,9 @@
 package com.wire.bots.roman.resources;
 
-import com.wire.bots.roman.model.MessageOut;
+import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
+import com.wire.bots.sdk.assets.Picture;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import io.jsonwebtoken.JwtException;
@@ -16,6 +17,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Base64;
 import java.util.UUID;
 
 import static com.wire.bots.roman.Tools.validateToken;
@@ -35,7 +37,7 @@ public class ConversationResource {
     @ApiOperation(value = "Forward messages to Wire BE")
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
     public Response send(@NotNull @HeaderParam("Authorization") String token,
-                         @ApiParam @Valid MessageOut message) {
+                         @ApiParam @Valid IncomingMessage message) {
         try {
             String subject = validateToken(token);
             UUID botId = UUID.fromString(subject);
@@ -46,6 +48,11 @@ public class ConversationResource {
                 switch (message.type) {
                     case "text": {
                         client.sendText(message.text);
+                    }
+                    break;
+                    case "image": {
+                        Picture picture = new Picture(Base64.getDecoder().decode(message.image));
+                        client.sendPicture(picture.getImageData(), picture.getMimeType());
                     }
                     break;
                 }
@@ -62,6 +69,7 @@ public class ConversationResource {
                     build();
         } catch (Exception e) {
             Logger.error("ConversationResource.send: %s", e);
+            e.printStackTrace();
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
