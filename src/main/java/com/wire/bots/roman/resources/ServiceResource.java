@@ -1,16 +1,17 @@
 package com.wire.bots.roman.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.ImageProcessor;
+import com.wire.bots.roman.ProviderClient;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
-import com.wire.bots.roman.model.SignIn;
+import com.wire.bots.sdk.assets.Picture;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
-import com.wire.bots.sdk.tools.Util;
 import io.dropwizard.validation.ValidationMethod;
 import io.jsonwebtoken.JwtException;
 import io.swagger.annotations.Api;
@@ -19,27 +20,20 @@ import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.skife.jdbi.v2.DBI;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import static com.wire.bots.roman.Tools.validateToken;
 
@@ -48,41 +42,29 @@ import static com.wire.bots.roman.Tools.validateToken;
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceResource {
 
-    private final WebTarget servicesTarget;
-    private final WebTarget providerTarget;
     private final ProvidersDAO providersDAO;
+    private final ProviderClient providerClient;
 
-    public ServiceResource(DBI jdbi, Client jerseyClient) {
+    public ServiceResource(DBI jdbi, ProviderClient providerClient) {
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
-
-        providerTarget = jerseyClient.target(Util.getHost())
-                .path("provider");
-        servicesTarget = providerTarget
-                .path("services");
+        this.providerClient = providerClient;
     }
 
     @POST
     @ApiOperation(value = "Register new Service", response = _Result.class)
-    public Response create(@ApiParam(hidden = true) @NotNull @CookieParam("zroman") String cookie,
+    public Response create(@ApiParam(hidden = true) @NotNull @CookieParam("zroman") String token,
                            @ApiParam @Valid _NewService payload) {
         try {
-            String subject = validateToken(cookie);
+            String subject = validateToken(token);
 
             Logger.debug("ServiceResource.create: provider: %s", subject);
 
             UUID providerId = UUID.fromString(subject);
-
-            Provider provider = providersDAO.get(providerId);  //todo: pull from the token
+            Provider provider = providersDAO.get(providerId);
 
             Logger.debug("ServiceResource.create: provider: %s, %s", provider.id, provider.email);
 
-            SignIn signIn = new SignIn();
-            signIn.email = provider.email;
-            signIn.password = provider.password;
-
-            Response login = providerTarget.path("login")
-                    .request(MediaType.APPLICATION_JSON)
-                    .post(Entity.entity(signIn, MediaType.APPLICATION_JSON));
+            Response login = providerClient.login(provider.email, provider.password);
 
             Logger.debug("ServiceResource.create: login status %d", login.getStatus());
 
@@ -93,22 +75,25 @@ public class ServiceResource {
                         build();
             }
 
+            NewCookie cookie = login.getCookies().get("zprovider");
+
             Service service = new Service();
             service.name = payload.name;
-            service.pubkey = String.format("%s\n%s\n%s", "-----BEGIN PUBLIC KEY-----", getPubkey(), "-----END PUBLIC KEY-----");
-            service.baseUrl = String.format("https://services.%s/roman", Util.getDomain());
-            service.description = "Description";
-            service.summary = "Summary";
-            service.tags = new String[]{"tutorial"};
 
-            Logger.debug("ServiceResource.create: pub key: `%s`", service.pubkey);
+            if (payload.avatar != null) {
+                byte[] image = Base64.getDecoder().decode(payload.avatar);
+                Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
+                String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mediumImage.getMimeType());
+                service.assets.get(0).key = key;
+                service.assets.get(1).key = key;
+            }
 
-            Response create = servicesTarget
-                    .request(MediaType.APPLICATION_JSON)
-                    .cookie(login.getCookies().get("zprovider"))
-                    .post(Entity.entity(service, MediaType.APPLICATION_JSON));
+            if (Logger.getLevel() == Level.FINE) {
+                ObjectMapper mapper = new ObjectMapper();
+                Logger.debug("ServiceResource.create: service: `%s`", mapper.writeValueAsString(service));
+            }
 
-            Logger.debug("ServiceResource.create: create service %s, status: %d", service.name, create.getStatus());
+            Response create = providerClient.createService(cookie, service);
 
             if (create.getStatus() >= 400) {
                 return Response.
@@ -121,16 +106,7 @@ public class ServiceResource {
 
             Logger.debug("ServiceResource.create: create service %s, status: %d", service.id, create.getStatus());
 
-            _UpdateService updateService = new _UpdateService();
-            updateService.enabled = true;
-            updateService.password = provider.password;
-
-            Response update = servicesTarget
-                    .path(service.id.toString())
-                    .path("connection")
-                    .request(MediaType.APPLICATION_JSON)
-                    .cookie(login.getCookies().get("zprovider"))
-                    .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
+            Response update = providerClient.enableService(cookie, service.id, provider.password);
 
             Logger.debug("ServiceResource.create: update service %s, status: %d", service.id, update.getStatus());
 
@@ -141,13 +117,13 @@ public class ServiceResource {
                         build();
             }
 
-            providersDAO.add(providerId, payload.url, service.token);   //todo sanity check on payload.url
+            providersDAO.add(providerId, payload.url, service.auth);
 
             _Result result = new _Result();
-            result.token = service.token;
+            result.auth = service.auth;
             result.code = String.format("%s:%s", providerId, service.id);
 
-            Logger.info("ServiceResource.create: service token %s, code: %s", result.token, result.code);
+            Logger.info("ServiceResource.create: service authentication %s, code: %s", result.auth, result.code);
 
             return Response.
                     ok(result).
@@ -169,33 +145,8 @@ public class ServiceResource {
         }
     }
 
-    private String getPubkey() throws IOException {
-        PublicKey publicKey = getPublicKey(String.format("services.%s", Util.getDomain()));
-        if (publicKey != null)
-            return Base64.getEncoder().encodeToString(publicKey.getEncoded());
-        return "";
-    }
 
-    private static PublicKey getPublicKey(String hostname) throws IOException {
-        SSLSocketFactory factory = HttpsURLConnection.getDefaultSSLSocketFactory();
-        SSLSocket socket = (SSLSocket) factory.createSocket(hostname, 443);
-        socket.startHandshake();
-        Certificate[] certs = socket.getSession().getPeerCertificates();
-        Certificate cert = certs[0];
-        return cert.getPublicKey();
-    }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    static class _UpdateService {
-        @NotNull
-        public String password;
-
-        @NotNull
-        public boolean enabled;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     static class _NewService {
         @NotNull
@@ -203,9 +154,12 @@ public class ServiceResource {
         @JsonProperty
         public String name;
 
-        @NotNull
         @JsonProperty
+        @NotNull
         public String url;
+
+        @JsonProperty
+        public String avatar;
 
         @ValidationMethod(message = "Malformed URL")
         @JsonIgnore
@@ -222,12 +176,10 @@ public class ServiceResource {
     }
 
     static class _Result {
-        @NotNull
         @JsonProperty("service_code")
         public String code;
 
-        @NotNull
         @JsonProperty("service_authentication")
-        public String token;
+        public String auth;
     }
 }

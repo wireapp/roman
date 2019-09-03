@@ -34,10 +34,10 @@ public class ConversationResource {
     }
 
     @POST
-    @ApiOperation(value = "Forward messages to Wire BE")
+    @ApiOperation(value = "Forward messages to Wire BE", authorizations = {@Authorization(value = "Bearer")})
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
-    public Response send(@NotNull @HeaderParam("Authorization") String token,
-                         @ApiParam @Valid IncomingMessage message) {
+    public Response send(@ApiParam @NotNull @HeaderParam("Authorization") String token,
+                         @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
             String subject = validateToken(token);
             UUID botId = UUID.fromString(subject);

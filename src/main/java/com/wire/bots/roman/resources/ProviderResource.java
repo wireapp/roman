@@ -2,16 +2,15 @@ package com.wire.bots.roman.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lambdaworks.crypto.SCryptUtil;
 import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.ProviderClient;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.SignIn;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
-import com.wire.bots.sdk.tools.Util;
 import io.dropwizard.validation.ValidationMethod;
 import io.jsonwebtoken.Jwts;
 import io.swagger.annotations.Api;
@@ -25,26 +24,20 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
-import java.util.UUID;
 
 @Api
 @Path("/provider")
 @Produces(MediaType.APPLICATION_JSON)
 public class ProviderResource {
 
-    private final WebTarget providerTarget;
     private final ProvidersDAO providersDAO;
+    private final ProviderClient providerClient;
 
-    public ProviderResource(DBI jdbi, Client jerseyClient) {
-        providerTarget = jerseyClient
-                .target(Util.getHost())
-                .path("provider");
+    public ProviderResource(DBI jdbi, ProviderClient providerClient) {
+        this.providerClient = providerClient;
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
     }
 
@@ -53,15 +46,10 @@ public class ProviderResource {
     @ApiOperation(value = "Register as Wire Bot Developer")
     public Response register(@ApiParam @Valid _NewUser payload) {
         try {
-            _NewProvider newProvider = new _NewProvider();
-            newProvider.name = payload.name;
-            newProvider.email = payload.email;
-            newProvider.description = "Description";
-            newProvider.url = "https://wire.com";
+            String name = payload.name;
+            String email = payload.email;
 
-            Response register = providerTarget.path("register")
-                    .request(MediaType.APPLICATION_JSON)
-                    .post(Entity.entity(newProvider, MediaType.APPLICATION_JSON));
+            Response register = providerClient.register(name, email);
 
             Logger.debug("ProviderResource.register: login status %d", register.getStatus());
 
@@ -75,10 +63,7 @@ public class ProviderResource {
             Provider provider = register.readEntity(Provider.class);
 
             String hash = SCryptUtil.scrypt(payload.password, 16384, 8, 1);
-            UUID providerId = provider.id;
-            String email = payload.email;
-            String password = provider.password;
-            providersDAO.insert(providerId, email, hash, password);
+            providersDAO.insert(provider.id, email, hash, provider.password);
 
             return Response.
                     ok(new ErrorMessage("Email was sent to: " + payload.email)).
@@ -106,13 +91,7 @@ public class ProviderResource {
                         .build();
             }
 
-            SignIn signIn = new SignIn();
-            signIn.email = provider.email;
-            signIn.password = provider.password;
-
-            Response login = providerTarget.path("login")
-                    .request(MediaType.APPLICATION_JSON)
-                    .post(Entity.entity(signIn, MediaType.APPLICATION_JSON));
+            Response login = providerClient.login(provider.email, provider.password);
 
             Logger.debug("RegisterResource.login: login status %d", login.getStatus());
 
@@ -144,7 +123,6 @@ public class ProviderResource {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     static class _NewUser {
         @NotNull
         @Length(min = 3, max = 128)
@@ -166,26 +144,5 @@ public class ProviderResource {
         public boolean isEmail() {
             return email.contains("@") && email.contains(".");
         }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    static class _NewProvider {
-        @NotNull
-        @JsonProperty
-        public String name;
-
-        @NotNull
-        @JsonProperty
-        public String email;
-
-        @NotNull
-        @JsonProperty
-        public String url;
-
-        @NotNull
-        @JsonProperty
-        public String description;
-
     }
 }
