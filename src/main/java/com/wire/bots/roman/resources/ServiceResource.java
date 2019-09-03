@@ -88,11 +88,6 @@ public class ServiceResource {
                 service.assets.get(1).key = key;
             }
 
-            if (Logger.getLevel() == Level.FINE) {
-                ObjectMapper mapper = new ObjectMapper();
-                Logger.debug("ServiceResource.create: service: `%s`", mapper.writeValueAsString(service));
-            }
-
             Response create = providerClient.createService(cookie, service);
 
             if (create.getStatus() >= 400) {
@@ -104,11 +99,12 @@ public class ServiceResource {
 
             service = create.readEntity(Service.class);
 
-            Logger.debug("ServiceResource.create: create service %s, status: %d", service.id, create.getStatus());
-
+            if (Logger.getLevel() == Level.FINE) {
+                ObjectMapper mapper = new ObjectMapper();
+                Logger.debug("ServiceResource.create: service: `%s`", mapper.writeValueAsString(service));
+            }
+            
             Response update = providerClient.enableService(cookie, service.id, provider.password);
-
-            Logger.debug("ServiceResource.create: update service %s, status: %d", service.id, update.getStatus());
 
             if (update.getStatus() >= 400) {
                 return Response.
@@ -177,9 +173,11 @@ public class ServiceResource {
 
     static class _Result {
         @JsonProperty("service_code")
+        @NotNull
         public String code;
 
         @JsonProperty("service_authentication")
+        @NotNull
         public String auth;
     }
 }

@@ -12,7 +12,7 @@ public class OutgoingMessage {
     public UUID botId;
 
     @NotNull
-    public UUID from;
+    public UUID userId;
 
     @NotNull
     public String type;

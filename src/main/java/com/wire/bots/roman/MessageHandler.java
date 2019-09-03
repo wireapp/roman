@@ -1,6 +1,7 @@
 package com.wire.bots.roman;
 
 import com.wire.bots.roman.DAO.BotsDAO;
+import com.wire.bots.roman.model.ExternalService;
 import com.wire.bots.roman.model.OutgoingMessage;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
@@ -36,7 +37,7 @@ public class MessageHandler extends MessageHandlerBase {
         UUID botId = newBot.id;
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
-        message.from = newBot.origin.id;
+        message.userId = newBot.origin.id;
         message.type = "conversation.bot_request";
 
         return send(message);
@@ -47,8 +48,8 @@ public class MessageHandler extends MessageHandlerBase {
         UUID botId = client.getId();
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
-        message.from = msg.from;
-        message.type = "conversation.new_conversation";
+        message.userId = msg.from;
+        message.type = "conversation.init";
         message.token = generateToken(botId);
 
         send(message);
@@ -59,7 +60,7 @@ public class MessageHandler extends MessageHandlerBase {
         UUID botId = client.getId();
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
-        message.from = msg.getUserId();
+        message.userId = msg.getUserId();
         message.type = "conversation.new_text";
         message.text = msg.getText();
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
@@ -79,7 +80,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             OutgoingMessage message = new OutgoingMessage();
             message.botId = botId;
-            message.from = msg.getUserId();
+            message.userId = msg.getUserId();
             message.type = "conversation.new_image";
             message.image = Base64.getEncoder().encodeToString(img);
             message.token = generateToken(botId);
@@ -90,13 +91,27 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
-    private boolean send(OutgoingMessage message) {
-        String token = botsDAO.getServiceAuthorization(message.botId);
-        String url = botsDAO.getUrl(message.botId);
+    @Override
+    public void onMemberJoin(WireClient client, SystemMessage msg) {
+        UUID botId = client.getId();
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.type = "conversation.user_joined";
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
 
-        Response post = jerseyClient.target(url)
+        for (UUID userId : msg.users) {
+            message.userId = userId;
+
+            send(message);
+        }
+    }
+
+    private boolean send(OutgoingMessage message) {
+        ExternalService externalService = botsDAO.get(message.botId);
+
+        Response post = jerseyClient.target(externalService.url)
                 .request(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + externalService.auth)
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
         Logger.info("%s: %s code: %d", message.type, message.botId, post.getStatus());

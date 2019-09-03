@@ -58,7 +58,7 @@ public class Service {
         assets.add(asset2);
     }
 
-    static class _Asset {
+    public static class _Asset {
         @JsonProperty
         public String type = "image";
 
