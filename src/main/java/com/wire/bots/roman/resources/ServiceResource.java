@@ -112,12 +112,13 @@ public class ServiceResource {
             }
 
             jdbi.onDemand(ProvidersDAO.class)
-                    .update(providerId, payload.url, service.auth);
+                    .update(providerId, payload.url, service.auth, service.id);
 
             _Result result = new _Result();
             result.auth = service.auth;
             result.code = String.format("%s:%s", providerId, service.id);
             result.key = token;
+            result.url = payload.url;
 
             Logger.info("ServiceResource.create: service authentication %s, code: %s", result.auth, result.code);
 
@@ -151,29 +152,68 @@ public class ServiceResource {
             Logger.debug("ServiceResource.update: provider: %s", subject);
 
             UUID providerId = UUID.fromString(subject);
-            Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
+            ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
 
-            jdbi.onDemand(ProvidersDAO.class)
-                    .updateUrl(provider.id, payload.url);
+            Provider provider = providersDAO.get(providerId);
+
+            providersDAO.updateUrl(provider.id, payload.url);
+
+            provider = providersDAO.get(providerId);
 
             _Result result = new _Result();
             result.key = token;
             result.auth = provider.serviceAuth;
-
-            Logger.info("ServiceResource.update: service authentication %s, url: %s", result.auth, payload.url);
+            result.code = String.format("%s:%s", provider.id, provider.serviceId);
+            result.url = provider.serviceUrl;
 
             return Response.
                     ok(result).
                     build();
         } catch (JwtException e) {
-            Logger.warning("ServiceResource.create %s", e);
+            Logger.warning("ServiceResource.update %s", e);
             return Response.
                     ok(new ErrorMessage("Invalid Authorization token")).
                     status(401).
                     build();
         } catch (Exception e) {
             e.printStackTrace();
-            Logger.error("ServiceResource.create: %s", e);
+            Logger.error("ServiceResource.update: %s", e);
+            return Response
+                    .ok(new ErrorMessage(e.getMessage()))
+                    .status(500)
+                    .build();
+        }
+    }
+
+    @GET
+    @ApiOperation(value = "Get Provider", response = _Result.class)
+    public Response get(@ApiParam(hidden = true) @NotNull @CookieParam("zroman") String token) {
+        try {
+            String subject = validateToken(token);
+
+            Logger.debug("ServiceResource.get: provider: %s", subject);
+
+            UUID providerId = UUID.fromString(subject);
+            Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
+
+            _Result result = new _Result();
+            result.key = token;
+            result.auth = provider.serviceAuth;
+            result.code = String.format("%s:%s", provider.id, provider.serviceId);
+            result.url = provider.serviceUrl;
+
+            return Response.
+                    ok(result).
+                    build();
+        } catch (JwtException e) {
+            Logger.warning("ServiceResource.get %s", e);
+            return Response.
+                    ok(new ErrorMessage("Invalid Authorization token")).
+                    status(401).
+                    build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("ServiceResource.get: %s", e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
@@ -189,7 +229,6 @@ public class ServiceResource {
         public String name;
 
         @JsonProperty
-        @NotNull
         public String url;
 
         @JsonProperty
@@ -198,6 +237,8 @@ public class ServiceResource {
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
         public boolean isUrl() {
+            if (url == null)
+                return true;
             try {
                 new URL(url);
                 return url.contains(".");
@@ -246,5 +287,8 @@ public class ServiceResource {
         @JsonProperty("app_key")
         @NotNull
         public String key;
+
+        @JsonProperty("webhook")
+        public String url;
     }
 }

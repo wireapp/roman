@@ -4,7 +4,8 @@ CREATE TABLE Providers (
  hash VARCHAR NOT NULL,
  password VARCHAR NOT NULL,
  url VARCHAR,
- service_auth VARCHAR
+ service_auth VARCHAR,
+ service UUID,
 );
 
 CREATE TABLE Bots (

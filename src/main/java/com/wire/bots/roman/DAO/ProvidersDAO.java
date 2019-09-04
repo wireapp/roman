@@ -19,11 +19,13 @@ public interface ProvidersDAO {
 
     @SqlUpdate("UPDATE Providers SET " +
             "url = :url," +
-            "service_auth = :auth " +
+            "service_auth = :auth, " +
+            "service = :serviceId " +
             "WHERE id = :id")
     void update(@Bind("id") UUID id,
                 @Bind("url") String url,
-                @Bind("auth") String auth);
+                @Bind("auth") String auth,
+                @Bind("serviceId") UUID serviceId);
 
     @SqlUpdate("UPDATE Providers SET url = :url WHERE id = :id")
     void updateUrl(@Bind("id") UUID id,

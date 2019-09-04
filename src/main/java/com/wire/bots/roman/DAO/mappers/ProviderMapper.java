@@ -22,6 +22,7 @@ public class ProviderMapper implements ResultSetMapper<Provider> {
             ret.hash = rs.getString("hash");
             ret.serviceAuth = rs.getString("service_auth");
             ret.serviceUrl = rs.getString("url");
+            ret.serviceId = getUuid(rs, "service");
 
             return ret;
         } catch (SQLException e) {

@@ -22,4 +22,6 @@ public class Provider {
     public String serviceUrl;
 
     public String serviceAuth;
+
+    public UUID serviceId;
 }
