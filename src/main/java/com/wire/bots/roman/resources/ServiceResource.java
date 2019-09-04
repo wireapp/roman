@@ -2,6 +2,7 @@ package com.wire.bots.roman.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.ProvidersDAO;
@@ -22,10 +23,7 @@ import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
@@ -114,7 +112,7 @@ public class ServiceResource {
             }
 
             jdbi.onDemand(ProvidersDAO.class)
-                    .add(providerId, payload.url, service.auth);
+                    .update(providerId, payload.url, service.auth);
 
             _Result result = new _Result();
             result.auth = service.auth;
@@ -143,6 +141,45 @@ public class ServiceResource {
         }
     }
 
+    @PUT
+    @ApiOperation(value = "Update Service", response = _Result.class)
+    public Response update(@ApiParam(hidden = true) @NotNull @CookieParam("zroman") String token,
+                           @ApiParam @Valid _UpdateService payload) {
+        try {
+            String subject = validateToken(token);
+
+            Logger.debug("ServiceResource.update: provider: %s", subject);
+
+            UUID providerId = UUID.fromString(subject);
+            Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
+
+            jdbi.onDemand(ProvidersDAO.class)
+                    .updateUrl(provider.id, payload.url);
+
+            _Result result = new _Result();
+            result.key = token;
+            result.auth = provider.serviceAuth;
+
+            Logger.info("ServiceResource.update: service authentication %s, url: %s", result.auth, payload.url);
+
+            return Response.
+                    ok(result).
+                    build();
+        } catch (JwtException e) {
+            Logger.warning("ServiceResource.create %s", e);
+            return Response.
+                    ok(new ErrorMessage("Invalid Authorization token")).
+                    status(401).
+                    build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("ServiceResource.create: %s", e);
+            return Response
+                    .ok(new ErrorMessage(e.getMessage()))
+                    .status(500)
+                    .build();
+        }
+    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class _NewService {
@@ -176,6 +213,27 @@ public class ServiceResource {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class _UpdateService {
+        @JsonProperty
+        public String url;
+
+        @ValidationMethod(message = "`url` is not a valid URL")
+        @JsonIgnore
+        public boolean isUrl() {
+            if (url == null)
+                return true;
+
+            try {
+                new URL(url);
+                return url.contains(".");
+            } catch (MalformedURLException e) {
+                return false;
+            }
+        }
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     static class _Result {
         @JsonProperty("service_code")
         @NotNull

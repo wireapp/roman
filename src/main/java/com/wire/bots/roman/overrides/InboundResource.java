@@ -1,12 +1,10 @@
 package com.wire.bots.roman.overrides;
 
 
-import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.server.model.Payload;
 import com.wire.bots.sdk.server.resources.MessageResource;
-import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -20,11 +18,9 @@ import java.util.UUID;
 @Consumes(MediaType.APPLICATION_JSON)
 @Path("/bots/{bot}/messages")
 public class InboundResource extends MessageResource {
-    private final DBI jdbi;
 
-    public InboundResource(MessageHandlerBase handler, ClientRepo repo, DBI jdbi) {
+    public InboundResource(MessageHandlerBase handler, ClientRepo repo) {
         super(handler, null, repo);
-        this.jdbi = jdbi;
     }
 
     @POST
@@ -38,8 +34,6 @@ public class InboundResource extends MessageResource {
     }
 
     protected boolean isValid(String auth) {
-        auth = auth.replace("Bearer", "").trim();
-        String url = jdbi.onDemand(ProvidersDAO.class).getUrl(auth);
-        return url != null;
+        return true;
     }
 }

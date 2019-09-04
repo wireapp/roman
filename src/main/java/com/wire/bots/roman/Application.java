@@ -82,7 +82,7 @@ public class Application extends Server<Config> {
 
     @Override
     protected void messageResource(Config config, Environment env, MessageHandlerBase handler, ClientRepo repo) {
-        addResource(new InboundResource(handler, repo, jdbi), env);
+        addResource(new InboundResource(handler, repo), env);
     }
 
     @Override

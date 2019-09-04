@@ -14,10 +14,12 @@ import com.wire.bots.sdk.server.model.SystemMessage;
 import com.wire.bots.sdk.tools.Logger;
 import org.skife.jdbi.v2.DBI;
 
+import javax.websocket.EncodeException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -111,20 +113,23 @@ public class MessageHandler extends MessageHandlerBase {
     private boolean send(OutgoingMessage message) {
         ExternalService externalService = jdbi.onDemand(BotsDAO.class).get(message.botId);
 
-        Response post = jerseyClient.target(externalService.url)
-                .request(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + externalService.auth)
-                .post(Entity.entity(message, MediaType.APPLICATION_JSON));
+        if (externalService.url != null) {
+            Response post = jerseyClient.target(externalService.url)
+                    .request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + externalService.auth)
+                    .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
-        if (message.text != null) {
-            Provider provider = jdbi.onDemand(ProvidersDAO.class)
-                    .getByAuth(externalService.auth);
-
-            return WebSocket.send(provider.id, message.text);
+            return post.getStatus() == 200;
         }
 
-        Logger.info("%s: %s code: %d", message.type, message.botId, post.getStatus());
+        Provider provider = jdbi.onDemand(ProvidersDAO.class)
+                .getByAuth(externalService.auth);
 
-        return post.getStatus() == 200;
+        try {
+            return WebSocket.send(provider.id, message);
+        } catch (IOException | EncodeException e) {
+            Logger.error("MessageHandler.send: %s %s", message.botId, e);
+            return false;
+        }
     }
 }

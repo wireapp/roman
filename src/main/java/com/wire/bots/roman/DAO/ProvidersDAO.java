@@ -21,9 +21,13 @@ public interface ProvidersDAO {
             "url = :url," +
             "service_auth = :auth " +
             "WHERE id = :id")
-    void add(@Bind("id") UUID id,
-             @Bind("url") String url,
-             @Bind("auth") String auth);
+    void update(@Bind("id") UUID id,
+                @Bind("url") String url,
+                @Bind("auth") String auth);
+
+    @SqlUpdate("UPDATE Providers SET url = :url WHERE id = :id")
+    void updateUrl(@Bind("id") UUID id,
+                   @Bind("url") String url);
 
     @SqlQuery("SELECT * FROM Providers WHERE email = :email")
     @RegisterMapper(ProviderMapper.class)

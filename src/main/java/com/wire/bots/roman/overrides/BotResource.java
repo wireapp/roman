@@ -49,9 +49,7 @@ public class BotResource extends BotsResource {
 
     @Override
     protected boolean isValid(String auth) {
-        auth = stripType(auth);
-        String url = jdbi.onDemand(ProvidersDAO.class).getUrl(auth);
-        return url != null;
+        return true;
     }
 
     private String stripType(String auth) {
