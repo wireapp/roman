@@ -35,4 +35,8 @@ public interface ProvidersDAO {
 
     @SqlQuery("SELECT url FROM Providers WHERE service_auth = :auth")
     String getUrl(@Bind("auth") String auth);
+
+    @SqlQuery("SELECT * FROM Providers WHERE service_auth = :auth")
+    @RegisterMapper(ProviderMapper.class)
+    Provider getByAuth(@Bind("auth") String auth);
 }

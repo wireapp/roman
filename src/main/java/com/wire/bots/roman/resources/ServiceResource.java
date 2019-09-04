@@ -1,7 +1,7 @@
 package com.wire.bots.roman.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.ProvidersDAO;
@@ -17,7 +17,7 @@ import io.jsonwebtoken.JwtException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.Length;
 import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
@@ -42,12 +42,12 @@ import static com.wire.bots.roman.Tools.validateToken;
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceResource {
 
-    private final ProvidersDAO providersDAO;
     private final ProviderClient providerClient;
+    private final DBI jdbi;
 
     public ServiceResource(DBI jdbi, ProviderClient providerClient) {
-        providersDAO = jdbi.onDemand(ProvidersDAO.class);
         this.providerClient = providerClient;
+        this.jdbi = jdbi;
     }
 
     @POST
@@ -60,7 +60,7 @@ public class ServiceResource {
             Logger.debug("ServiceResource.create: provider: %s", subject);
 
             UUID providerId = UUID.fromString(subject);
-            Provider provider = providersDAO.get(providerId);
+            Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
 
             Logger.debug("ServiceResource.create: provider: %s, %s", provider.id, provider.email);
 
@@ -103,7 +103,7 @@ public class ServiceResource {
                 ObjectMapper mapper = new ObjectMapper();
                 Logger.debug("ServiceResource.create: service: `%s`", mapper.writeValueAsString(service));
             }
-            
+
             Response update = providerClient.enableService(cookie, service.id, provider.password);
 
             if (update.getStatus() >= 400) {
@@ -113,11 +113,13 @@ public class ServiceResource {
                         build();
             }
 
-            providersDAO.add(providerId, payload.url, service.auth);
+            jdbi.onDemand(ProvidersDAO.class)
+                    .add(providerId, payload.url, service.auth);
 
             _Result result = new _Result();
             result.auth = service.auth;
             result.code = String.format("%s:%s", providerId, service.id);
+            result.key = token;
 
             Logger.info("ServiceResource.create: service authentication %s, code: %s", result.auth, result.code);
 
@@ -142,11 +144,10 @@ public class ServiceResource {
     }
 
 
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     static class _NewService {
         @NotNull
-        @NotEmpty
+        @Length(min = 3, max = 128)
         @JsonProperty
         public String name;
 
@@ -157,17 +158,21 @@ public class ServiceResource {
         @JsonProperty
         public String avatar;
 
-        @ValidationMethod(message = "Malformed URL")
+        @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
         public boolean isUrl() {
             try {
                 new URL(url);
-                if (!url.contains("."))
-                    return false;
-                return true;
+                return url.contains(".");
             } catch (MalformedURLException e) {
                 return false;
             }
+        }
+
+        @ValidationMethod(message = "`image` is not a Base64 encoded string")
+        @JsonIgnore
+        public boolean isAvatar() {
+            return avatar == null || avatar.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
         }
     }
 
@@ -179,5 +184,9 @@ public class ServiceResource {
         @JsonProperty("service_authentication")
         @NotNull
         public String auth;
+
+        @JsonProperty("app_key")
+        @NotNull
+        public String key;
     }
 }

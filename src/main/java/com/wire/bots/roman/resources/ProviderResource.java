@@ -33,12 +33,12 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class ProviderResource {
 
-    private final ProvidersDAO providersDAO;
     private final ProviderClient providerClient;
+    private final DBI jdbi;
 
     public ProviderResource(DBI jdbi, ProviderClient providerClient) {
         this.providerClient = providerClient;
-        providersDAO = jdbi.onDemand(ProvidersDAO.class);
+        this.jdbi = jdbi;
     }
 
     @POST
@@ -63,7 +63,8 @@ public class ProviderResource {
             Provider provider = register.readEntity(Provider.class);
 
             String hash = SCryptUtil.scrypt(payload.password, 16384, 8, 1);
-            providersDAO.insert(provider.id, email, hash, provider.password);
+            jdbi.onDemand(ProvidersDAO.class)
+                    .insert(provider.id, email, hash, provider.password);
 
             return Response.
                     ok(new ErrorMessage("Email was sent to: " + payload.email)).
@@ -83,7 +84,7 @@ public class ProviderResource {
     @ApiOperation(value = "Login as Wire Bot Developer")
     public Response login(@ApiParam @Valid SignIn payload) {
         try {
-            Provider provider = providersDAO.get(payload.email);
+            Provider provider = jdbi.onDemand(ProvidersDAO.class).get(payload.email);
             if (provider == null || !SCryptUtil.check(payload.password, provider.hash)) {
                 return Response
                         .ok(new ErrorMessage("Wrong email or password"))

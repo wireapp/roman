@@ -1,8 +1,10 @@
 package com.wire.bots.roman;
 
 import com.wire.bots.roman.DAO.BotsDAO;
+import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.ExternalService;
 import com.wire.bots.roman.model.OutgoingMessage;
+import com.wire.bots.roman.model.Provider;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.models.ImageMessage;
@@ -23,13 +25,13 @@ import java.util.concurrent.TimeUnit;
 import static com.wire.bots.roman.Tools.generateToken;
 
 public class MessageHandler extends MessageHandlerBase {
-    private final BotsDAO botsDAO;
 
     private final Client jerseyClient;
+    private final DBI jdbi;
 
     MessageHandler(DBI jdbi, Client jerseyClient) {
-        this.botsDAO = jdbi.onDemand(BotsDAO.class);
         this.jerseyClient = jerseyClient;
+        this.jdbi = jdbi;
     }
 
     @Override
@@ -107,14 +109,22 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     private boolean send(OutgoingMessage message) {
-        ExternalService externalService = botsDAO.get(message.botId);
+        ExternalService externalService = jdbi.onDemand(BotsDAO.class).get(message.botId);
 
         Response post = jerseyClient.target(externalService.url)
                 .request(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + externalService.auth)
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
+        if (message.text != null) {
+            Provider provider = jdbi.onDemand(ProvidersDAO.class)
+                    .getByAuth(externalService.auth);
+
+            return WebSocket.send(provider.id, message.text);
+        }
+
         Logger.info("%s: %s code: %d", message.type, message.botId, post.getStatus());
+
         return post.getStatus() == 200;
     }
 }

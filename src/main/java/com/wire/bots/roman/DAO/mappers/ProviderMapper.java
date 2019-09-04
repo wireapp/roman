@@ -20,6 +20,8 @@ public class ProviderMapper implements ResultSetMapper<Provider> {
             ret.email = rs.getString("email");
             ret.password = rs.getString("password");
             ret.hash = rs.getString("hash");
+            ret.serviceAuth = rs.getString("service_auth");
+            ret.serviceUrl = rs.getString("url");
 
             return ret;
         } catch (SQLException e) {

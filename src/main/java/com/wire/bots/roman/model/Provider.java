@@ -18,4 +18,8 @@ public class Provider {
     public String password;
 
     public String hash;
+
+    public String serviceUrl;
+
+    public String serviceAuth;
 }

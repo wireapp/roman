@@ -31,6 +31,7 @@ import com.wire.bots.sdk.factories.StorageFactory;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.websockets.WebsocketBundle;
 import io.jsonwebtoken.security.Keys;
 import org.skife.jdbi.v2.DBI;
 
@@ -54,6 +55,9 @@ public class Application extends Server<Config> {
     public void initialize(Bootstrap<Config> bootstrap) {
         super.initialize(bootstrap);
         instance = (Application) bootstrap.getApplication();
+
+        WebsocketBundle bundle = new WebsocketBundle(WebSocket.class);
+        bootstrap.addBundle(bundle);
     }
 
     @Override

@@ -20,13 +20,11 @@ import javax.ws.rs.core.Response;
 @Consumes(MediaType.APPLICATION_JSON)
 @Path("/bots")
 public class BotResource extends BotsResource {
-    private final ProvidersDAO providersDAO;
-    private final BotsDAO botsDAO;
+    private final DBI jdbi;
 
     public BotResource(MessageHandlerBase handler, StorageFactory storageF, CryptoFactory cryptoF, DBI jdbi) {
         super(handler, storageF, cryptoF, null);
-        this.providersDAO = jdbi.onDemand(ProvidersDAO.class);
-        this.botsDAO = jdbi.onDemand(BotsDAO.class);
+        this.jdbi = jdbi;
     }
 
     @POST
@@ -40,8 +38,8 @@ public class BotResource extends BotsResource {
     @Override
     protected boolean onNewBot(NewBot newBot, String auth) {
         auth = stripType(auth);
-        String url = providersDAO.getUrl(auth);
-        int insert = botsDAO.insert(newBot.id, url, auth);
+        String url = jdbi.onDemand(ProvidersDAO.class).getUrl(auth);
+        int insert = jdbi.onDemand(BotsDAO.class).insert(newBot.id, url, auth);
         if (insert == 0) {
             Logger.error("Failed to insert `url` and `auth` to Bots table");
             return false;
@@ -52,7 +50,7 @@ public class BotResource extends BotsResource {
     @Override
     protected boolean isValid(String auth) {
         auth = stripType(auth);
-        String url = providersDAO.getUrl(auth);
+        String url = jdbi.onDemand(ProvidersDAO.class).getUrl(auth);
         return url != null;
     }
 

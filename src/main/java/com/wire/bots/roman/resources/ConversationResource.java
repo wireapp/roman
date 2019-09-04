@@ -45,7 +45,7 @@ public class ConversationResource {
             Logger.info("ConversationResource.send: `%s` bot: %s", message.type, botId);
 
             try (WireClient client = repo.getClient(botId)) {
-                switch (message.type) {
+                switch (message.type.toLowerCase()) {
                     case "text": {
                         client.sendText(message.text);
                     }
@@ -55,6 +55,11 @@ public class ConversationResource {
                         client.sendPicture(picture.getImageData(), picture.getMimeType());
                     }
                     break;
+                    default:
+                        return Response.
+                                ok(new ErrorMessage("Unsupported `type`: " + message.type)).
+                                status(400).
+                                build();
                 }
 
                 return Response.

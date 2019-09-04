@@ -20,11 +20,11 @@ import java.util.UUID;
 @Consumes(MediaType.APPLICATION_JSON)
 @Path("/bots/{bot}/messages")
 public class InboundResource extends MessageResource {
-    private final ProvidersDAO providersDAO;
+    private final DBI jdbi;
 
     public InboundResource(MessageHandlerBase handler, ClientRepo repo, DBI jdbi) {
         super(handler, null, repo);
-        this.providersDAO = jdbi.onDemand(ProvidersDAO.class);
+        this.jdbi = jdbi;
     }
 
     @POST
@@ -39,7 +39,7 @@ public class InboundResource extends MessageResource {
 
     protected boolean isValid(String auth) {
         auth = auth.replace("Bearer", "").trim();
-        String url = providersDAO.getUrl(auth);
+        String url = jdbi.onDemand(ProvidersDAO.class).getUrl(auth);
         return url != null;
     }
 }
