@@ -36,13 +36,13 @@ public class ConversationResource {
     @POST
     @ApiOperation(value = "Forward messages to Wire BE", authorizations = {@Authorization(value = "Bearer")})
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
-    public Response send(@ApiParam @NotNull @HeaderParam("Authorization") String token,
+    public Response post(@ApiParam @NotNull @HeaderParam("Authorization") String token,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
             String subject = validateToken(token);
             UUID botId = UUID.fromString(subject);
 
-            Logger.info("ConversationResource.send: `%s` bot: %s", message.type, botId);
+            Logger.info("ConversationResource: `%s` bot: %s", message.type, botId);
 
             try (WireClient client = repo.getClient(botId)) {
                 switch (message.type.toLowerCase()) {
@@ -67,13 +67,13 @@ public class ConversationResource {
                         build();
             }
         } catch (JwtException e) {
-            Logger.warning("ConversationResource.send %s", e);
+            Logger.warning("ConversationResource %s", e);
             return Response.
                     ok(new ErrorMessage("Invalid Authorization token")).
                     status(403).
                     build();
         } catch (Exception e) {
-            Logger.error("ConversationResource.send: %s", e);
+            Logger.error("ConversationResource: %s", e);
             e.printStackTrace();
             return Response
                     .ok(new ErrorMessage(e.getMessage()))

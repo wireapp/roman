@@ -36,7 +36,7 @@ import java.util.logging.Level;
 import static com.wire.bots.roman.Tools.validateToken;
 
 @Api
-@Path("/provider/services")
+@Path("/services")
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceResource {
 
@@ -186,7 +186,7 @@ public class ServiceResource {
     }
 
     @GET
-    @ApiOperation(value = "Get Provider", response = _Result.class)
+    @ApiOperation(value = "Get the Service", response = _Result.class)
     public Response get(@ApiParam(hidden = true) @NotNull @CookieParam("zroman") String token) {
         try {
             String subject = validateToken(token);

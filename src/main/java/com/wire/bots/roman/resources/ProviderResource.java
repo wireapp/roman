@@ -29,7 +29,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 @Api
-@Path("/provider")
+@Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 public class ProviderResource {
 

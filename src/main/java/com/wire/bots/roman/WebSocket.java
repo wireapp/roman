@@ -17,7 +17,10 @@ public class WebSocket {
     static boolean send(UUID providerId, OutgoingMessage message) throws IOException, EncodeException {
         Session session = sessions.get(providerId);
         if (session != null && session.isOpen()) {
-            Logger.info("Sending message (%s) over wss to %s", message.type, providerId);
+            Logger.info("Sending message (%s) over wss to provider: %s, bot: %s",
+                    message.type,
+                    providerId,
+                    message.botId);
 
             session.getBasicRemote().sendObject(message);
             return true;

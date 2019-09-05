@@ -55,7 +55,9 @@ public class MessageHandler extends MessageHandlerBase {
         message.type = "conversation.init";
         message.token = generateToken(botId);
 
-        send(message);
+        boolean send = send(message);
+        if (!send)
+            Logger.warning("onNewConversation: failed to deliver message to: bot: %s", botId);
     }
 
     @Override
@@ -68,7 +70,9 @@ public class MessageHandler extends MessageHandlerBase {
         message.text = msg.getText();
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
 
-        send(message);
+        boolean send = send(message);
+        if (!send)
+            Logger.warning("onText: failed to deliver message to: bot: %s", botId);
     }
 
     @Override
@@ -88,7 +92,10 @@ public class MessageHandler extends MessageHandlerBase {
             message.image = Base64.getEncoder().encodeToString(img);
             message.token = generateToken(botId);
 
-            send(message);
+            boolean send = send(message);
+            if (!send)
+                Logger.warning("onImage: failed to deliver message to: bot: %s", botId);
+
         } catch (Exception e) {
             Logger.error("onImage: %s %s", botId, e);
         }
@@ -113,25 +120,31 @@ public class MessageHandler extends MessageHandlerBase {
         UUID providerId = jdbi.onDemand(BotsDAO.class).getProviderId(message.botId);
         Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
         if (provider == null) {
-            Logger.warning("MessageHandler.send: provider == null. providerId: %s, bot: %s",
+            Logger.error("MessageHandler.send: provider == null. providerId: %s, bot: %s",
                     providerId, message.botId);
             return false;
         }
 
+        // Webhook
         if (provider.serviceUrl != null) {
             Response post = jerseyClient.target(provider.serviceUrl)
                     .request(MediaType.APPLICATION_JSON)
                     .header("Authorization", "Bearer " + provider.serviceAuth)
                     .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
-            Logger.info("MessageHandler.send: `%s` bot: %s, status: %d", message.type, message.botId, post.getStatus());
+            Logger.info("MessageHandler.send: `%s` bot: %s, provider: %s, status: %d",
+                    message.type,
+                    message.botId,
+                    providerId,
+                    post.getStatus());
+
             return post.getStatus() == 200;
         }
 
         try {
             return WebSocket.send(provider.id, message);
         } catch (IOException | EncodeException e) {
-            Logger.error("MessageHandler.send: %s %s", message.botId, e);
+            Logger.error("MessageHandler.send: bot: %s, provider: %s,  error %s", message.botId, providerId, e);
             return false;
         }
     }
