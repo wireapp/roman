@@ -2,6 +2,7 @@ package com.wire.bots.roman.overrides;
 
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.model.Provider;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.factories.CryptoFactory;
 import com.wire.bots.sdk.factories.StorageFactory;
@@ -38,10 +39,10 @@ public class BotResource extends BotsResource {
     @Override
     protected boolean onNewBot(NewBot newBot, String auth) {
         auth = stripType(auth);
-        String url = jdbi.onDemand(ProvidersDAO.class).getUrl(auth);
-        int insert = jdbi.onDemand(BotsDAO.class).insert(newBot.id, url, auth);
+        Provider provider = jdbi.onDemand(ProvidersDAO.class).getByAuth(auth);
+        int insert = jdbi.onDemand(BotsDAO.class).insert(newBot.id, provider.id);
         if (insert == 0) {
-            Logger.error("Failed to insert `url` and `auth` to Bots table");
+            Logger.error("Failed to insert ProviderID into Bots table");
             return false;
         }
         return handler.onNewBot(newBot);

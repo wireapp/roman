@@ -10,7 +10,6 @@ CREATE TABLE Providers (
 
 CREATE TABLE Bots (
  id UUID PRIMARY KEY,
- url VARCHAR NOT NULL,
- token VARCHAR NOT NULL
+ provider UUID NOT NULL
 );
 

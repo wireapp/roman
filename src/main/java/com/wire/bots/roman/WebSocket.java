@@ -17,13 +17,12 @@ public class WebSocket {
     static boolean send(UUID providerId, OutgoingMessage message) throws IOException, EncodeException {
         Session session = sessions.get(providerId);
         if (session != null && session.isOpen()) {
-            Logger.info("Sending message over ws to %s", providerId);
+            Logger.info("Sending message (%s) over wss to %s", message.type, providerId);
 
             session.getBasicRemote().sendObject(message);
             return true;
         }
         return false;
-
     }
 
     @OnOpen
@@ -33,12 +32,12 @@ public class WebSocket {
 
         sessions.put(providerId, session);
 
-        Logger.info("%s connected", providerId);
+        Logger.debug("Session %s connected. provider: %s", session.getId(), providerId);
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        Logger.info("%s disconnected", session.getId());
+        Logger.debug("%s disconnected", session.getId());
     }
 
     @OnError

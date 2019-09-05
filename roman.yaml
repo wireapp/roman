@@ -17,12 +17,12 @@ swagger:
 
 jerseyClient:
   timeout: 20s
-  connectionTimeout: 4000ms
-  connectionRequestTimeout: 4000ms
+  connectionTimeout: 4s
+  connectionRequestTimeout: 4s
   keepAlive: 0ms
   retries: 3
 
-auth: ${E_ROMAN_SERVICE_TOKEN}
+auth: ${SERVICE_TOKEN}
 
 db:
   driver: postgresql
@@ -31,7 +31,7 @@ db:
   password: ${POSTGRES_PASSWORD}
   port: 5432
 
-key: ${E_ROMAN_KEY}
+key: ${APP_KEY}
 
 database:
   driverClass: org.postgresql.Driver

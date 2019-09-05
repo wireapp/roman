@@ -1,6 +1,5 @@
 package com.wire.bots.roman.DAO.mappers;
 
-import com.wire.bots.roman.model.ExternalService;
 import com.wire.bots.sdk.tools.Logger;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
@@ -10,17 +9,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class BotsMapper implements ResultSetMapper<ExternalService> {
+public class BotsMapper implements ResultSetMapper<UUID> {
     @Override
     @Nullable
-    public ExternalService map(int i, ResultSet rs, StatementContext statementContext) {
-        ExternalService ret = new ExternalService();
+    public UUID map(int i, ResultSet rs, StatementContext statementContext) {
         try {
-            ret.botId = getUuid(rs, "id");
-            ret.url = rs.getString("url");
-            ret.auth = rs.getString("token");
-
-            return ret;
+            return getUuid(rs, "provider");
         } catch (SQLException e) {
             Logger.error("BotsMapper: i: %d, e: %s", i, e);
             return null;
