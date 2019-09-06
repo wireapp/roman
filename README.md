@@ -5,16 +5,25 @@ Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API
 https://services.zinfra.io/proxy/swagger
 
 ### Register as Wire Bot Developer
-[register](https://services.zinfra.io/proxy/swagger#!/default/register)
+ - [register](https://services.zinfra.io/proxy/swagger#!/default/register)
 
 ### Login
-[login](https://services.zinfra.io/proxy/swagger#!/default/login)
+ - [login](https://services.zinfra.io/proxy/swagger#!/default/login)
 
 ### Create a service
-[create service](https://services.zinfra.io/proxy/swagger#!/default/create)
-Only `name` is mandatory. Specify `url` if you want to use your _webhook_ to receive events from Wire Backend. Leave `url`
-as `null` if you prefer _Webhooks_. `avatar` for your bot is optional and it is `Base64` encoded jpeg|png image. If
-`avatar` filed is left as `null` default avatar is assigned for the Service.
+ - [create service](https://services.zinfra.io/proxy/swagger#!/default/create)
+
+```
+{
+  "name": "My Cool Bot",
+  "url": "https://my.server.com/webhook",
+  "avatar": "..." // Base64 encoded image 
+}
+```
+
+Only `name` is mandatory. Specify `url` if you want to use your _Webhook_ to receive events from Wire Backend.
+Leave `url` _null_ if you prefer _Websocket_. `avatar` for your bot is optional and it is `Base64` encoded `jpeg`|`png` image. If
+`avatar` filed is left _null_ default avatar is assigned for the Service.
 
 After creating your Service the following json is returned:
 ```
@@ -32,12 +41,14 @@ Go to your Team Settings page and navigate to _Services_ tab. Add this `service_
 Now your team members should be able to see your _Service_ when they open _people picker_ and navigate to _services_ tab.
 
 ### Webhook
-In case `url` was specified when creating the service webhook will be used. All requests coming from Wire to your Service's endpoint will have HTTP Header `Authorization` with value:
+In case `url` was specified when creating the service webhook will be used. All requests coming from Wire to your
+Service's endpoint will have HTTP Header `Authorization` with value:
  `Bearer <service_authentication>`. Make sure you verify this value in your webhook implementation.
-Wire will send events to the `url` you speficied when creating the Service. Your webhook should always return HTTP code `200`
+Wire will send events to the `url` you specified when creating the Service. Your webhook should always return HTTP code `200`
 
 ### Websocket
 In order to receive events via _Websocket_ connect to:
+
 ```
 wss://services.zinfra.io/proxy/await/`<app_key>`
 ```
@@ -53,9 +64,11 @@ wss://services.zinfra.io/proxy/await/`<app_key>`
 }
 ```
 
-Your service must be available at the moment `bot_request` event is sent. It must respond with http code `200`. In case of Websocket implementation it is enough the socket is connected to the Proxy at that moment.
+Your service must be available at the moment `bot_request` event is sent. It must respond with http code `200`.
+ In case of Websocket implementation it is enough the socket is connected to the Proxy at that moment.
 
-- `init`: If your Service responded with 200 to a `bot_request` another event is sent. `text` filed contains the name of the conversation your bot is being added
+- `init`: If your Service responded with 200 to a `bot_request` another event is sent. `text` field contains the name
+of the conversation your bot is being added
 ```
 {
     "type": "conversation.init",
@@ -106,11 +119,12 @@ _Outgoing Message_ can be of 2 types:
 - **Image message**
 ```
 {
-	"type": "image",
+    "type": "image",
     "image": "..." // Base64 encoded image
 }
 ```
-**Note:** `token` that comes with `conversation.init` events is _lifelong_. It should be stored for later usage. `token` that comes with other event types has lifespan of 20 seconds.
+**Note:** `token` that comes with `conversation.init` events is _lifelong_. It should be stored for later usage. `token`
+ that comes with other event types has lifespan of 20 seconds.
 
 ### Bot Example
-[echo](https://github.com/dkovacevic/demo-proxy)
+ - Echo bot in Java: https://github.com/dkovacevic/demo-proxy
