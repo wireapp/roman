@@ -1,16 +1,16 @@
-## Wire Bot API Proxy
-It uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API
+# Wire Bot API Proxy
+Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API
 
-# API documentation:
+### API documentation:
 https://services.zinfra.io/proxy/swagger
 
-# Register as Wire Bot Developer
+### Register as Wire Bot Developer
 [register](https://services.zinfra.io/proxy/swagger#!/default/register)
 
-# Login
+### Login
 [login](https://services.zinfra.io/proxy/swagger#!/default/login)
 
-# Create a service
+### Create a service
 [create service](https://services.zinfra.io/proxy/swagger#!/default/create)
 Only `name` is mandatory. Specify `url` if you want to use your _webhook_ to receive events from Wire Backend. Leave `url`
 as `null` if you prefer _Webhooks_. `avatar` for your bot is optional and it is `Base64` encoded jpeg|png image. If
@@ -31,18 +31,18 @@ After creating your Service the following json is returned:
 Go to your Team Settings page and navigate to _Services_ tab. Add this `service_code` and enable this service for your team.
 Now your team members should be able to see your _Service_ when they open _people picker_ and navigate to _services_ tab.
 
-# Webhook
-All requests coming from Wire to your Service's endpoint will have HTTP Header `Authorization` with value:
+### Webhook
+In case `url` was specified when creating the service webhook will be used. All requests coming from Wire to your Service's endpoint will have HTTP Header `Authorization` with value:
  `Bearer <service_authentication>`. Make sure you verify this value in your webhook implementation.
 Wire will send events to the `url` you speficied when creating the Service. Your webhook should always return HTTP code `200`
 
-# Websocket
-In order to receive events via websocket connect to:
+### Websocket
+In order to receive events via _Websocket_ connect to:
 ```
 wss://services.zinfra.io/proxy/await/`<app_key>`
 ```
 
-# Events that are sent from the Server to your endpoint (Webhook or Websocket)
+### Events that are sent from the Server to your endpoint (Webhook or Websocket)
 
 - `bot_request`: When bot is added to a conversation ( 1-1 conversation or a group)
 ```
@@ -110,9 +110,7 @@ _Outgoing Message_ can be of 2 types:
     "image": "..." // Base64 encoded image
 }
 ```
-
-
 **Note:** `token` that comes with `conversation.init` events is _lifelong_. It should be stored for later usage. `token` that comes with other event types has lifespan of 20 seconds.
 
-# Bot Example
+### Bot Example
 [echo](https://github.com/dkovacevic/demo-proxy)
