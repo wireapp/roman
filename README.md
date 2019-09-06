@@ -44,7 +44,8 @@ Now your team members should be able to see your _Service_ when they open _peopl
 In case `url` was specified when creating the service webhook will be used. All requests coming from Wire to your
 Service's endpoint will have HTTP Header `Authorization` with value:
  `Bearer <service_authentication>`. Make sure you verify this value in your webhook implementation.
-Wire will send events to the `url` you specified when creating the Service. Your webhook should always return HTTP code `200`
+Wire will send events as `POST` HTTP request to the `url` you specified when creating the Service.
+Your webhook should always return HTTP code `200` as the result
 
 ### Websocket
 In order to receive events via _Websocket_ connect to:
@@ -53,7 +54,7 @@ In order to receive events via _Websocket_ connect to:
 wss://services.zinfra.io/proxy/await/`<app_key>`
 ```
 
-### Events that are sent from the Server to your endpoint (Webhook or Websocket)
+### Events that are sent as HTTP `POST` to your endpoint (Webhook or Websocket)
 
 - `bot_request`: When bot is added to a conversation ( 1-1 conversation or a group)
 ```
@@ -67,7 +68,7 @@ wss://services.zinfra.io/proxy/await/`<app_key>`
 Your service must be available at the moment `bot_request` event is sent. It must respond with http code `200`.
  In case of Websocket implementation it is enough the socket is connected to the Proxy at that moment.
 
-- `init`: If your Service responded with 200 to a `bot_request` another event is sent. `text` field contains the name
+- `init`: If your Service responded with `200` to a `bot_request` another event is sent. `text` field contains the name
 of the conversation your bot is being added
 ```
 {
@@ -103,8 +104,15 @@ of the conversation your bot is being added
 
 If the event contains `token` field this `token` can be used to respond to this event by sending `Outgoing Message` like:
 
+### Posting back to Wire conversation
+In order to post text or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
+You must also specify the HTTP header as `Authorization: <token>` where `token` was obtained in `init` or other events
+ like: `new_text` or `new_image` ...
+
+Example:
 ```
-POST https://services.zinfra.io/proxy/conversation -d '{"type": "text", "text": "Hello!"}' -H'Authorization:<token>'
+POST https://services.zinfra.io/proxy/conversation -d '{"type": "text", "text": "Hello!"}' \
+-H'Authorization:eyJhbGciOiJIUzM4NCJ9.eyJpc3MiOiJodHRwczovL3dpcmUuY29tIiwic3ViIjoiMjE2ZWZjMzEtZDQ4My00YmQ2LWFlYzctNGFkYzJkYTUwY2E1In0.h1iGvhzCcbSea_Hoi5oIcIgr_GyPjcKUGUXXD_AXWVKTMIml9e3UIbec2jf2gETK'
 ```
 
 _Outgoing Message_ can be of 2 types:
@@ -123,6 +131,8 @@ _Outgoing Message_ can be of 2 types:
     "image": "..." // Base64 encoded image
 }
 ```
+Full description: https://services.zinfra.io/proxy/swagger#!/default/post
+
 **Note:** `token` that comes with `conversation.init` events is _lifelong_. It should be stored for later usage. `token`
  that comes with other event types has lifespan of 20 seconds.
 
