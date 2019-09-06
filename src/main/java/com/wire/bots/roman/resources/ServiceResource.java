@@ -50,9 +50,16 @@ public class ServiceResource {
 
     @POST
     @ApiOperation(value = "Register new Service", response = _Result.class)
-    public Response create(@ApiParam(hidden = true) @NotNull @CookieParam("zroman") String token,
+    public Response create(@ApiParam(hidden = true) @CookieParam("zroman") String token,
                            @ApiParam @Valid _NewService payload) {
         try {
+            if (token == null) {
+                Response.
+                        ok(new ErrorMessage("Not Authenticated")).
+                        status(403).
+                        build();
+            }
+
             String subject = validateToken(token);
 
             Logger.debug("ServiceResource.create: provider: %s", subject);
@@ -149,9 +156,16 @@ public class ServiceResource {
 
     @PUT
     @ApiOperation(value = "Update Service", response = _Result.class)
-    public Response update(@ApiParam(hidden = true) @NotNull @CookieParam("zroman") String token,
+    public Response update(@ApiParam(hidden = true) @CookieParam("zroman") String token,
                            @ApiParam @Valid _UpdateService payload) {
         try {
+            if (token == null) {
+                Response.
+                        ok(new ErrorMessage("Not Authenticated")).
+                        status(403).
+                        build();
+            }
+
             String subject = validateToken(token);
 
             Logger.debug("ServiceResource.update: provider: %s", subject);
@@ -192,8 +206,15 @@ public class ServiceResource {
 
     @GET
     @ApiOperation(value = "Get the Service", response = _Result.class)
-    public Response get(@ApiParam(hidden = true) @NotNull @CookieParam("zroman") String token) {
+    public Response get(@ApiParam(hidden = true) @CookieParam("zroman") String token) {
         try {
+            if (token == null) {
+                Response.
+                        ok(new ErrorMessage("Not Authenticated")).
+                        status(403).
+                        build();
+            }
+
             String subject = validateToken(token);
 
             Logger.debug("ServiceResource.get: provider: %s", subject);

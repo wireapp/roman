@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint(value = "/roman/await/{access_token}", encoders = MessageEncoder.class)
+@ServerEndpoint(value = "/proxy/await/{access_token}", encoders = MessageEncoder.class)
 public class WebSocket {
     private final static ConcurrentHashMap<UUID, Session> sessions = new ConcurrentHashMap<>();// ProviderId, Session,
 

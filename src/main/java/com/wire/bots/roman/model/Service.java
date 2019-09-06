@@ -43,7 +43,7 @@ public class Service {
         summary = "Summary";
         description = "Description";
         tags = new String[]{"tutorial"};
-        baseUrl = String.format("https://services.%s/roman", Util.getDomain());
+        baseUrl = String.format("https://services.%s/proxy", Util.getDomain());
         pubkey = String.format("%s\n%s\n%s", "-----BEGIN PUBLIC KEY-----", Tools.getPubkey(), "-----END PUBLIC KEY-----");
 
         assets = new ArrayList<>();

@@ -1,5 +1,5 @@
 server:
-  rootPath: /roman/*
+  rootPath: /proxy/*
   requestLog:
     appenders: []
 
@@ -10,7 +10,7 @@ logging:
 
 swagger:
   resourcePackage: com.wire.bots.roman.resources
-  uriPrefix: /roman
+  uriPrefix: /proxy
   schemes:
     - http
     - https
