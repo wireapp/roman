@@ -10,6 +10,7 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Provider {
     public UUID id;
+    public String name;
 
     @NotNull
     public String email;
@@ -24,4 +25,6 @@ public class Provider {
     public String serviceAuth;
 
     public UUID serviceId;
+
+    public String serviceName;
 }

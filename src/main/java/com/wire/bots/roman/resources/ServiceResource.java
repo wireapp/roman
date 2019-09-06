@@ -111,14 +111,19 @@ public class ServiceResource {
                         build();
             }
 
-            jdbi.onDemand(ProvidersDAO.class)
-                    .update(providerId, payload.url, service.auth, service.id);
+            int u = jdbi.onDemand(ProvidersDAO.class)
+                    .update(providerId, payload.url, service.auth, service.id, payload.name);
+
+            if (u == 0) {
+                Logger.warning("Failed to update Providers table with Service details");
+            }
 
             _Result result = new _Result();
             result.auth = service.auth;
             result.code = String.format("%s:%s", providerId, service.id);
             result.key = token;
             result.url = payload.url;
+            result.service = payload.name;
 
             Logger.info("ServiceResource.create: service authentication %s, code: %s", result.auth, result.code);
 
@@ -201,6 +206,9 @@ public class ServiceResource {
             result.auth = provider.serviceAuth;
             result.code = String.format("%s:%s", provider.id, provider.serviceId);
             result.url = provider.serviceUrl;
+            result.email = provider.email;
+            result.company = provider.name;
+            result.service = provider.serviceName;
 
             return Response.
                     ok(result).
@@ -290,5 +298,11 @@ public class ServiceResource {
 
         @JsonProperty("webhook")
         public String url;
+
+        public String email;
+
+        public String company;
+
+        public String service;
     }
 }

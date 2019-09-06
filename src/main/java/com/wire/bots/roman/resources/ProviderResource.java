@@ -63,8 +63,15 @@ public class ProviderResource {
             Provider provider = register.readEntity(Provider.class);
 
             String hash = SCryptUtil.scrypt(payload.password, 16384, 8, 1);
-            jdbi.onDemand(ProvidersDAO.class)
-                    .insert(provider.id, email, hash, provider.password);
+            int insert = jdbi.onDemand(ProvidersDAO.class)
+                    .insert(name, provider.id, email, hash, provider.password);
+
+            if (insert == 0) {
+                return Response.
+                        ok(new ErrorMessage("Failed to update local db")).
+                        status(500).
+                        build();
+            }
 
             return Response.
                     ok(new ErrorMessage("Email was sent to: " + payload.email)).

@@ -10,9 +10,10 @@ import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 import java.util.UUID;
 
 public interface ProvidersDAO {
-    @SqlUpdate("INSERT INTO Providers (id, email, hash, password) " +
-            "VALUES (:id, :email, :hash, :password)")
-    int insert(@Bind("id") UUID id,
+    @SqlUpdate("INSERT INTO Providers (name, id, email, hash, password) " +
+            "VALUES (:name, :id, :email, :hash, :password)")
+    int insert(@Bind("name") String name,
+               @Bind("id") UUID id,
                @Bind("email") String email,
                @Bind("hash") String hash,
                @Bind("password") String password);
@@ -20,12 +21,14 @@ public interface ProvidersDAO {
     @SqlUpdate("UPDATE Providers SET " +
             "url = :url," +
             "service_auth = :auth, " +
-            "service = :serviceId " +
+            "service = :serviceId, " +
+            "service_name = :serviceName " +
             "WHERE id = :id")
-    void update(@Bind("id") UUID id,
-                @Bind("url") String url,
-                @Bind("auth") String auth,
-                @Bind("serviceId") UUID serviceId);
+    int update(@Bind("id") UUID id,
+               @Bind("url") String url,
+               @Bind("auth") String auth,
+               @Bind("serviceId") UUID serviceId,
+               @Bind("serviceName") String serviceName);
 
     @SqlUpdate("UPDATE Providers SET url = :url WHERE id = :id")
     void updateUrl(@Bind("id") UUID id,
