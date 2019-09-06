@@ -1,5 +1,6 @@
 package com.wire.bots.roman.resources;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
@@ -19,6 +20,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import static com.wire.bots.roman.Tools.validateToken;
 
@@ -26,7 +28,6 @@ import static com.wire.bots.roman.Tools.validateToken;
 @Path("/conversation")
 @Produces(MediaType.APPLICATION_JSON)
 public class ConversationResource {
-
     private final ClientRepo repo;
 
     public ConversationResource(ClientRepo repo) {
@@ -39,6 +40,8 @@ public class ConversationResource {
     public Response post(@ApiParam @NotNull @HeaderParam("Authorization") String token,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
+            trace(message);
+            
             String subject = validateToken(token);
             UUID botId = UUID.fromString(subject);
 
@@ -79,6 +82,17 @@ public class ConversationResource {
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
+        }
+    }
+
+    private void trace(IncomingMessage message) {
+        try {
+            if (Logger.getLevel() == Level.FINE) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                Logger.debug(objectMapper.writeValueAsString(message));
+            }
+        } catch (Exception ignore) {
+
         }
     }
 }

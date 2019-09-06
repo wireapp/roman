@@ -1,5 +1,6 @@
 package com.wire.bots.roman;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.OutgoingMessage;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import static com.wire.bots.roman.Tools.generateToken;
 
@@ -53,6 +55,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.botId = botId;
         message.userId = msg.from;
         message.type = "conversation.init";
+        message.text = msg.conversation.name;
         message.token = generateToken(botId);
 
         boolean send = send(message);
@@ -125,6 +128,8 @@ public class MessageHandler extends MessageHandlerBase {
             return false;
         }
 
+        trace(message);
+
         // Webhook
         if (provider.serviceUrl != null) {
             Response post = jerseyClient.target(provider.serviceUrl)
@@ -146,6 +151,17 @@ public class MessageHandler extends MessageHandlerBase {
         } catch (IOException | EncodeException e) {
             Logger.error("MessageHandler.send: bot: %s, provider: %s,  error %s", message.botId, providerId, e);
             return false;
+        }
+    }
+
+    private void trace(OutgoingMessage message) {
+        try {
+            if (Logger.getLevel() == Level.FINE) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                Logger.debug(objectMapper.writeValueAsString(message));
+            }
+        } catch (Exception ignore) {
+
         }
     }
 }

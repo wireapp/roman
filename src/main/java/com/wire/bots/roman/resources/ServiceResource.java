@@ -36,7 +36,7 @@ import java.util.logging.Level;
 import static com.wire.bots.roman.Tools.validateToken;
 
 @Api
-@Path("/services")
+@Path("/service")
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceResource {
 
