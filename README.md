@@ -60,8 +60,8 @@ wss://services.zinfra.io/proxy/await/`<app_key>`
 ```
 {
     "type": "conversation.bot_request",
-    "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",  // unique identifier of this bot
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107"  //
+    "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",  // Unique identifier for this bot
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107"  // User who requested this bot
 }
 ```
 
@@ -74,9 +74,9 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.init",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
-    "token": "...", // store this token so the bot can post back
-    "text": "Bot Example Conversation" // conversation name
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who added this bot into conversation
+    "token": "...",                                   // Access token. Store this token so the bot can post back later
+    "text": "Bot Example Conversation"                // Conversation name
 }
 ```
 
@@ -85,9 +85,9 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.new_text",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // author of this message
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // Author of this message
     "text": "Hi everybody!",
-    "token": "..." // use this token to reply to this message - valid for 20 sec
+    "token": "..."                                    // Use this token to reply to this message - valid for 20 sec
 }
 ```
 - `new_image`: When an image is posted in a conversation where this bot is present
@@ -97,8 +97,8 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "type": "conversation.new_image",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
-    "token": "...", // use this token to reply to this message - valid for 20 sec
-    "image": "..." // Base64 encoded image
+    "token": "...", // Use this token to reply to this message - valid for 20 sec
+    "image": "..."  // Base64 encoded image
 }
 ```
 

@@ -49,7 +49,7 @@ public class ServiceResource {
     }
 
     @POST
-    @ApiOperation(value = "Register new Service", response = _Result.class)
+    @ApiOperation(value = "Create new Service", response = _Result.class)
     public Response create(@ApiParam(hidden = true) @CookieParam("zroman") String token,
                            @ApiParam @Valid _NewService payload) {
         try {
@@ -159,6 +159,8 @@ public class ServiceResource {
     public Response update(@ApiParam(hidden = true) @CookieParam("zroman") String token,
                            @ApiParam @Valid _UpdateService payload) {
         try {
+            ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
+
             if (token == null) {
                 Response.
                         ok(new ErrorMessage("Not Authenticated")).
@@ -171,9 +173,14 @@ public class ServiceResource {
             Logger.debug("ServiceResource.update: provider: %s", subject);
 
             UUID providerId = UUID.fromString(subject);
-            ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
 
             Provider provider = providersDAO.get(providerId);
+            if (provider.serviceId == null) {
+                return Response.
+                        ok(new ErrorMessage("You have no service created yet")).
+                        status(404).
+                        build();
+            }
 
             providersDAO.updateUrl(provider.id, payload.url);
 
@@ -225,7 +232,7 @@ public class ServiceResource {
             _Result result = new _Result();
             result.key = token;
             result.auth = provider.serviceAuth;
-            result.code = String.format("%s:%s", provider.id, provider.serviceId);
+            result.code = provider.serviceId != null ? String.format("%s:%s", provider.id, provider.serviceId) : null;
             result.url = provider.serviceUrl;
             result.email = provider.email;
             result.company = provider.name;
@@ -265,7 +272,7 @@ public class ServiceResource {
 
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
-        public boolean isUrl() {
+        public boolean isUrlValid() {
             if (url == null)
                 return true;
             try {
@@ -278,7 +285,7 @@ public class ServiceResource {
 
         @ValidationMethod(message = "`image` is not a Base64 encoded string")
         @JsonIgnore
-        public boolean isAvatar() {
+        public boolean isAvatarValid() {
             return avatar == null || avatar.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
         }
     }
@@ -290,7 +297,7 @@ public class ServiceResource {
 
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
-        public boolean isUrl() {
+        public boolean isUrlValid() {
             if (url == null)
                 return true;
 
@@ -320,10 +327,13 @@ public class ServiceResource {
         @JsonProperty("webhook")
         public String url;
 
+        @JsonProperty
         public String email;
 
+        @JsonProperty
         public String company;
 
+        @JsonProperty
         public String service;
     }
 }
