@@ -23,7 +23,7 @@ https://services.zinfra.io/proxy/swagger
 
 Only `name` is mandatory. Specify `url` if you want to use your _Webhook_ to receive events from Wire Backend.
 Leave `url` _null_ if you prefer _Websocket_. `avatar` for your bot is optional and it is `Base64` encoded `jpeg`|`png` image. If
-`avatar` filed is left _null_ default avatar is assigned for the Service.
+`avatar` field is left _null_ default avatar is assigned for the Service.
 
 After creating your Service the following json is returned:
 ```
@@ -33,7 +33,7 @@ After creating your Service the following json is returned:
   "service": "ACME Integration",
   "service_code": "8d935243-828f-45d8-b52e-cdc1385334fc:d8371f5e-cd41-4528-a2bb-f3feefea160f",
   "service_authentication": "g_ZiEfOnMdVnbbpyKIWCVZIk",
-  "app_key": "..."
+  "app_key": "..."  // used when connecting using websocket
 }
 ```
 
@@ -45,7 +45,7 @@ In case `url` was specified when creating the service webhook will be used. All 
 Service's endpoint will have HTTP Header `Authorization` with value:
  `Bearer <service_authentication>`. Make sure you verify this value in your webhook implementation.
 Wire will send events as `POST` HTTP request to the `url` you specified when creating the Service.
-Your webhook should always return HTTP code `200` as the result
+Your webhook should always return HTTP code `200` as the result.
 
 ### Websocket
 In order to receive events via _Websocket_ connect to:
@@ -60,23 +60,23 @@ wss://services.zinfra.io/proxy/await/`<app_key>`
 ```
 {
     "type": "conversation.bot_request",
-    "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107"
+    "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",  // unique identifier of this bot
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107"  //
 }
 ```
 
 Your service must be available at the moment `bot_request` event is sent. It must respond with http code `200`.
  In case of Websocket implementation it is enough the socket is connected to the Proxy at that moment.
 
-- `init`: If your Service responded with `200` to a `bot_request` another event is sent. `text` field contains the name
-of the conversation your bot is being added
+- `init`: If your Service responded with `200` to a `bot_request` another event is sent: `init`.
+`text` field contains the name of the conversation your bot is being added to.
 ```
 {
     "type": "conversation.init",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
-    "token": "...",
-    "text": "Bot Example Conversation"
+    "token": "...", // store this token so the bot can post back
+    "text": "Bot Example Conversation" // conversation name
 }
 ```
 
@@ -85,9 +85,9 @@ of the conversation your bot is being added
 {
     "type": "conversation.new_text",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // author of this message
     "text": "Hi everybody!",
-    "token": "..." // token
+    "token": "..." // use this token to reply to this message - valid for 20 sec
 }
 ```
 - `new_image`: When an image is posted in a conversation where this bot is present
@@ -97,23 +97,24 @@ of the conversation your bot is being added
     "type": "conversation.new_image",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
-    "token": "...",
+    "token": "...", // use this token to reply to this message - valid for 20 sec
     "image": "..." // Base64 encoded image
 }
 ```
 
-If the event contains `token` field this `token` can be used to respond to this event by sending `Outgoing Message` like:
-
 ### Posting back to Wire conversation
-In order to post text or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
-You must also specify the HTTP header as `Authorization: <token>` where `token` was obtained in `init` or other events
- like: `new_text` or `new_image` ...
+
+If the event contains `token` field this `token` can be used to respond to this event by sending `Outgoing Message` like:
 
 Example:
 ```
 POST https://services.zinfra.io/proxy/conversation -d '{"type": "text", "text": "Hello!"}' \
--H'Authorization:eyJhbGciOiJIUzM4NCJ9.eyJpc3MiOiJodHRwczovL3dpcmUuY29tIiwic3ViIjoiMjE2ZWZjMzEtZDQ4My00YmQ2LWFlYzctNGFkYzJkYTUwY2E1In0.h1iGvhzCcbSea_Hoi5oIcIgr_GyPjcKUGUXXD_AXWVKTMIml9e3UIbec2jf2gETK'
+-H'Authorization:eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
 ```
+
+In order to post text or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
+You must also specify the HTTP header as `Authorization: <token>` where `token` was obtained in `init` or other events
+ like: `new_text` or `new_image`.
 
 _Outgoing Message_ can be of 2 types:
 - **Text message**
@@ -137,4 +138,4 @@ Full description: https://services.zinfra.io/proxy/swagger#!/default/post
  that comes with other event types has lifespan of 20 seconds.
 
 ### Bot Example
- - Echo bot in Java: https://github.com/dkovacevic/demo-proxy
+- Echo bot in Java: https://github.com/dkovacevic/demo-proxy

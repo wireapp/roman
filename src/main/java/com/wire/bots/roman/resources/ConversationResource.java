@@ -41,14 +41,14 @@ public class ConversationResource {
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
             trace(message);
-            
+
             String subject = validateToken(token);
             UUID botId = UUID.fromString(subject);
 
             Logger.info("ConversationResource: `%s` bot: %s", message.type, botId);
 
             try (WireClient client = repo.getClient(botId)) {
-                switch (message.type.toLowerCase()) {
+                switch (message.type) {
                     case "text": {
                         client.sendText(message.text);
                     }
@@ -58,11 +58,6 @@ public class ConversationResource {
                         client.sendPicture(picture.getImageData(), picture.getMimeType());
                     }
                     break;
-                    default:
-                        return Response.
-                                ok(new ErrorMessage("Unsupported `type`: " + message.type)).
-                                status(400).
-                                build();
                 }
 
                 return Response.
