@@ -33,7 +33,7 @@ After creating your Service the following json is returned:
   "service": "ACME Integration",
   "service_code": "8d935243-828f-45d8-b52e-cdc1385334fc:d8371f5e-cd41-4528-a2bb-f3feefea160f",
   "service_authentication": "g_ZiEfOnMdVnbbpyKIWCVZIk",
-  "app_key": "..."  // used when connecting using websocket
+  "app_key": "..."  // Needed when connecting using a websocket
 }
 ```
 

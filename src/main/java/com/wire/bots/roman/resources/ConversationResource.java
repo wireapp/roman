@@ -35,7 +35,7 @@ public class ConversationResource {
     }
 
     @POST
-    @ApiOperation(value = "Forward messages to Wire BE", authorizations = {@Authorization(value = "Bearer")})
+    @ApiOperation(value = "Post message on Wire", authorizations = {@Authorization(value = "Bearer")})
     @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
     public Response post(@ApiParam @NotNull @HeaderParam("Authorization") String token,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
