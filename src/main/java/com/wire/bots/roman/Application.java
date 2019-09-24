@@ -20,6 +20,7 @@ package com.wire.bots.roman;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.overrides.BotResource;
 import com.wire.bots.roman.overrides.InboundResource;
+import com.wire.bots.roman.resources.BroadcastResource;
 import com.wire.bots.roman.resources.ConversationResource;
 import com.wire.bots.roman.resources.ProviderResource;
 import com.wire.bots.roman.resources.ServiceResource;
@@ -78,6 +79,7 @@ public class Application extends Server<Config> {
         addResource(new ProviderResource(jdbi, providerClient), env);
         addResource(new ServiceResource(jdbi, providerClient), env);
         addResource(new ConversationResource(getRepo()), env);
+        addResource(new BroadcastResource(jdbi, getRepo()), env);
     }
 
     @Override

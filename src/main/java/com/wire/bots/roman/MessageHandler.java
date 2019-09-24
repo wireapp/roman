@@ -119,6 +119,12 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
+    @Override
+    public void onBotRemoved(UUID botId, SystemMessage msg) {
+        BotsDAO botsDAO = jdbi.onDemand(BotsDAO.class);
+        botsDAO.remove(botId);
+    }
+
     private boolean send(OutgoingMessage message) {
         UUID providerId = jdbi.onDemand(BotsDAO.class).getProviderId(message.botId);
         Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);

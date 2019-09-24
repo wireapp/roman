@@ -14,7 +14,7 @@ public class BotsMapper implements ResultSetMapper<UUID> {
     @Nullable
     public UUID map(int i, ResultSet rs, StatementContext statementContext) {
         try {
-            return getUuid(rs, "provider");
+            return getUuid(rs, "uuid");
         } catch (SQLException e) {
             Logger.error("BotsMapper: i: %d, e: %s", i, e);
             return null;
