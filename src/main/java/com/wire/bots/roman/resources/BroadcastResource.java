@@ -8,6 +8,7 @@ import com.wire.bots.roman.model.Provider;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.assets.Picture;
+import com.wire.bots.sdk.exceptions.MissingStateException;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import io.jsonwebtoken.JwtException;
@@ -83,6 +84,9 @@ public class BroadcastResource {
                         }
                         break;
                     }
+                } catch (MissingStateException e) {
+                    Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
+                    botsDAO.remove(botId);
                 } catch (Exception e) {
                     Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
                 }
