@@ -5,6 +5,7 @@ import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.assets.Picture;
+import com.wire.bots.sdk.exceptions.MissingStateException;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import io.jsonwebtoken.JwtException;
@@ -36,7 +37,10 @@ public class ConversationResource {
 
     @POST
     @ApiOperation(value = "Post message on Wire", authorizations = {@Authorization(value = "Bearer")})
-    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated")})
+    @ApiResponses(value = {
+            @ApiResponse(code = 403, message = "Not authenticated"),
+            @ApiResponse(code = 409, message = "Unknown bot. This bot might be deleted by the user")
+    })
     public Response post(@ApiParam @NotNull @HeaderParam("Authorization") String token,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
@@ -47,23 +51,7 @@ public class ConversationResource {
 
             Logger.info("ConversationResource: `%s` bot: %s", message.type, botId);
 
-            try (WireClient client = repo.getClient(botId)) {
-                switch (message.type) {
-                    case "text": {
-                        client.sendText(message.text);
-                    }
-                    break;
-                    case "image": {
-                        Picture picture = new Picture(Base64.getDecoder().decode(message.image));
-                        client.sendPicture(picture.getImageData(), picture.getMimeType());
-                    }
-                    break;
-                }
-
-                return Response.
-                        ok().
-                        build();
-            }
+            return send(message, botId);
         } catch (JwtException e) {
             Logger.warning("ConversationResource %s", e);
             return Response.
@@ -77,6 +65,32 @@ public class ConversationResource {
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
+        }
+    }
+
+    private Response send(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient client = repo.getClient(botId)) {
+            switch (message.type) {
+                case "text": {
+                    client.sendText(message.text);
+                }
+                break;
+                case "image": {
+                    Picture picture = new Picture(Base64.getDecoder().decode(message.image));
+                    client.sendPicture(picture.getImageData(), picture.getMimeType());
+                }
+                break;
+            }
+
+            return Response.
+                    ok().
+                    build();
+        } catch (MissingStateException e) {
+            Logger.info("ConversationResource bot: %s err: %s", botId, e);
+            return Response.
+                    ok(new ErrorMessage("Unknown bot. This bot might be deleted by the user")).
+                    status(409).
+                    build();
         }
     }
 
