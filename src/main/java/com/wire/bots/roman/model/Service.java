@@ -44,7 +44,8 @@ public class Service {
         description = "Description";
         tags = new String[]{"tutorial"};
         baseUrl = String.format("https://services.%s/proxy", Util.getDomain());
-        pubkey = String.format("%s\n%s\n%s", "-----BEGIN PUBLIC KEY-----", Tools.getPubkey(), "-----END PUBLIC KEY-----");
+        String hostname = String.format("services.%s", Util.getDomain());
+        pubkey = Tools.getPubkey(hostname);
 
         assets = new ArrayList<>();
         _Asset asset1 = new _Asset();

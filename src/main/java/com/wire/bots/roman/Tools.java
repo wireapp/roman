@@ -1,6 +1,5 @@
 package com.wire.bots.roman;
 
-import com.wire.bots.sdk.tools.Util;
 import io.jsonwebtoken.Jwts;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -41,11 +40,14 @@ public class Tools {
                 .compact();
     }
 
-    public static String getPubkey() throws IOException {
-        PublicKey publicKey = getPublicKey(String.format("services.%s", Util.getDomain()));
+    public static String getPubkey(String hostname) throws IOException {
+        String str = null;
+        PublicKey publicKey = getPublicKey(hostname);
         if (publicKey != null)
-            return Base64.getEncoder().encodeToString(publicKey.getEncoded());
-        return "";
+            str = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+        final String start = "-----BEGIN PUBLIC KEY-----";
+        final String end = "-----END PUBLIC KEY-----";
+        return String.format("%s\n%s\n%s", start, str, end);
     }
 
     private static PublicKey getPublicKey(String hostname) throws IOException {

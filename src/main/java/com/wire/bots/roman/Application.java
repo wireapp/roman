@@ -17,6 +17,7 @@
 
 package com.wire.bots.roman;
 
+import com.wire.bots.roman.commands.UpdateCertCommand;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.overrides.BotResource;
 import com.wire.bots.roman.overrides.InboundResource;
@@ -59,6 +60,8 @@ public class Application extends Server<Config> {
 
         WebsocketBundle bundle = new WebsocketBundle(WebSocket.class);
         bootstrap.addBundle(bundle);
+
+        bootstrap.addCommand(new UpdateCertCommand());
     }
 
     @Override
