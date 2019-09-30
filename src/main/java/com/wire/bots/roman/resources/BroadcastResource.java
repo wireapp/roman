@@ -71,29 +71,14 @@ public class BroadcastResource {
 
             List<UUID> botIds = botsDAO.getBotIds(providerId);
 
+            int ret = 0;
             for (UUID botId : botIds) {
-                try (WireClient client = repo.getClient(botId)) {
-                    switch (message.type) {
-                        case "text": {
-                            client.sendText(message.text);
-                        }
-                        break;
-                        case "image": {
-                            Picture picture = new Picture(Base64.getDecoder().decode(message.image));
-                            client.sendPicture(picture.getImageData(), picture.getMimeType());
-                        }
-                        break;
-                    }
-                } catch (MissingStateException e) {
-                    Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
-                    botsDAO.remove(botId);
-                } catch (Exception e) {
-                    Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
-                }
+                if (send(botId, message))
+                    ret++;
             }
 
             return Response.
-                    ok(new ErrorMessage(String.format("%d messages sent", botIds.size()))).
+                    ok(new ErrorMessage(String.format("%d messages sent", ret))).
                     build();
         } catch (JwtException e) {
             Logger.warning("BroadcastResource %s", e);
@@ -109,6 +94,30 @@ public class BroadcastResource {
                     .status(500)
                     .build();
         }
+    }
+
+    private boolean send(UUID botId, @ApiParam @NotNull @Valid IncomingMessage message) {
+        try (WireClient client = repo.getClient(botId)) {
+            switch (message.type) {
+                case "text": {
+                    client.sendText(message.text);
+                }
+                break;
+                case "image": {
+                    Picture picture = new Picture(Base64.getDecoder().decode(message.image));
+                    client.sendPicture(picture.getImageData(), picture.getMimeType());
+                }
+                break;
+            }
+            return true;
+        } catch (MissingStateException e) {
+            Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
+            jdbi.onDemand(BotsDAO.class).remove(botId);
+        } catch (Exception e) {
+            Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
+        }
+
+        return false;
     }
 
     private void trace(IncomingMessage message) {
