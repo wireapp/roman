@@ -23,7 +23,7 @@ public class ProviderClient {
     private final WebTarget servicesTarget;
     private final WebTarget providerTarget;
 
-    ProviderClient(Client jerseyClient) {
+    public ProviderClient(Client jerseyClient) {
 
         providerTarget = jerseyClient.target(Util.getHost())
                 .path("provider");
@@ -63,6 +63,19 @@ public class ProviderClient {
     public Response enableService(NewCookie zprovider, UUID serviceId, String password) {
         _UpdateService updateService = new _UpdateService();
         updateService.enabled = true;
+        updateService.password = password;
+
+        return servicesTarget
+                .path(serviceId.toString())
+                .path("connection")
+                .request(MediaType.APPLICATION_JSON)
+                .cookie(zprovider)
+                .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
+    }
+
+    public Response updateServicePubKey(NewCookie zprovider, UUID serviceId, String password, String pubkey) {
+        _UpdateService updateService = new _UpdateService();
+        updateService.pubKeys = new String[]{pubkey};
         updateService.password = password;
 
         return servicesTarget
@@ -128,6 +141,9 @@ public class ProviderClient {
 
         @JsonProperty
         public boolean enabled;
+
+        @JsonProperty("public_keys")
+        public String[] pubKeys;
     }
 
 

@@ -7,6 +7,7 @@ import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ProvidersDAO {
@@ -37,6 +38,10 @@ public interface ProvidersDAO {
     @SqlQuery("SELECT * FROM Providers WHERE email = :email")
     @RegisterMapper(ProviderMapper.class)
     Provider get(@Bind("email") String email);
+
+    @SqlQuery("SELECT * FROM Providers")
+    @RegisterMapper(ProviderMapper.class)
+    List<Provider> selectAll();
 
     @SqlQuery("SELECT * FROM Providers WHERE id = :id")
     @RegisterMapper(ProviderMapper.class)
