@@ -80,6 +80,11 @@ public class ConversationResource {
                     client.sendPicture(picture.getImageData(), picture.getMimeType());
                 }
                 break;
+                default:
+                    return Response.
+                            ok(new ErrorMessage("Unknown message type: " + message.type)).
+                            status(400).
+                            build();
             }
 
             return Response.

@@ -121,6 +121,13 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onBotRemoved(UUID botId, SystemMessage msg) {
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.type = "conversation.bot_removed";
+        boolean send = send(message);
+        if (!send)
+            Logger.warning("onBotRemoved: failed to deliver message to: bot: %s", botId);
+
         BotsDAO botsDAO = jdbi.onDemand(BotsDAO.class);
         botsDAO.remove(botId);
     }
