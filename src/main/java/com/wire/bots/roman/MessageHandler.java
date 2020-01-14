@@ -43,6 +43,9 @@ public class MessageHandler extends MessageHandlerBase {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.userId = newBot.origin.id;
+        message.handle = newBot.origin.handle;
+        message.locale = newBot.locale;
+
         message.type = "conversation.bot_request";
 
         return send(message);

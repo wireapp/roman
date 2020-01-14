@@ -61,7 +61,9 @@ wss://services.wire.com/proxy/await/`<app_key>`
 {
     "type": "conversation.bot_request",
     "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",  // Unique identifier for this bot
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107"  // User who requested this bot
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who requested this bot
+    "handle": "dejan_wire", // username of the user who requested this bot
+    "locale": "en_US"       // locale of the user who requested this bot
 }
 ```
 
