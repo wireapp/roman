@@ -152,3 +152,31 @@ Full description: https://services.wire.com/proxy/swagger#!/default/post
 
 ### Bot Example
 - Echo bot in Java: https://github.com/dkovacevic/demo-proxy
+
+## Build docker image from source code
+docker build -t $DOCKER_USERNAME/roman:latest .
+
+## Example of Docker run command
+```
+docker run \ 
+-e APP_KEY='this_is_some_long_key' \  
+-e DOMAIN='https://myproxy.mydomain.com' \  
+-e BACKEND='https://prod-nginz-https.wire.com' \  
+-e DB_URL='jdbc:postgresql://docker.for.mac.localhost/roman' \
+-e DB_USER='postgres' \ 
+-e DB_PASSWORD='secret' \
+-p 80:8080 \
+--name roman --rm $DOCKER_USERNAME/roman:latest
+```                          
+
+## Environment variables:
+
+```         
+LOG_LEVEL      # ERROR, WARN, INFO, DEBUG. INFO by default 
+APP_KEY        # 32 alphanumeric key used to generate tokens 
+DOMAIN         # Domain where your proxy will be exposed 
+BACKEND        # Wire Backed API URL. `https://prod-nginz-https.wire.com` by default 
+DB_URL         # Postgres URL. format: jdbc:postgresql://<HOST>:<PORT>/<DB_NAME>  
+DB_USER        # Postgres user. null by defaul
+DB_PASSWORD    # Postgres user's password. null by defaul  
+```
