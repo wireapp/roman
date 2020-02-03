@@ -39,7 +39,15 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     @Override
-    public boolean onNewBot(NewBot newBot) {
+    public boolean onNewBot(NewBot newBot, String auth) {
+        auth = auth.replace("Bearer", "").trim();
+        Provider provider = jdbi.onDemand(ProvidersDAO.class).getByAuth(auth);
+        int insert = jdbi.onDemand(BotsDAO.class).insert(newBot.id, provider.id);
+        if (insert == 0) {
+            Logger.error("Failed to insert ProviderID into Bots table");
+            return false;
+        }
+
         UUID botId = newBot.id;
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;

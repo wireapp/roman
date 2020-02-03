@@ -19,16 +19,12 @@ package com.wire.bots.roman;
 
 import com.wire.bots.roman.commands.UpdateCertCommand;
 import com.wire.bots.roman.model.Config;
-import com.wire.bots.roman.overrides.BotResource;
-import com.wire.bots.roman.overrides.InboundResource;
 import com.wire.bots.roman.resources.BroadcastResource;
 import com.wire.bots.roman.resources.ConversationResource;
 import com.wire.bots.roman.resources.ProviderResource;
 import com.wire.bots.roman.resources.ServiceResource;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
-import com.wire.bots.sdk.factories.CryptoFactory;
-import com.wire.bots.sdk.factories.StorageFactory;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -86,18 +82,5 @@ public class Application extends Server<Config> {
         addResource(new ServiceResource(jdbi, providerClient));
         addResource(new ConversationResource(getRepo()));
         addResource(new BroadcastResource(jdbi, getRepo()));
-    }
-
-    @Override
-    protected void messageResource() {
-        addResource(new InboundResource(messageHandler, repo));
-    }
-
-    @Override
-    protected void botResource() {
-        StorageFactory storageFactory = getStorageFactory();
-        CryptoFactory cryptoFactory = getCryptoFactory();
-
-        addResource(new BotResource(messageHandler, storageFactory, cryptoFactory, jdbi));
     }
 }

@@ -5,10 +5,11 @@ server:
       - type: console
         filterFactories:
           - type: status-filter-factory
+
 logging:
-  level: INFO
+  level: ${LOG_LEVEL:-INFO}
   loggers:
-    "com.wire.bots.logger": INFO
+    "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
 swagger:
   resourcePackage: com.wire.bots.roman.resources
@@ -25,10 +26,9 @@ jerseyClient:
   retries: 3
   userAgent: roman
 
-# File system as default DB. Other drivers supported: redis and postgresql. Primary keys are stored there
 database:
-  driverClass: ${DB_DRIVER:-org.postgresql.Driver}   # Can be: fs | redis | org.postgresql.Driver (default)
-  url: ${DB_URL:-jdbc:postgresql://localhost/roman}  # for File System it should be absolute path like: file:///var/echo/data or null
+  driverClass: org.postgresql.Driver
+  url: ${DB_URL:-jdbc:postgresql://localhost/roman}
   user: ${DB_USER:-}
   password: ${DB_PASSWORD:-}
 
