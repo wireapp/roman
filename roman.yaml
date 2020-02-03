@@ -1,8 +1,10 @@
 server:
   rootPath: /proxy/*
   requestLog:
-    appenders: []
-
+    appenders:
+      - type: console
+        filterFactories:
+          - type: status-filter-factory
 logging:
   level: INFO
   loggers:
@@ -21,30 +23,16 @@ jerseyClient:
   connectionRequestTimeout: 4s
   keepAlive: 0ms
   retries: 3
+  userAgent: roman
 
-auth: ${SERVICE_TOKEN}
-
-db:
-  driver: postgresql
-  host: ${POSTGRES_HOST}
-  user: postgres
-  password: ${POSTGRES_PASSWORD}
-  port: 5432
-
-key: ${APP_KEY}
-
+# File system as default DB. Other drivers supported: redis and postgresql. Primary keys are stored there
 database:
-  driverClass: org.postgresql.Driver
-  user: postgres
-  password: ${POSTGRES_PASSWORD}
-  url: ${POSTGRES_URL}
-  properties:
-    charSet: UTF-8
-  maxWaitForConnection: 1s
-  validationQuery: "/* MyService Health Check */ SELECT 1"
-  minSize: 8
-  maxSize: 32
-  checkConnectionWhileIdle: false
-  evictionInterval: 10s
-  minIdleTime: 1 minute
+  driverClass: ${DB_DRIVER:-org.postgresql.Driver}   # Can be: fs | redis | org.postgresql.Driver (default)
+  url: ${DB_URL:-jdbc:postgresql://localhost/roman}  # for File System it should be absolute path like: file:///var/echo/data or null
+  user: ${DB_USER:-}
+  password: ${DB_PASSWORD:-}
+
+key: ${APP_KEY:-}
+domain: ${DOMAIN:-https://services.wire.com}
+apiHost: ${BACKEND:-https://prod-nginz-https.wire.com}
 

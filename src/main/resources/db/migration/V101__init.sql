@@ -14,4 +14,3 @@ CREATE TABLE Bots (
  id UUID PRIMARY KEY,
  provider UUID NOT NULL
 );
-

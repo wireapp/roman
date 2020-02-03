@@ -25,7 +25,6 @@ import com.wire.bots.roman.resources.BroadcastResource;
 import com.wire.bots.roman.resources.ConversationResource;
 import com.wire.bots.roman.resources.ProviderResource;
 import com.wire.bots.roman.resources.ServiceResource;
-import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
 import com.wire.bots.sdk.factories.CryptoFactory;
@@ -69,32 +68,36 @@ public class Application extends Server<Config> {
         return new MessageHandler(jdbi, getClient());
     }
 
+    public static Application getInstance() {
+        return instance;
+    }
+
     @Override
     protected void initialize(Config config, Environment env) {
         this.key = Keys.hmacShaKeyFor(config.key.getBytes());
-        this.jdbi = new DBIFactory().build(environment, config.database, "roman");
+        this.jdbi = new DBIFactory().build(environment, config.dataSourceFactory, "roman");
     }
 
     @Override
     protected void onRun(Config config, Environment env) {
         ProviderClient providerClient = new ProviderClient(getClient());
 
-        addResource(new ProviderResource(jdbi, providerClient), env);
-        addResource(new ServiceResource(jdbi, providerClient), env);
-        addResource(new ConversationResource(getRepo()), env);
-        addResource(new BroadcastResource(jdbi, getRepo()), env);
+        addResource(new ProviderResource(jdbi, providerClient));
+        addResource(new ServiceResource(jdbi, providerClient));
+        addResource(new ConversationResource(getRepo()));
+        addResource(new BroadcastResource(jdbi, getRepo()));
     }
 
     @Override
-    protected void messageResource(Config config, Environment env, MessageHandlerBase handler, ClientRepo repo) {
-        addResource(new InboundResource(handler, repo), env);
+    protected void messageResource() {
+        addResource(new InboundResource(messageHandler, repo));
     }
 
     @Override
-    protected void botResource(Config config, Environment env, MessageHandlerBase handler) {
+    protected void botResource() {
         StorageFactory storageFactory = getStorageFactory();
         CryptoFactory cryptoFactory = getCryptoFactory();
 
-        addResource(new BotResource(handler, storageFactory, cryptoFactory, jdbi), env);
+        addResource(new BotResource(messageHandler, storageFactory, cryptoFactory, jdbi));
     }
 }

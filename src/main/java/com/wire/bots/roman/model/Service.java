@@ -3,8 +3,8 @@ package com.wire.bots.roman.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wire.bots.roman.Application;
 import com.wire.bots.roman.Tools;
-import com.wire.bots.sdk.tools.Util;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
@@ -40,12 +40,13 @@ public class Service {
     public String[] tags;
 
     public Service() throws IOException {
+        Config config = Application.getInstance().getConfig();
+
         summary = "Summary";
         description = "Description";
         tags = new String[]{"tutorial"};
-        baseUrl = String.format("https://services.%s/proxy", Util.getDomain());
-        String hostname = String.format("services.%s", Util.getDomain());
-        pubkey = Tools.getPubkey(hostname);
+        baseUrl = String.format("%s/proxy", config.domain);
+        pubkey = Tools.getPubkey(config.domain);
 
         assets = new ArrayList<>();
         _Asset asset1 = new _Asset();

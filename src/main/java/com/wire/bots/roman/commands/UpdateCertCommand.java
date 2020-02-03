@@ -47,13 +47,13 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
                 bootstrap.getClassLoader());
 
         Client client = new JerseyClientBuilder(environment)
-                .using(config.getJerseyClientConfiguration())
+                .using(config.jerseyClient)
                 .withProvider(JacksonJsonProvider.class)
                 .build(getName());
 
         ProviderClient providerClient = new ProviderClient(client);
 
-        DBI jdbi = new DBIFactory().build(environment, config.database, "postgresql");
+        DBI jdbi = new DBIFactory().build(environment, config.dataSourceFactory, "postgresql");
         ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
 
         String hostname = namespace.getString("domain");

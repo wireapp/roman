@@ -2,6 +2,7 @@ package com.wire.bots.roman;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Service;
 import com.wire.bots.roman.model.SignIn;
 import com.wire.bots.sdk.models.AssetKey;
@@ -17,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class ProviderClient {
@@ -24,8 +26,8 @@ public class ProviderClient {
     private final WebTarget providerTarget;
 
     public ProviderClient(Client jerseyClient) {
-
-        providerTarget = jerseyClient.target(Util.getHost())
+        Config config = Application.getInstance().getConfig();
+        providerTarget = jerseyClient.target(config.apiHost)
                 .path("provider");
         servicesTarget = providerTarget
                 .path("services");
@@ -115,9 +117,9 @@ public class ProviderClient {
 
         // Complete
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        os.write(sb.toString().getBytes("utf-8"));
+        os.write(sb.toString().getBytes(StandardCharsets.UTF_8));
         os.write(image);
-        os.write("\r\n--frontier--\r\n".getBytes("utf-8"));
+        os.write("\r\n--frontier--\r\n".getBytes(StandardCharsets.UTF_8));
 
         Response response = providerTarget
                 .path("assets")

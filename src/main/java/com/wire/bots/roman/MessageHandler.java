@@ -11,6 +11,7 @@ import com.wire.bots.sdk.models.ImageMessage;
 import com.wire.bots.sdk.models.TextMessage;
 import com.wire.bots.sdk.server.model.NewBot;
 import com.wire.bots.sdk.server.model.SystemMessage;
+import com.wire.bots.sdk.server.model.User;
 import com.wire.bots.sdk.tools.Logger;
 import org.skife.jdbi.v2.DBI;
 
@@ -116,9 +117,15 @@ public class MessageHandler extends MessageHandlerBase {
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
 
         for (UUID userId : msg.users) {
-            message.userId = userId;
+            try {
+                User user = client.getUser(userId);
 
-            send(message);
+                message.userId = userId;
+                message.handle = user.handle;
+                send(message);
+            } catch (Exception e) {
+                Logger.error("onMemberJoin: %s %s", botId, e);
+            }
         }
     }
 

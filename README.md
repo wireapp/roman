@@ -104,6 +104,17 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 }
 ```
 
+- `new_image`: When an image is posted in a conversation where this bot is present
+
+```
+{
+    "type": "conversation.new_image",
+    "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
+    "token": "...", // Use this token to reply to this message - valid for 20 sec
+    "image": "..."  // Base64 encoded image
+}
+```
 ### Posting back to Wire conversation
 
 If the event contains `token` field this `token` can be used to respond to this event by sending `Outgoing Message` like:

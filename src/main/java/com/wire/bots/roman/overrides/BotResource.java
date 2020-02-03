@@ -9,11 +9,14 @@ import com.wire.bots.sdk.factories.StorageFactory;
 import com.wire.bots.sdk.server.model.NewBot;
 import com.wire.bots.sdk.server.resources.BotsResource;
 import com.wire.bots.sdk.tools.Logger;
+import io.swagger.annotations.Authorization;
 import org.skife.jdbi.v2.DBI;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -24,16 +27,18 @@ public class BotResource extends BotsResource {
     private final DBI jdbi;
 
     public BotResource(MessageHandlerBase handler, StorageFactory storageF, CryptoFactory cryptoF, DBI jdbi) {
-        super(handler, storageF, cryptoF, null);
+        super(handler, storageF, cryptoF);
         this.jdbi = jdbi;
     }
 
     @POST
     @Override
-    public Response newBot(@HeaderParam("Authorization") @NotNull String auth,
+    @Authorization("Bearer")
+    public Response newBot(@Context ContainerRequestContext context,
+                           @HeaderParam("Authorization") @NotNull String auth,
                            @Valid @NotNull NewBot newBot) throws Exception {
 
-        return super.newBot(auth, newBot);
+        return super.newBot(context, auth, newBot);
     }
 
     @Override
@@ -46,11 +51,6 @@ public class BotResource extends BotsResource {
             return false;
         }
         return handler.onNewBot(newBot);
-    }
-
-    @Override
-    protected boolean isValid(String auth) {
-        return true;
     }
 
     private String stripType(String auth) {

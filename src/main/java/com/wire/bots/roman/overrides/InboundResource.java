@@ -5,6 +5,7 @@ import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.server.model.Payload;
 import com.wire.bots.sdk.server.resources.MessageResource;
+import io.swagger.annotations.Authorization;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -20,20 +21,17 @@ import java.util.UUID;
 public class InboundResource extends MessageResource {
 
     public InboundResource(MessageHandlerBase handler, ClientRepo repo) {
-        super(handler, null, repo);
+        super(handler, repo);
     }
 
     @POST
     @Override
+    @Authorization("Bearer")
     public Response newMessage(@HeaderParam("Authorization") @NotNull String auth,
                                @PathParam("bot") UUID botId,
                                @QueryParam("id") UUID messageID,
                                @Valid @NotNull Payload payload) throws IOException {
 
         return super.newMessage(auth, botId, messageID, payload);
-    }
-
-    protected boolean isValid(String auth) {
-        return true;
     }
 }
