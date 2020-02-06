@@ -64,6 +64,7 @@ wss://services.wire.com/proxy/await/`<app_key>`
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who requested this bot
     "handle": "dejan_wire", // username of the user who requested this bot
     "locale": "en_US"       // locale of the user who requested this bot
+    "token": "..."          // Use this token to make outbound requests to the Wire API server
 }
 ```
 
