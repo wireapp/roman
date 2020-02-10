@@ -28,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Base64;
 import java.util.UUID;
@@ -276,9 +277,9 @@ public class ServiceResource {
             if (url == null)
                 return true;
             try {
-                new URL(url);
-                return url.contains(".");
-            } catch (MalformedURLException e) {
+                new URL(url).toURI();
+                return true;
+            } catch (URISyntaxException | MalformedURLException e) {
                 return false;
             }
         }
@@ -300,11 +301,10 @@ public class ServiceResource {
         public boolean isUrlValid() {
             if (url == null)
                 return true;
-
             try {
-                new URL(url);
-                return url.contains(".");
-            } catch (MalformedURLException e) {
+                new URL(url).toURI();
+                return true;
+            } catch (URISyntaxException | MalformedURLException e) {
                 return false;
             }
         }
