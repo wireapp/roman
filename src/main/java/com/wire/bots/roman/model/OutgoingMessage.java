@@ -23,4 +23,5 @@ public class OutgoingMessage {
     public String image;
     public String handle;
     public String locale;
+    public UUID conversationId;
 }

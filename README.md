@@ -78,6 +78,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "type": "conversation.init",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who added this bot into conversation
+    "conversationId": "6e546250-35d2-4e79-a3d7-1dc36962a9cc",  // UUID of the conversation
     "token": "...",                                   // Access token. Store this token so the bot can post back later
     "text": "Bot Example Conversation"                // Conversation name
 }

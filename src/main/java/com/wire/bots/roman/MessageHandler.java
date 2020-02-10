@@ -68,6 +68,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.botId = botId;
         message.userId = msg.from;
         message.type = "conversation.init";
+        message.conversationId = msg.conversation.id;
         message.text = msg.conversation.name;
         message.token = generateToken(botId);
 
