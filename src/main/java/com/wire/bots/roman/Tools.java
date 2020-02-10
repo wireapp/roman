@@ -11,6 +11,8 @@ import java.security.cert.Certificate;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class Tools {
 
@@ -42,7 +44,8 @@ public class Tools {
 
     public static String getPubkey(String hostname) throws IOException {
         String str = null;
-        PublicKey publicKey = getPublicKey(hostname);
+        String raw_hostname = URI.create(hostname).getHost();
+        PublicKey publicKey = getPublicKey(raw_hostname);
         if (publicKey != null)
             str = Base64.getEncoder().encodeToString(publicKey.getEncoded());
         final String start = "-----BEGIN PUBLIC KEY-----";
