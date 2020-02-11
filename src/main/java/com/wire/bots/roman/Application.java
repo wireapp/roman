@@ -71,7 +71,7 @@ public class Application extends Server<Config> {
     @Override
     protected void initialize(Config config, Environment env) {
         this.key = Keys.hmacShaKeyFor(config.key.getBytes());
-        this.jdbi = new DBIFactory().build(environment, config.dataSourceFactory, "roman");
+        this.jdbi = new DBIFactory().build(environment, config.database, "roman");
     }
 
     @Override

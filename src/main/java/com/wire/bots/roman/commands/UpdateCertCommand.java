@@ -53,7 +53,7 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
 
         ProviderClient providerClient = new ProviderClient(client);
 
-        DBI jdbi = new DBIFactory().build(environment, config.dataSourceFactory, "postgresql");
+        DBI jdbi = new DBIFactory().build(environment, config.database, "postgresql");
         ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
 
         String hostname = namespace.getString("domain");
