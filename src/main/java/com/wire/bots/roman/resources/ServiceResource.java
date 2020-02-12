@@ -8,13 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.ImageProcessor;
 import com.wire.bots.roman.ProviderClient;
+import com.wire.bots.roman.filters.ServiceAuthorization;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
 import com.wire.bots.sdk.assets.Picture;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
 import io.dropwizard.validation.ValidationMethod;
-import io.jsonwebtoken.JwtException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -24,6 +24,8 @@ import org.skife.jdbi.v2.DBI;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
@@ -33,8 +35,6 @@ import java.net.URL;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.logging.Level;
-
-import static com.wire.bots.roman.Tools.validateToken;
 
 @Api
 @Path("/service")
@@ -51,21 +51,13 @@ public class ServiceResource {
 
     @POST
     @ApiOperation(value = "Create new Service", response = _Result.class)
+    @ServiceAuthorization
     public Response create(@ApiParam(hidden = true) @CookieParam("zroman") String token,
+                           @Context ContainerRequestContext context,
                            @ApiParam @Valid _NewService payload) {
         try {
-            if (token == null) {
-                Response.
-                        ok(new ErrorMessage("Not Authenticated")).
-                        status(403).
-                        build();
-            }
+            UUID providerId = (UUID) context.getProperty("providerid");
 
-            String subject = validateToken(token);
-
-            Logger.debug("ServiceResource.create: provider: %s", subject);
-
-            UUID providerId = UUID.fromString(subject);
             Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
 
             Logger.debug("ServiceResource.create: provider: %s, %s", provider.id, provider.email);
@@ -139,12 +131,6 @@ public class ServiceResource {
                     ok(result).
                     status(update.getStatus()).
                     build();
-        } catch (JwtException e) {
-            Logger.warning("ServiceResource.create %s", e);
-            return Response.
-                    ok(new ErrorMessage("Invalid Authorization token")).
-                    status(401).
-                    build();
         } catch (Exception e) {
             e.printStackTrace();
             Logger.error("ServiceResource.create: %s", e);
@@ -157,23 +143,14 @@ public class ServiceResource {
 
     @PUT
     @ApiOperation(value = "Update Service", response = _Result.class)
-    public Response update(@ApiParam(hidden = true) @CookieParam("zroman") String token,
+    @ServiceAuthorization
+    public Response update(@Context ContainerRequestContext context,
+                           @ApiParam(hidden = true) @CookieParam("zroman") String token,
                            @ApiParam @Valid _UpdateService payload) {
         try {
             ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
 
-            if (token == null) {
-                Response.
-                        ok(new ErrorMessage("Not Authenticated")).
-                        status(403).
-                        build();
-            }
-
-            String subject = validateToken(token);
-
-            Logger.debug("ServiceResource.update: provider: %s", subject);
-
-            UUID providerId = UUID.fromString(subject);
+            UUID providerId = (UUID) context.getProperty("providerid");
 
             Provider provider = providersDAO.get(providerId);
             if (provider.serviceId == null) {
@@ -196,12 +173,6 @@ public class ServiceResource {
             return Response.
                     ok(result).
                     build();
-        } catch (JwtException e) {
-            Logger.warning("ServiceResource.update %s", e);
-            return Response.
-                    ok(new ErrorMessage("Invalid Authorization token")).
-                    status(401).
-                    build();
         } catch (Exception e) {
             e.printStackTrace();
             Logger.error("ServiceResource.update: %s", e);
@@ -214,20 +185,14 @@ public class ServiceResource {
 
     @GET
     @ApiOperation(value = "Get the Service", response = _Result.class)
-    public Response get(@ApiParam(hidden = true) @CookieParam("zroman") String token) {
+    @ServiceAuthorization
+    public Response get(@ApiParam(hidden = true) @CookieParam("zroman") String token,
+                        @Context ContainerRequestContext context) {
         try {
-            if (token == null) {
-                Response.
-                        ok(new ErrorMessage("Not Authenticated")).
-                        status(403).
-                        build();
-            }
+            UUID providerId = (UUID) context.getProperty("providerid");
 
-            String subject = validateToken(token);
+            Logger.debug("ServiceResource.get: provider: %s", providerId);
 
-            Logger.debug("ServiceResource.get: provider: %s", subject);
-
-            UUID providerId = UUID.fromString(subject);
             Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
 
             _Result result = new _Result();
@@ -241,12 +206,6 @@ public class ServiceResource {
 
             return Response.
                     ok(result).
-                    build();
-        } catch (JwtException e) {
-            Logger.warning("ServiceResource.get %s", e);
-            return Response.
-                    ok(new ErrorMessage("Invalid Authorization token")).
-                    status(401).
                     build();
         } catch (Exception e) {
             e.printStackTrace();

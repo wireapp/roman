@@ -19,6 +19,7 @@ package com.wire.bots.roman;
 
 import com.wire.bots.roman.commands.UpdateCertCommand;
 import com.wire.bots.roman.filters.ProxyAuthenticationFilter;
+import com.wire.bots.roman.filters.ServiceAuthenticationFilter;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.resources.*;
 import com.wire.bots.sdk.MessageHandlerBase;
@@ -70,6 +71,7 @@ public class Application extends Server<Config> {
     protected void registerFeatures() {
         super.registerFeatures();
         environment.jersey().register(ProxyAuthenticationFilter.ProxyAuthenticationFeature.class);
+        environment.jersey().register(ServiceAuthenticationFilter.ServiceAuthenticationFeature.class);
     }
 
     @Override
