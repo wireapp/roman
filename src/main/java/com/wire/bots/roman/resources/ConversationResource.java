@@ -1,29 +1,27 @@
 package com.wire.bots.roman.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.assets.Picture;
 import com.wire.bots.sdk.exceptions.MissingStateException;
+import com.wire.bots.sdk.server.model.Conversation;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
-import io.jsonwebtoken.JwtException;
 import io.swagger.annotations.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.logging.Level;
-
-import static com.wire.bots.roman.Tools.validateToken;
 
 @Api
 @Path("/conversation")
@@ -36,30 +34,52 @@ public class ConversationResource {
     }
 
     @POST
-    @ApiOperation(value = "Post message on Wire", authorizations = {@Authorization(value = "Bearer")})
+    @ApiOperation(value = "Post message on Wire", authorizations = {@Authorization("Bearer")})
     @ApiResponses(value = {
             @ApiResponse(code = 403, message = "Not authenticated"),
             @ApiResponse(code = 409, message = "Unknown bot. This bot might be deleted by the user")
     })
-    public Response post(@ApiParam @NotNull @HeaderParam("Authorization") String token,
+    @ProxyAuthorization
+    public Response post(@Context ContainerRequestContext context,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
             trace(message);
 
-            String subject = validateToken(token);
-            UUID botId = UUID.fromString(subject);
-
-            Logger.info("ConversationResource: `%s` bot: %s", message.type, botId);
+            UUID botId = (UUID) context.getProperty("botid");
 
             return send(message, botId);
-        } catch (JwtException e) {
-            Logger.warning("ConversationResource %s", e);
-            return Response.
-                    ok(new ErrorMessage("Invalid Authorization token")).
-                    status(403).
-                    build();
         } catch (Exception e) {
-            Logger.error("ConversationResource: %s", e);
+            Logger.error("ConversationResource.post: %s", e);
+            e.printStackTrace();
+            return Response
+                    .ok(new ErrorMessage(e.getMessage()))
+                    .status(500)
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("/{convId}")
+    @ApiOperation(value = "Get conversation data", authorizations = {@Authorization("Bearer")})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, response = Conversation.class, message = "Conversation"),
+            @ApiResponse(code = 403, message = "Not authenticated"),
+            @ApiResponse(code = 409, message = "Unknown bot. This bot might be deleted by the user")
+    })
+    @ProxyAuthorization
+    public Response get(@Context ContainerRequestContext context,
+                        @ApiParam @PathParam("convId") UUID convId) {
+        try {
+            UUID botId = (UUID) context.getProperty("botid");
+
+            try (WireClient client = repo.getClient(botId)) {
+                final Conversation conversation = client.getConversation();
+                return Response
+                        .ok(conversation)
+                        .build();
+            }
+        } catch (Exception e) {
+            Logger.error("ConversationResource.get: %s", e);
             e.printStackTrace();
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
