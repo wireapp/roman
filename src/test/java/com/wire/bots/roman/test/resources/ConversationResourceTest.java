@@ -60,7 +60,6 @@ public class ConversationResourceTest {
     public void testGetConversation() {
         final Conversation response = resources
                 .target("conversation")
-                .path(CONV_ID.toString())
                 .request()
                 .get(Conversation.class);
 

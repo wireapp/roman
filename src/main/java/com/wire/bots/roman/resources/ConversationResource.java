@@ -14,7 +14,10 @@ import io.swagger.annotations.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -59,7 +62,6 @@ public class ConversationResource {
     }
 
     @GET
-    @Path("/{convId}")
     @ApiOperation(value = "Get conversation data", authorizations = {@Authorization("Bearer")})
     @ApiResponses(value = {
             @ApiResponse(code = 200, response = Conversation.class, message = "Conversation"),
@@ -67,17 +69,11 @@ public class ConversationResource {
             @ApiResponse(code = 409, message = "Unknown bot. This bot might be deleted by the user")
     })
     @ProxyAuthorization
-    public Response get(@Context ContainerRequestContext context,
-                        @ApiParam @PathParam("convId") UUID convId) {
-        try {
-            UUID botId = (UUID) context.getProperty("botid");
-
-            try (WireClient client = repo.getClient(botId)) {
-                final Conversation conversation = client.getConversation();
-                return Response
-                        .ok(conversation)
-                        .build();
-            }
+    public Response get(@Context ContainerRequestContext context) {
+        try (WireClient client = repo.getClient((UUID) context.getProperty("botid"))) {
+            return Response
+                    .ok(client.getConversation())
+                    .build();
         } catch (Exception e) {
             Logger.error("ConversationResource.get: %s", e);
             e.printStackTrace();
