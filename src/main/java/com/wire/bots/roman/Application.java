@@ -18,11 +18,11 @@
 package com.wire.bots.roman;
 
 import com.wire.bots.roman.commands.UpdateCertCommand;
+import com.wire.bots.roman.filters.BackendAuthenticationFilter;
+import com.wire.bots.roman.filters.ProxyAuthenticationFilter;
+import com.wire.bots.roman.filters.ServiceAuthenticationFilter;
 import com.wire.bots.roman.model.Config;
-import com.wire.bots.roman.resources.BroadcastResource;
-import com.wire.bots.roman.resources.ConversationResource;
-import com.wire.bots.roman.resources.ProviderResource;
-import com.wire.bots.roman.resources.ServiceResource;
+import com.wire.bots.roman.resources.*;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
 import io.dropwizard.jdbi.DBIFactory;
@@ -48,6 +48,10 @@ public class Application extends Server<Config> {
         return instance.key;
     }
 
+    public static Application getInstance() {
+        return instance;
+    }
+
     @Override
     public void initialize(Bootstrap<Config> bootstrap) {
         super.initialize(bootstrap);
@@ -64,8 +68,11 @@ public class Application extends Server<Config> {
         return new MessageHandler(jdbi, getClient());
     }
 
-    public static Application getInstance() {
-        return instance;
+    @Override
+    protected void registerFeatures() {
+        environment.jersey().register(ProxyAuthenticationFilter.ProxyAuthenticationFeature.class);
+        environment.jersey().register(ServiceAuthenticationFilter.ServiceAuthenticationFeature.class);
+        environment.jersey().register(BackendAuthenticationFilter.BackendAuthenticationFeature.class);
     }
 
     @Override
@@ -81,6 +88,7 @@ public class Application extends Server<Config> {
         addResource(new ProviderResource(jdbi, providerClient));
         addResource(new ServiceResource(jdbi, providerClient));
         addResource(new ConversationResource(getRepo()));
+        addResource(new UsersResource(getRepo()));
         addResource(new BroadcastResource(jdbi, getRepo()));
     }
 }

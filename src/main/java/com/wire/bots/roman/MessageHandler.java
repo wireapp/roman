@@ -40,13 +40,8 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public boolean onNewBot(NewBot newBot, String auth) {
-        auth = auth.replace("Bearer", "").trim();
-        Provider provider = jdbi.onDemand(ProvidersDAO.class).getByAuth(auth);
-        int insert = jdbi.onDemand(BotsDAO.class).insert(newBot.id, provider.id);
-        if (insert == 0) {
-            Logger.error("Failed to insert ProviderID into Bots table");
-            return false;
-        }
+        Provider provider = getProvider(auth);
+        jdbi.onDemand(BotsDAO.class).insert(newBot.id, provider.id);
 
         UUID botId = newBot.id;
         OutgoingMessage message = new OutgoingMessage();
@@ -63,6 +58,9 @@ public class MessageHandler extends MessageHandlerBase {
     @Override
     public void onNewConversation(WireClient client, SystemMessage msg) {
         UUID botId = client.getId();
+
+        validate(botId);
+
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.userId = msg.from;
@@ -75,9 +73,19 @@ public class MessageHandler extends MessageHandlerBase {
             Logger.warning("onNewConversation: failed to deliver message to: bot: %s", botId);
     }
 
+    private UUID validate(UUID botId) {
+        UUID providerId = jdbi.onDemand(BotsDAO.class).getProviderId(botId);
+        if (providerId == null)
+            throw new RuntimeException("Unknown botId: " + botId.toString());
+        return providerId;
+    }
+
     @Override
     public void onText(WireClient client, TextMessage msg) {
         UUID botId = client.getId();
+
+        validate(botId);
+
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.userId = msg.getUserId();
@@ -93,6 +101,8 @@ public class MessageHandler extends MessageHandlerBase {
     @Override
     public void onImage(WireClient client, ImageMessage msg) {
         UUID botId = client.getId();
+
+        validate(botId);
 
         try {
             byte[] img = client.downloadAsset(msg.getAssetKey(),
@@ -119,6 +129,9 @@ public class MessageHandler extends MessageHandlerBase {
     @Override
     public void onMemberJoin(WireClient client, SystemMessage msg) {
         UUID botId = client.getId();
+
+        validate(botId);
+
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.type = "conversation.user_joined";
@@ -139,6 +152,8 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onBotRemoved(UUID botId, SystemMessage msg) {
+        validate(botId);
+
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.type = "conversation.bot_removed";
@@ -194,5 +209,12 @@ public class MessageHandler extends MessageHandlerBase {
         } catch (Exception ignore) {
 
         }
+    }
+
+    private Provider getProvider(String auth) {
+        final Provider provider = jdbi.onDemand(ProvidersDAO.class).getByAuth(auth);
+        if (provider == null)
+            throw new RuntimeException("Unknown auth");
+        return provider;
     }
 }

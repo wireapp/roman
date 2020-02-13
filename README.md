@@ -122,11 +122,11 @@ If the event contains `token` field this `token` can be used to respond to this 
 Example:
 ```
 POST https://services.wire.com/proxy/conversation -d '{"type": "text", "text": "Hello!"}' \
--H'Authorization:eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
+-H'Authorization:Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
 ```
 
 In order to post text or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
-You must also specify the HTTP header as `Authorization: <token>` where `token` was obtained in `init` or other events
+You must also specify the HTTP header as `Authorization:Bearer <token>` where `token` was obtained in `init` or other events
  like: `new_text` or `new_image`.
 
 _Outgoing Message_ can be of 2 types:
