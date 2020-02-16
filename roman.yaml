@@ -31,7 +31,7 @@ database:
   url: ${DB_URL:-jdbc:postgresql://localhost/roman}
   user: ${DB_USER:-}
   password: ${DB_PASSWORD:-}
-  baseline: ${DB_BASELINE:-}
+  baseline: ${DB_BASELINE:-true}
 
 key: ${APP_KEY:-}
 domain: ${DOMAIN:-https://services.wire.com}

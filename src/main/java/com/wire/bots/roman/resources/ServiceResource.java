@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.ImageProcessor;
 import com.wire.bots.roman.ProviderClient;
+import com.wire.bots.roman.Tools;
 import com.wire.bots.roman.filters.ServiceAuthorization;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
@@ -29,17 +30,19 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.UUID;
-import java.util.logging.Level;
 
 @Api
 @Path("/service")
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceResource {
+    private static final String PROFILE_KEY = "3-1-c9262f6f-892f-40d5-9349-fbeb62c8aba4";
 
     private final ProviderClient providerClient;
     private final DBI jdbi;
@@ -75,7 +78,7 @@ public class ServiceResource {
 
             NewCookie cookie = login.getCookies().get("zprovider");
 
-            Service service = new Service();
+            Service service = newService();
             service.name = payload.name;
 
             if (payload.avatar != null) {
@@ -97,11 +100,6 @@ public class ServiceResource {
 
             service = create.readEntity(Service.class);
 
-            if (Logger.getLevel() == Level.FINE) {
-                ObjectMapper mapper = new ObjectMapper();
-                Logger.debug("ServiceResource.create: service: `%s`", mapper.writeValueAsString(service));
-            }
-
             Response update = providerClient.enableService(cookie, service.id, provider.password);
 
             if (update.getStatus() >= 400) {
@@ -111,12 +109,8 @@ public class ServiceResource {
                         build();
             }
 
-            int u = jdbi.onDemand(ProvidersDAO.class)
+            jdbi.onDemand(ProvidersDAO.class)
                     .update(providerId, payload.url, service.auth, service.id, payload.name);
-
-            if (u == 0) {
-                Logger.warning("Failed to update Providers table with Service details");
-            }
 
             _Result result = new _Result();
             result.auth = service.auth;
@@ -198,7 +192,7 @@ public class ServiceResource {
             _Result result = new _Result();
             result.key = token;
             result.auth = provider.serviceAuth;
-            result.code = provider.serviceId != null ? String.format("%s:%s", provider.id, provider.serviceId) : null;
+            result.code = String.format("%s:%s", provider.id, provider.serviceId);
             result.url = provider.serviceUrl;
             result.email = provider.email;
             result.company = provider.name;
@@ -215,6 +209,27 @@ public class ServiceResource {
                     .status(500)
                     .build();
         }
+    }
+
+    private Service newService() throws IOException {
+        final String domain = Application.getInstance().getConfig().domain;
+
+        Service ret = new Service();
+        ret.baseUrl = String.format("%s/proxy", domain);
+        ret.pubkey = Tools.getPubkey(domain);
+
+        ret.assets = new ArrayList<>();
+        Service._Asset asset1 = new Service._Asset();
+        asset1.key = PROFILE_KEY;
+        asset1.size = "complete";
+        ret.assets.add(asset1);
+
+        Service._Asset asset2 = new Service._Asset();
+        asset2.key = PROFILE_KEY;
+        asset2.size = "preview";
+        ret.assets.add(asset2);
+
+        return ret;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

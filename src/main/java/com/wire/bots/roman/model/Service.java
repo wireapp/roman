@@ -3,62 +3,36 @@ package com.wire.bots.roman.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.wire.bots.roman.Application;
-import com.wire.bots.roman.Tools;
 
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Service {
-
-    private static final String PROFILE_KEY = "3-1-c9262f6f-892f-40d5-9349-fbeb62c8aba4";
-    @JsonProperty("auth_token")
-    public String auth;
-
     public UUID id;
 
     @NotNull
     public String name;
 
+    @JsonProperty("auth_token")
+    public String auth;
+
     @NotNull
     @JsonProperty("base_url")
     public String baseUrl;
 
-    public String description;
+    public String description = "Powered by Roman";
 
-    public String summary;
+    public String summary = "Summary";
 
     @JsonProperty("public_key")
     public String pubkey;
     @JsonProperty
     public ArrayList<_Asset> assets;
 
-    public String[] tags;
-
-    public Service() throws IOException {
-        Config config = Application.getInstance().getConfig();
-
-        summary = "Summary";
-        description = "Description";
-        tags = new String[]{"tutorial"};
-        baseUrl = String.format("%s/proxy", config.domain);
-        pubkey = Tools.getPubkey(config.domain);
-
-        assets = new ArrayList<>();
-        _Asset asset1 = new _Asset();
-        asset1.key = PROFILE_KEY;
-        asset1.size = "complete";
-        assets.add(asset1);
-
-        _Asset asset2 = new _Asset();
-        asset2.key = PROFILE_KEY;
-        asset2.size = "preview";
-        assets.add(asset2);
-    }
+    public String[] tags = new String[]{"tutorial"};
 
     public static class _Asset {
         @JsonProperty
