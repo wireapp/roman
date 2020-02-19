@@ -1,9 +1,8 @@
-package com.wire.bots.roman.test.resources;
+package com.wire.bots.roman.resources;
 
 import com.wire.bots.cryptobox.CryptoException;
-import com.wire.bots.roman.resources.UsersResource;
-import com.wire.bots.roman.test.resources.dummies.AuthenticationFeatureDummy;
-import com.wire.bots.roman.test.resources.dummies.WireClientDummy;
+import com.wire.bots.roman.resources.dummies.AuthenticationFeatureDummy;
+import com.wire.bots.roman.resources.dummies.WireClientDummy;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.server.model.User;
 import io.dropwizard.testing.junit.ResourceTestRule;
@@ -14,8 +13,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static com.wire.bots.roman.test.resources.dummies.Const.BOT_ID;
-import static com.wire.bots.roman.test.resources.dummies.Const.USER_ID;
+import static com.wire.bots.roman.resources.dummies.Const.BOT_ID;
+import static com.wire.bots.roman.resources.dummies.Const.USER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 

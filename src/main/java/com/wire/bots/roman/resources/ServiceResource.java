@@ -67,7 +67,7 @@ public class ServiceResource {
 
             Response login = providerClient.login(provider.email, provider.password);
 
-            Logger.debug("ServiceResource.create: login status %d", login.getStatus());
+            Logger.debug("ServiceResource.create: login status: %d", login.getStatus());
 
             if (login.getStatus() >= 400) {
                 return Response.
@@ -91,6 +91,8 @@ public class ServiceResource {
 
             Response create = providerClient.createService(cookie, service);
 
+            Logger.debug("ServiceResource.create: create service status: %d", create.getStatus());
+
             if (create.getStatus() >= 400) {
                 return Response.
                         ok(create.readEntity(String.class)).
@@ -101,6 +103,8 @@ public class ServiceResource {
             service = create.readEntity(Service.class);
 
             Response update = providerClient.enableService(cookie, service.id, provider.password);
+
+            Logger.debug("ServiceResource.create: enable service status: %d", update.getStatus());
 
             if (update.getStatus() >= 400) {
                 return Response.

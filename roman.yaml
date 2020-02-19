@@ -25,6 +25,12 @@ jerseyClient:
   keepAlive: 0ms
   retries: 3
   userAgent: roman
+  tls:
+    protocol: TLSv1.2
+    provider: SunJSSE
+    supportedProtocols:
+      - TLSv1.1
+      - TLSv1.2
 
 database:
   driverClass: org.postgresql.Driver

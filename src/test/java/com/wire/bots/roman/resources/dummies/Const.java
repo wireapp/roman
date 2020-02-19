@@ -1,4 +1,4 @@
-package com.wire.bots.roman.test.resources.dummies;
+package com.wire.bots.roman.resources.dummies;
 
 import java.util.UUID;
 

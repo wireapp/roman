@@ -34,11 +34,11 @@ import javax.ws.rs.core.Response;
 public class ProviderResource {
 
     private final ProviderClient providerClient;
-    private final DBI jdbi;
+    private final ProvidersDAO providersDAO;
 
     public ProviderResource(DBI jdbi, ProviderClient providerClient) {
         this.providerClient = providerClient;
-        this.jdbi = jdbi;
+        providersDAO = jdbi.onDemand(ProvidersDAO.class);
     }
 
     @POST
@@ -63,15 +63,7 @@ public class ProviderResource {
             Provider provider = register.readEntity(Provider.class);
 
             String hash = SCryptUtil.scrypt(payload.password, 16384, 8, 1);
-            int insert = jdbi.onDemand(ProvidersDAO.class)
-                    .insert(name, provider.id, email, hash, provider.password);
-
-            if (insert == 0) {
-                return Response.
-                        ok(new ErrorMessage("Failed to update local db")).
-                        status(500).
-                        build();
-            }
+            providersDAO.insert(name, provider.id, email, hash, provider.password);
 
             return Response.
                     ok(new ErrorMessage("Email was sent to: " + payload.email)).
@@ -91,7 +83,7 @@ public class ProviderResource {
     @ApiOperation(value = "Login as Wire Bot Developer")
     public Response login(@ApiParam @Valid SignIn payload) {
         try {
-            Provider provider = jdbi.onDemand(ProvidersDAO.class).get(payload.email);
+            Provider provider = providersDAO.get(payload.email);
             if (provider == null || !SCryptUtil.check(payload.password, provider.hash)) {
                 return Response
                         .ok(new ErrorMessage("Wrong email or password"))

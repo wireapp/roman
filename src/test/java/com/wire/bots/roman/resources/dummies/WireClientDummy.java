@@ -1,4 +1,4 @@
-package com.wire.bots.roman.test.resources.dummies;
+package com.wire.bots.roman.resources.dummies;
 
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.WireClientBase;
@@ -16,9 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
-
-import static com.wire.bots.roman.test.resources.dummies.Const.CONV_ID;
-import static com.wire.bots.roman.test.resources.dummies.Const.USER_ID;
 
 public class WireClientDummy extends WireClientBase implements WireClient {
     public WireClientDummy() {
@@ -132,7 +129,7 @@ public class WireClientDummy extends WireClientBase implements WireClient {
 
     @Override
     public Collection<User> getUsers(Collection<UUID> userIds) throws HttpException {
-        return Collections.singleton(getUser(USER_ID));
+        return Collections.singleton(getUser(Const.USER_ID));
     }
 
     @Override
@@ -145,7 +142,7 @@ public class WireClientDummy extends WireClientBase implements WireClient {
     @Override
     public Conversation getConversation() throws IOException {
         Conversation conversation = new Conversation();
-        conversation.id = CONV_ID;
+        conversation.id = Const.CONV_ID;
         return conversation;
     }
 
