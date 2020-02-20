@@ -7,6 +7,7 @@ import com.wire.bots.roman.model.OutgoingMessage;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
+import com.wire.bots.sdk.assets.DeliveryReceipt;
 import com.wire.bots.sdk.models.ImageMessage;
 import com.wire.bots.sdk.models.TextMessage;
 import com.wire.bots.sdk.server.model.NewBot;
@@ -93,9 +94,11 @@ public class MessageHandler extends MessageHandlerBase {
         message.text = msg.getText();
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
 
-        boolean send = send(message);
-        if (!send)
-            Logger.warning("onText: failed to deliver message to: bot: %s", botId);
+        if (send(message)) {
+            sendDeliveryReceipt(client, msg.getMessageId());
+        } else {
+            Logger.warning("onText: failed to deliver message to bot: %s", botId);
+        }
     }
 
     @Override
@@ -117,10 +120,11 @@ public class MessageHandler extends MessageHandlerBase {
             message.image = Base64.getEncoder().encodeToString(img);
             message.token = generateToken(botId);
 
-            boolean send = send(message);
-            if (!send)
-                Logger.warning("onImage: failed to deliver message to: bot: %s", botId);
-
+            if (send(message)) {
+                sendDeliveryReceipt(client, msg.getMessageId());
+            } else {
+                Logger.warning("onImage: failed to deliver message to bot: %s", botId);
+            }
         } catch (Exception e) {
             Logger.error("onImage: %s %s", botId, e);
         }
@@ -197,6 +201,16 @@ public class MessageHandler extends MessageHandlerBase {
         } catch (IOException | EncodeException e) {
             Logger.error("MessageHandler.send: bot: %s, provider: %s,  error %s", message.botId, providerId, e);
             return false;
+        }
+    }
+
+    private void sendDeliveryReceipt(WireClient client, UUID messageId) {
+        try {
+            client.send(new DeliveryReceipt(messageId));
+        } catch (Exception e) {
+            Logger.error("sendDeliveryReceipt: failed to deliver the receipt for message: %s, bot: %s",
+                    messageId,
+                    client.getId());
         }
     }
 
