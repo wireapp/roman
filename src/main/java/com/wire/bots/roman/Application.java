@@ -90,5 +90,11 @@ public class Application extends Server<Config> {
         addResource(new ConversationResource(getRepo()));
         addResource(new UsersResource(getRepo()));
         addResource(new BroadcastResource(jdbi, getRepo()));
+        addResource(new MessagesResource());
+    }
+
+    @Override
+    public DBI getJdbi() {
+        return jdbi;
     }
 }
