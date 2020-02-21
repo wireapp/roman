@@ -18,7 +18,8 @@ COPY --from=build-env /app/target/roman.jar /opt/roman/
 COPY roman.yaml         /etc/roman/
 
 WORKDIR /opt/roman
+ENV LD_LIBRARY_PATH=/opt/wire/lib
 
-EXPOSE  8080 8081
+EXPOSE  8080 8081 8082
 
-ENTRYPOINT ["java", "-jar", "roman.jar", "server", "/etc/roman/roman.yaml"]
+ENTRYPOINT ["java", "-javaagent:$(LD_LIBRARY_PATH)/jmx_prometheus_javaagent.jar=8082:$(LD_LIBRARY_PATH)/metrics.yaml", -jar", "roman.jar", "server", "/etc/roman/roman.yaml"]

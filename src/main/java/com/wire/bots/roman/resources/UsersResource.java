@@ -1,5 +1,6 @@
 package com.wire.bots.roman.resources;
 
+import com.codahale.metrics.annotation.Metered;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
@@ -34,10 +35,11 @@ public class UsersResource {
     @ApiResponses(value = {
             @ApiResponse(code = 200, response = User.class, message = "User"),
             @ApiResponse(code = 403, message = "Not authenticated"),
-            @ApiResponse(code = 409, message = "Unknown bot. This bot might be deleted by the user")
+            @ApiResponse(code = 409, message = "Unknown bot. This bot might have been deleted by the user")
     })
     @ProxyAuthorization
-    public Response post(@Context ContainerRequestContext context,
+    @Metered
+    public Response get(@Context ContainerRequestContext context,
                          @ApiParam @PathParam("userId") UUID userId) {
         try {
             UUID botId = (UUID) context.getProperty("botid");

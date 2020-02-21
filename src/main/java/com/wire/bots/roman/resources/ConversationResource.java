@@ -1,5 +1,6 @@
 package com.wire.bots.roman.resources;
 
+import com.codahale.metrics.annotation.Metered;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
@@ -43,6 +44,7 @@ public class ConversationResource {
             @ApiResponse(code = 409, message = "Unknown bot. This bot might be deleted by the user")
     })
     @ProxyAuthorization
+    @Metered
     public Response post(@Context ContainerRequestContext context,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
@@ -69,6 +71,7 @@ public class ConversationResource {
             @ApiResponse(code = 409, message = "Unknown bot. This bot might be deleted by the user")
     })
     @ProxyAuthorization
+    @Metered
     public Response get(@Context ContainerRequestContext context) {
         try (WireClient client = repo.getClient((UUID) context.getProperty("botid"))) {
             return Response

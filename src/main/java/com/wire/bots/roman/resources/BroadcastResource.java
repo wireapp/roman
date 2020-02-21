@@ -1,5 +1,6 @@
 package com.wire.bots.roman.resources;
 
+import com.codahale.metrics.annotation.Metered;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
@@ -48,6 +49,7 @@ public class BroadcastResource {
             @ApiResponse(code = 403, message = "Not authenticated"),
             @ApiResponse(code = 404, message = "Unknown access token")
     })
+    @Metered
     public Response post(@ApiParam @NotNull @HeaderParam("access_token") String token,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
