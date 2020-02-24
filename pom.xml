@@ -19,7 +19,7 @@
     </repositories>
 
     <properties>
-        <lithium.version>2.34.5</lithium.version>
+        <lithium.version>2.34.6</lithium.version>
         <dropwizard.version>1.3.12</dropwizard.version>
     </properties>
 

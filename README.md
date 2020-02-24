@@ -143,6 +143,14 @@ _Outgoing Message_ can be of 2 types:
 {
     "type": "image",
     "image": "..." // Base64 encoded image
+}     
+```
+
+- **Poll message**
+```
+{
+    "type": "poll",
+    "poll": { "body": "...", "buttons": ["choice 1", "choice 2"]}
 }
 ```
 Full description: https://services.wire.com/proxy/swagger#!/default/post
