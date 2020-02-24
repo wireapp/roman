@@ -64,14 +64,14 @@ public class IncomingBackendMessageTest {
         // Create some fake provider and service
         ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
         providersDAO.insert("Test Provider", providerId, email, "hash", "password");
-        providersDAO.update(providerId, "http://localhost:8080/proxy/messages", serviceAuth, UUID.randomUUID(), "Test Service");
+        providersDAO.update(providerId, "http://localhost:8080/messages", serviceAuth, UUID.randomUUID(), "Test Service");
 
-        // Test Bot added into conv. BE calls POST /proxy/bots with NewBot object
+        // Test Bot added into conv. BE calls POST /bots with NewBot object
         NewBotResponseModel newBotResponseModel = newBot(botId, userId, convId);
         assertThat(newBotResponseModel.lastPreKey).isNotNull();
         assertThat(newBotResponseModel.preKeys).isNotNull();
 
-        // Test new Text message is sent to Roman by the BE. BE calls POST /proxy/bots/{botId}/messages with Payload obj
+        // Test new Text message is sent to Roman by the BE. BE calls POST /bots/{botId}/messages with Payload obj
         Response res = newTextMessageFromBackend(botId, userId, messageId, newBotResponseModel);
         assertThat(res.getStatus()).isEqualTo(200);
     }
@@ -94,7 +94,6 @@ public class IncomingBackendMessageTest {
 
         Response res = client
                 .target("http://localhost:" + SUPPORT.getLocalPort())
-                .path("proxy")
                 .path("bots")
                 .request()
                 .header("Authorization", "Bearer " + serviceAuth)
@@ -126,7 +125,6 @@ public class IncomingBackendMessageTest {
 
         return client
                 .target("http://localhost:" + SUPPORT.getLocalPort())
-                .path("proxy")
                 .path("bots")
                 .path(botId.toString())
                 .path("messages")

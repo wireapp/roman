@@ -219,7 +219,7 @@ public class ServiceResource {
         final String domain = Application.getInstance().getConfig().domain;
 
         Service ret = new Service();
-        ret.baseUrl = String.format("%s/proxy", domain);
+        ret.baseUrl = domain;
         ret.pubkey = Tools.getPubkey(domain);
 
         ret.assets = new ArrayList<>();

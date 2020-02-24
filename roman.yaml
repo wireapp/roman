@@ -1,5 +1,4 @@
 server:
-  rootPath: /proxy/*
   requestLog:
     appenders:
       - type: console
@@ -13,7 +12,6 @@ logging:
 
 swagger:
   resourcePackage: com.wire.bots.roman.resources
-  uriPrefix: /proxy
   schemes:
     - http
     - https

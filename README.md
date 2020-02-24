@@ -2,16 +2,16 @@
 Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API
 
 ### API documentation:
-https://services.wire.com/proxy/swagger
+https://proxy.services.wire.com/swagger
 
 ### Register as Wire Bot Developer
- - [register](https://services.wire.com/proxy/swagger#!/default/register)
+ - [register](https://proxy.services.wire.com/swagger#!/default/register)
 
 ### Login
- - [login](https://services.wire.com/proxy/swagger#!/default/login)
+ - [login](https://proxy.services.wire.com/swagger#!/default/login)
 
 ### Create a service
- - [create service](https://services.wire.com/proxy/swagger#!/default/create)
+ - [create service](https://proxy.services.wire.com/swagger#!/default/create)
 
 ```
 {
@@ -51,7 +51,7 @@ Your webhook should always return HTTP code `200` as the result.
 In order to receive events via _Websocket_ connect to:
 
 ```
-wss://services.wire.com/proxy/await/`<app_key>`
+wss://proxy.services.wire.com/await/`<app_key>`
 ```
 
 ### Events that are sent as HTTP `POST` to your endpoint (Webhook or Websocket)
@@ -121,7 +121,7 @@ If the event contains `token` field this `token` can be used to respond to this 
 
 Example:
 ```
-POST https://services.wire.com/proxy/conversation -d '{"type": "text", "text": "Hello!"}' \
+POST https://proxy.services.wire.com/conversation -d '{"type": "text", "text": "Hello!"}' \
 -H'Authorization:Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
 ```
 
@@ -145,7 +145,7 @@ _Outgoing Message_ can be of 2 types:
     "image": "..." // Base64 encoded image
 }
 ```
-Full description: https://services.wire.com/proxy/swagger#!/default/post
+Full description: https://proxy.services.wire.com/swagger#!/default/post
 
 **Note:** `token` that comes with `conversation.init` events is _lifelong_. It should be stored for later usage. `token`
  that comes with other event types has lifespan of 20 seconds.
