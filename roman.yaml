@@ -38,6 +38,6 @@ database:
   baseline: ${DB_BASELINE:-}
 
 key: ${APP_KEY:-}
-domain: ${DOMAIN:-https://services.wire.com}
+domain: ${DOMAIN:-https://proxy.services.wire.com}
 apiHost: ${BACKEND:-https://prod-nginz-https.wire.com}
 

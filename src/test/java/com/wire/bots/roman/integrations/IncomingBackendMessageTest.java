@@ -68,7 +68,7 @@ public class IncomingBackendMessageTest {
         providersDAO.insert("Test Provider", providerId, email, "hash", "password");
         providersDAO.update(providerId, "http://localhost:8080/messages", serviceAuth, UUID.randomUUID(), "Test Service");
 
-        // Test Bot added into conv. BE calls POST /proxy/bots with NewBot object
+        // Test Bot added into conv. BE calls POST /bots with NewBot object
         NewBotResponseModel newBotResponseModel = newBotFromBE(botId, userId, convId);
         assertThat(newBotResponseModel.lastPreKey).isNotNull();
         assertThat(newBotResponseModel.preKeys).isNotNull();
@@ -76,7 +76,7 @@ public class IncomingBackendMessageTest {
         CryptoFile crypto = new CryptoFile("data", botId);
         PreKeys preKeys = new PreKeys(newBotResponseModel.preKeys, USER_CLIENT_DUMMY, userId);
 
-        // Test new Text message is sent to Roman by the BE. BE calls POST /proxy/bots/{botId}/messages with Payload obj
+        // Test new Text message is sent to Roman by the BE. BE calls POST /bots/{botId}/messages with Payload obj
         Recipients encrypt = crypto.encrypt(preKeys, generateTextMessage(messageId, "Hello Bob"));
         String cypher = encrypt.get(userId, USER_CLIENT_DUMMY);
         Response res = newOtrMessageFromBackend(botId, userId, cypher);
@@ -155,7 +155,6 @@ public class IncomingBackendMessageTest {
 
         return client
                 .target("http://localhost:" + SUPPORT.getLocalPort())
-                .path("proxy")
                 .path("conversation")
                 .request()
                 .header("Authorization", "Bearer " + token)
