@@ -4,7 +4,9 @@ import com.waz.model.Messages;
 import com.wire.bots.cryptobox.CryptoException;
 import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.Tools;
 import com.wire.bots.roman.model.Config;
+import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.sdk.crypto.CryptoFile;
 import com.wire.bots.sdk.models.otr.PreKeys;
 import com.wire.bots.sdk.models.otr.Recipients;
@@ -66,17 +68,35 @@ public class IncomingBackendMessageTest {
         providersDAO.insert("Test Provider", providerId, email, "hash", "password");
         providersDAO.update(providerId, "http://localhost:8080/messages", serviceAuth, UUID.randomUUID(), "Test Service");
 
-        // Test Bot added into conv. BE calls POST /bots with NewBot object
-        NewBotResponseModel newBotResponseModel = newBot(botId, userId, convId);
+        // Test Bot added into conv. BE calls POST /proxy/bots with NewBot object
+        NewBotResponseModel newBotResponseModel = newBotFromBE(botId, userId, convId);
         assertThat(newBotResponseModel.lastPreKey).isNotNull();
         assertThat(newBotResponseModel.preKeys).isNotNull();
 
-        // Test new Text message is sent to Roman by the BE. BE calls POST /bots/{botId}/messages with Payload obj
-        Response res = newTextMessageFromBackend(botId, userId, messageId, newBotResponseModel);
+        CryptoFile crypto = new CryptoFile("data", botId);
+        PreKeys preKeys = new PreKeys(newBotResponseModel.preKeys, USER_CLIENT_DUMMY, userId);
+
+        // Test new Text message is sent to Roman by the BE. BE calls POST /proxy/bots/{botId}/messages with Payload obj
+        Recipients encrypt = crypto.encrypt(preKeys, generateTextMessage(messageId, "Hello Bob"));
+        String cypher = encrypt.get(userId, USER_CLIENT_DUMMY);
+        Response res = newOtrMessageFromBackend(botId, userId, cypher);
         assertThat(res.getStatus()).isEqualTo(200);
+
+        ArrayList<String> buttons = new ArrayList<>();
+        buttons.add("First");
+        buttons.add("Second");
+        res = newPollMessageFromBot("This is a poll", buttons, botId);
+
+        // Test new PollAnswer message is sent to Roman by the BE.
+        encrypt = crypto.encrypt(preKeys, generatePollAnswerMessage(UUID.randomUUID(), UUID.randomUUID(), 1));
+        cypher = encrypt.get(userId, USER_CLIENT_DUMMY);
+        res = newOtrMessageFromBackend(botId, userId, cypher);
+        assertThat(res.getStatus()).isEqualTo(200);
+
+        crypto.close();
     }
 
-    private NewBotResponseModel newBot(UUID botId, UUID userId, UUID convId) {
+    private NewBotResponseModel newBotFromBE(UUID botId, UUID userId, UUID convId) {
         NewBot newBot = new NewBot();
         newBot.id = botId;
         newBot.locale = "en";
@@ -104,14 +124,7 @@ public class IncomingBackendMessageTest {
         return res.readEntity(NewBotResponseModel.class);
     }
 
-    private Response newTextMessageFromBackend(UUID botId, UUID userId, UUID messageId, NewBotResponseModel newBot)
-            throws CryptoException {
-        byte[] text = generateTextMessage(messageId, "Hello Bob");
-
-        CryptoFile crypto = new CryptoFile("data", botId);
-        PreKeys preKeys = new PreKeys(newBot.preKeys, USER_CLIENT_DUMMY, userId);
-        Recipients encrypt = crypto.encrypt(preKeys, text);
-
+    private Response newOtrMessageFromBackend(UUID botId, UUID userId, String cypher) {
         Payload payload = new Payload();
         payload.type = "conversation.otr-message-add";
         payload.from = userId;
@@ -119,9 +132,7 @@ public class IncomingBackendMessageTest {
         payload.data = new Payload.Data();
         payload.data.sender = USER_CLIENT_DUMMY;
         payload.data.recipient = BOT_CLIENT_DUMMY;
-        payload.data.text = encrypt.get(userId, USER_CLIENT_DUMMY);
-
-        crypto.close();
+        payload.data.text = cypher;
 
         return client
                 .target("http://localhost:" + SUPPORT.getLocalPort())
@@ -133,12 +144,42 @@ public class IncomingBackendMessageTest {
                 .post(Entity.entity(payload, MediaType.APPLICATION_JSON_TYPE));
     }
 
+    Response newPollMessageFromBot(String body, ArrayList<String> buttons, UUID botId) {
+        String token = Tools.generateToken(botId);
+
+        IncomingMessage message = new IncomingMessage();
+        message.type = "poll";
+        message.poll = new IncomingMessage.Poll();
+        message.poll.body = body;
+        message.poll.buttons = buttons;
+
+        return client
+                .target("http://localhost:" + SUPPORT.getLocalPort())
+                .path("proxy")
+                .path("conversation")
+                .request()
+                .header("Authorization", "Bearer " + token)
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
+    }
+
     private byte[] generateTextMessage(UUID messageId, String content) {
         Messages.Text.Builder text = Messages.Text.newBuilder()
                 .setContent(content);
         return Messages.GenericMessage.newBuilder()
                 .setMessageId(messageId.toString())
                 .setText(text)
+                .build()
+                .toByteArray();
+    }
+
+    private byte[] generatePollAnswerMessage(UUID messageId, UUID pollId, int choice) {
+        Messages.PollAnswer.Builder pollAnswer = Messages.PollAnswer.newBuilder()
+                .setPollId(pollId.toString())
+                .setChoice(choice);
+
+        return Messages.GenericMessage.newBuilder()
+                .setMessageId(messageId.toString())
+                .setPollAnswer(pollAnswer)
                 .build()
                 .toByteArray();
     }

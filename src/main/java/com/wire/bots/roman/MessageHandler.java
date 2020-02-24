@@ -1,6 +1,7 @@
 package com.wire.bots.roman;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.OutgoingMessage;
@@ -65,6 +66,7 @@ public class MessageHandler extends MessageHandlerBase {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.userId = msg.from;
+        message.messageId = msg.id;
         message.type = "conversation.init";
         message.text = msg.conversation.name;
         message.token = generateToken(botId);
@@ -72,13 +74,6 @@ public class MessageHandler extends MessageHandlerBase {
         boolean send = send(message);
         if (!send)
             Logger.warning("onNewConversation: failed to deliver message to: bot: %s", botId);
-    }
-
-    private UUID validate(UUID botId) {
-        UUID providerId = jdbi.onDemand(BotsDAO.class).getProviderId(botId);
-        if (providerId == null)
-            throw new RuntimeException("Unknown botId: " + botId.toString());
-        return providerId;
     }
 
     @Override
@@ -90,6 +85,7 @@ public class MessageHandler extends MessageHandlerBase {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.userId = msg.getUserId();
+        message.messageId = msg.getMessageId();
         message.type = "conversation.new_text";
         message.text = msg.getText();
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
@@ -116,6 +112,7 @@ public class MessageHandler extends MessageHandlerBase {
             OutgoingMessage message = new OutgoingMessage();
             message.botId = botId;
             message.userId = msg.getUserId();
+            message.messageId = msg.getMessageId();
             message.type = "conversation.new_image";
             message.image = Base64.getEncoder().encodeToString(img);
             message.token = generateToken(botId);
@@ -131,9 +128,34 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     @Override
+    public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
+        UUID botId = client.getId();
+        UUID messageId = UUID.fromString(event.getMessageId());
+
+        if (event.hasPollAnswer()) {
+            Messages.PollAnswer pollAnswer = event.getPollAnswer();
+
+            OutgoingMessage message = new OutgoingMessage();
+            message.botId = botId;
+            message.userId = userId;
+            message.messageId = messageId;
+            message.type = "conversation.poll.answer";
+            message.token = generateToken(botId);
+            message.pollAnswer = new OutgoingMessage.PollAnswer();
+            message.pollAnswer.pollId = UUID.fromString(pollAnswer.getPollId());
+            message.pollAnswer.choice = pollAnswer.getChoice();
+
+            if (send(message)) {
+                sendDeliveryReceipt(client, messageId);
+            } else {
+                Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
+            }
+        }
+    }
+
+    @Override
     public void onMemberJoin(WireClient client, SystemMessage msg) {
         UUID botId = client.getId();
-
         validate(botId);
 
         OutgoingMessage message = new OutgoingMessage();
@@ -230,5 +252,12 @@ public class MessageHandler extends MessageHandlerBase {
         if (provider == null)
             throw new RuntimeException("Unknown auth");
         return provider;
+    }
+
+    private UUID validate(UUID botId) {
+        UUID providerId = jdbi.onDemand(BotsDAO.class).getProviderId(botId);
+        if (providerId == null)
+            throw new RuntimeException("Unknown botId: " + botId.toString());
+        return providerId;
     }
 }

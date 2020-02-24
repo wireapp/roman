@@ -7,6 +7,7 @@ import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.assets.Picture;
+import com.wire.bots.sdk.assets.Poll;
 import com.wire.bots.sdk.exceptions.MissingStateException;
 import com.wire.bots.sdk.server.model.Conversation;
 import com.wire.bots.sdk.server.model.ErrorMessage;
@@ -99,6 +100,15 @@ public class ConversationResource {
                     client.sendPicture(picture.getImageData(), picture.getMimeType());
                 }
                 break;
+                case "poll": {
+                    IncomingMessage.Poll poll = message.poll;
+                    StringBuilder sb = new StringBuilder(poll.body);
+                    for (String caption : poll.buttons)
+                        sb.append(String.format("\n[%s](%s)", caption, caption));
+
+                    client.sendText(sb.toString());
+                    client.send(new Poll(poll.body, poll.buttons));
+                }
                 default:
                     return Response.
                             ok(new ErrorMessage("Unknown message type: " + message.type)).

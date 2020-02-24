@@ -14,6 +14,8 @@ public class OutgoingMessage {
     @NotNull
     public UUID userId;
 
+    public UUID messageId;
+
     @NotNull
     public String type;
 
@@ -23,4 +25,10 @@ public class OutgoingMessage {
     public String image;
     public String handle;
     public String locale;
+    public PollAnswer pollAnswer;
+
+    public static class PollAnswer {
+        public UUID pollId;
+        public int choice;
+    }
 }

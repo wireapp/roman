@@ -6,13 +6,12 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
+import java.net.URI;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class Tools {
 
@@ -24,7 +23,7 @@ public class Tools {
                 .getSubject();
     }
 
-    static String generateToken(UUID botId) {
+    public static String generateToken(UUID botId) {
         return Jwts.builder()
                 .setIssuer("https://wire.com")
                 .setSubject(botId.toString())

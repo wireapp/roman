@@ -8,11 +8,12 @@ import io.dropwizard.validation.OneOf;
 import io.dropwizard.validation.ValidationMethod;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IncomingMessage {
     @NotNull
-    @OneOf(value = {"text", "image"})
+    @OneOf(value = {"text", "image", "poll"})
     @JsonProperty
     public String type;
 
@@ -20,6 +21,8 @@ public class IncomingMessage {
     public String text;
     @JsonProperty
     public String image;
+    @JsonProperty
+    public Poll poll;
 
     @JsonIgnore
     @ValidationMethod(message = "`image` is not a Base64 encoded string")
@@ -35,5 +38,10 @@ public class IncomingMessage {
         if (!type.equals("text"))
             return true;
         return text != null && !text.isEmpty();
+    }
+
+    public static class Poll {
+        public String body;
+        public ArrayList<String> buttons;
     }
 }
