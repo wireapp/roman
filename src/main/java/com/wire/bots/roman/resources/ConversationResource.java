@@ -4,8 +4,11 @@ import com.codahale.metrics.annotation.Metered;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
+import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
+import com.wire.bots.sdk.assets.ButtonActionConfirmation;
+import com.wire.bots.sdk.assets.MessageText;
 import com.wire.bots.sdk.assets.Picture;
 import com.wire.bots.sdk.assets.Poll;
 import com.wire.bots.sdk.exceptions.MissingStateException;
@@ -41,8 +44,9 @@ public class ConversationResource {
     @POST
     @ApiOperation(value = "Post message on Wire", authorizations = {@Authorization("Bearer")})
     @ApiResponses(value = {
-            @ApiResponse(code = 403, message = "Not authenticated"),
-            @ApiResponse(code = 409, message = "Unknown bot. This bot might be deleted by the user")
+            @ApiResponse(code = 200, response = PostMessageResult.class, message = "MessageId"),
+            @ApiResponse(code = 403, response = ErrorMessage.class, message = "Not authenticated"),
+            @ApiResponse(code = 409, response = ErrorMessage.class, message = "Unknown bot. This bot might be deleted by the user")
     })
     @ProxyAuthorization
     @Metered
@@ -89,26 +93,55 @@ public class ConversationResource {
     }
 
     private Response send(IncomingMessage message, UUID botId) throws Exception {
+        PostMessageResult result = new PostMessageResult();
+
         try (WireClient client = repo.getClient(botId)) {
             switch (message.type) {
                 case "text": {
-                    client.sendText(message.text);
+                    result.messageId = client.sendText(message.text);
                 }
                 break;
                 case "image": {
                     Picture picture = new Picture(Base64.getDecoder().decode(message.image));
-                    client.sendPicture(picture.getImageData(), picture.getMimeType());
+                    result.messageId = client.sendPicture(picture.getImageData(), picture.getMimeType());
                 }
                 break;
-                case "poll": {
-                    IncomingMessage.Poll poll = message.poll;
-                    StringBuilder sb = new StringBuilder(poll.body);
-                    for (String caption : poll.buttons)
-                        sb.append(String.format("\n[%s](%s)", caption, caption));
+                case "poll.new": {
+                    Poll poll = new Poll();
+                    poll.setMessageId(message.poll.id);
+                    poll.addText(message.poll.body);
 
-                    client.sendText(sb.toString());
-                    client.send(new Poll(poll.body, poll.buttons));
+                    StringBuilder sb = new StringBuilder(message.poll.body);
+                    for (int i = 0; i < message.poll.buttons.size(); i++) {
+                        final String caption = message.poll.buttons.get(i);
+
+                        sb.append(String.format("\n[%s](%s)", caption, i));
+                        poll.addButton("" + i, caption);
+                    }
+
+                    MessageText text = new MessageText(sb.toString())
+                            .setMessageId(message.poll.id);
+
+                    try {
+                        client.send(text);
+                        client.send(poll);
+                    } catch (Exception ignore) {
+
+                    }
+
+                    result.messageId = text.getMessageId();
                 }
+                break;
+                case "poll.action.confirmation": {
+                    ButtonActionConfirmation confirmation = new ButtonActionConfirmation(message.poll.id, message.poll.offset);
+                    try {
+                        client.sendDirectPicture(confirmation, message.poll.userId);
+                    } catch (Exception e) {
+
+                    }
+                    result.messageId = confirmation.getMessageId();
+                }
+                break;
                 default:
                     return Response.
                             ok(new ErrorMessage("Unknown message type: " + message.type)).
@@ -117,7 +150,7 @@ public class ConversationResource {
             }
 
             return Response.
-                    ok().
+                    ok(result).
                     build();
         } catch (MissingStateException e) {
             Logger.info("ConversationResource bot: %s err: %s", botId, e);
@@ -125,14 +158,20 @@ public class ConversationResource {
                     ok(new ErrorMessage("Unknown bot. This bot might be deleted by the user")).
                     status(409).
                     build();
+        } catch (Exception e) {
+            Logger.error("ConversationResource bot: %s err: %s", botId, e);
+            return Response.
+                    ok(new ErrorMessage(e.getMessage())).
+                    status(503).
+                    build();
         }
     }
 
     private void trace(IncomingMessage message) {
         try {
             if (Logger.getLevel() == Level.FINE) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                Logger.debug(objectMapper.writeValueAsString(message));
+                ObjectMapper mapper = new ObjectMapper();
+                Logger.debug(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
             }
         } catch (Exception ignore) {
 

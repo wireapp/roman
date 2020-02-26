@@ -5,6 +5,7 @@ import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.OutgoingMessage;
+import com.wire.bots.roman.model.Poll;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
@@ -91,7 +92,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
 
         if (send(message)) {
-            sendDeliveryReceipt(client, msg.getMessageId());
+            sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
         } else {
             Logger.warning("onText: failed to deliver message to bot: %s", botId);
         }
@@ -118,7 +119,7 @@ public class MessageHandler extends MessageHandlerBase {
             message.token = generateToken(botId);
 
             if (send(message)) {
-                sendDeliveryReceipt(client, msg.getMessageId());
+                sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
             } else {
                 Logger.warning("onImage: failed to deliver message to bot: %s", botId);
             }
@@ -132,22 +133,20 @@ public class MessageHandler extends MessageHandlerBase {
         UUID botId = client.getId();
         UUID messageId = UUID.fromString(event.getMessageId());
 
-        if (event.hasPollAnswer()) {
-            Messages.PollAnswer pollAnswer = event.getPollAnswer();
+        if (event.hasButtonAction()) {
+            Messages.ButtonAction action = event.getButtonAction();
 
             OutgoingMessage message = new OutgoingMessage();
             message.botId = botId;
             message.userId = userId;
             message.messageId = messageId;
-            message.type = "conversation.poll.answer";
+            message.type = "conversation.poll.action";
             message.token = generateToken(botId);
-            message.pollAnswer = new OutgoingMessage.PollAnswer();
-            message.pollAnswer.pollId = UUID.fromString(pollAnswer.getPollId());
-            message.pollAnswer.choice = pollAnswer.getChoice();
+            message.poll = new Poll();
+            message.poll.id = UUID.fromString(action.getReferenceMessageId());
+            message.poll.offset = action.getButtonId();
 
-            if (send(message)) {
-                sendDeliveryReceipt(client, messageId);
-            } else {
+            if (!send(message)) {
                 Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
             }
         }
@@ -226,9 +225,9 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
-    private void sendDeliveryReceipt(WireClient client, UUID messageId) {
+    private void sendDeliveryReceipt(WireClient client, UUID messageId, UUID userId) {
         try {
-            client.send(new DeliveryReceipt(messageId));
+            client.sendDirectPicture(new DeliveryReceipt(messageId), userId);
         } catch (Exception e) {
             Logger.error("sendDeliveryReceipt: failed to deliver the receipt for message: %s, bot: %s",
                     messageId,

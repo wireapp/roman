@@ -88,6 +88,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "type": "conversation.new_text",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // Author of this message
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
     "text": "Hi everybody!",
     "token": "..."                                    // Use this token to reply to this message - valid for 20 sec
 }
@@ -98,21 +99,26 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.new_image",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
     "token": "...", // Use this token to reply to this message - valid for 20 sec
     "image": "..."  // Base64 encoded image
 }
 ```
 
-- `new_image`: When an image is posted in a conversation where this bot is present
+- `conversation.poll.action`: When user clicks on a button from a poll
 
 ```
 {
-    "type": "conversation.new_image",
-    "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
-    "token": "...", // Use this token to reply to this message - valid for 20 sec
-    "image": "..."  // Base64 encoded image
+  "botId" : "5ea53c35-918f-4117-930f-9dffeb997cb6",
+  "userId" : "4675d199-ac0d-483c-b423-1ba026681719",
+  "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
+  "type" : "conversation.poll.action",
+  "token" : "eyJhbGciOiJIUzM4NCJ9.eyJpc3MiOiJodHRwczovL3dpcmUuY29tIiwic3ViIjoiNWVhNTNjMzUtOTE4Zi00MTE3LTkzMGYtOWRmZmViOTk3Y2I2In0.OQxwaGWKt8vUmmeo9H9ZNSGBUeQlMrYK1IpB96EkrEKy3xNlbsVsr1XheUgwgqh_",
+  "pollAnswer" : {
+    "pollId" : "f55d395c-0a9a-406f-a9a3-12c1bb4a3b34",
+    "buttonId" : "1"
+  }
 }
 ```
 ### Posting back to Wire conversation
@@ -129,7 +135,7 @@ In order to post text or an image as a bot into Wire conversation you need to se
 You must also specify the HTTP header as `Authorization:Bearer <token>` where `token` was obtained in `init` or other events
  like: `new_text` or `new_image`.
 
-_Outgoing Message_ can be of 2 types:
+_Outgoing Message_ can be of 3 types:
 - **Text message**
 ```
 {
@@ -146,11 +152,27 @@ _Outgoing Message_ can be of 2 types:
 }     
 ```
 
-- **Poll message**
+- **New Poll message**
 ```
 {
-    "type": "poll",
-    "poll": { "body": "...", "buttons": ["choice 1", "choice 2"]}
+  "type" : "poll.new",
+  "poll" : {
+    "id" : "24166f23-3477-4f2f-a7ca-44863d456fc8",
+    "body" : "This is a poll",
+    "buttons" : [ "First", "Second" ]
+  }
+}
+```   
+
+- **Poll Action Confirmation**
+```
+{
+  "type" : "poll.action.confirmation",
+  "poll" : {
+    "id" : "24166f23-3477-4f2f-a7ca-44863d456fc8",
+    "offset" : "1",
+    "userId" : "2e06e56f-7e99-41e9-b3ba-185669bd52c1"
+  }
 }
 ```
 Full description: https://proxy.services.wire.com/swagger#!/default/post

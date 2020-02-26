@@ -6,7 +6,7 @@ server:
           - type: status-filter-factory
 
 logging:
-  level: ${LOG_LEVEL:-INFO}
+  level: INFO
   loggers:
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 

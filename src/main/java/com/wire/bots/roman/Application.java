@@ -25,6 +25,8 @@ import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.resources.*;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
+import io.dropwizard.bundles.redirect.PathRedirect;
+import io.dropwizard.bundles.redirect.RedirectBundle;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -57,10 +59,9 @@ public class Application extends Server<Config> {
         super.initialize(bootstrap);
         instance = (Application) bootstrap.getApplication();
 
-        WebsocketBundle bundle = new WebsocketBundle(WebSocket.class);
-        bootstrap.addBundle(bundle);
-
+        bootstrap.addBundle(new WebsocketBundle(WebSocket.class));
         bootstrap.addCommand(new UpdateCertCommand());
+        bootstrap.addBundle(new RedirectBundle(new PathRedirect("/", "/swagger#/default")));
     }
 
     @Override

@@ -4,11 +4,9 @@ WORKDIR /app
 
 COPY pom.xml ./
 
-RUN mvn verify --fail-never
-
 COPY . ./
 
-RUN mvn -U -Dmaven.test.skip=true package
+RUN mvn -Dmaven.test.skip=true package
 
 FROM dejankovacevic/bots.runtime:2.10.3
 
