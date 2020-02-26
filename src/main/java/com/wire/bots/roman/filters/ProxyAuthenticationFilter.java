@@ -23,13 +23,13 @@ public class ProxyAuthenticationFilter implements ContainerRequestFilter {
 
         if (auth == null) {
             Exception cause = new IllegalArgumentException("Missing Authorization");
-            throw new WebApplicationException(cause, Response.Status.BAD_REQUEST);
+            throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);
         }
 
         String[] split = auth.split(" ");
 
         if (split.length != 2) {
-            Exception cause = new IllegalArgumentException("Bad Authorization");
+            Exception cause = new IllegalArgumentException("Bad Authorization: missing token and/or token type");
             throw new WebApplicationException(cause, Response.Status.BAD_REQUEST);
         }
 
@@ -37,7 +37,7 @@ public class ProxyAuthenticationFilter implements ContainerRequestFilter {
         String token = split[1];
 
         if (!Objects.equals(type, "Bearer")) {
-            Exception cause = new IllegalArgumentException("Bad Authorization");
+            Exception cause = new IllegalArgumentException("Bad Authorization: wrong token type");
             throw new WebApplicationException(cause, Response.Status.BAD_REQUEST);
         }
 

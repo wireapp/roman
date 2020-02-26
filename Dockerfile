@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY pom.xml ./
 
+RUN mvn verify --fail-never
+
 COPY . ./
 
 RUN mvn -Dmaven.test.skip=true package

@@ -122,11 +122,13 @@ public class ConversationResource {
                     MessageText text = new MessageText(sb.toString())
                             .setMessageId(message.poll.id);
 
+                    Logger.info("poll.new: pollId: %s", message.poll.id);
+
                     try {
                         client.send(text);
                         client.send(poll);
-                    } catch (Exception ignore) {
-
+                    } catch (Exception e) {
+                        Logger.error("Send: %s", e);
                     }
 
                     result.messageId = text.getMessageId();
@@ -136,10 +138,13 @@ public class ConversationResource {
                     ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
                             message.poll.id,
                             message.poll.offset.toString());
+
+                    Logger.info("poll.action.confirmation: pollId: %s, offset: %s", message.poll.id, message.poll.offset);
+
                     try {
                         client.sendDirectPicture(confirmation, message.poll.userId);
                     } catch (Exception e) {
-
+                        Logger.error("Send: %s", e);
                     }
                     result.messageId = confirmation.getMessageId();
                 }

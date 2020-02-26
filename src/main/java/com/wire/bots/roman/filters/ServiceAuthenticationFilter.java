@@ -22,7 +22,7 @@ public class ServiceAuthenticationFilter implements ContainerRequestFilter {
 
         if (authCookie == null) {
             Exception cause = new IllegalArgumentException("Missing Authorization");
-            throw new WebApplicationException(cause, Response.Status.BAD_REQUEST);
+            throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);
         }
 
         String token = authCookie.getValue();

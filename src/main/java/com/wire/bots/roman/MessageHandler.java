@@ -34,17 +34,19 @@ import static com.wire.bots.roman.Tools.generateToken;
 public class MessageHandler extends MessageHandlerBase {
 
     private final Client jerseyClient;
-    private final DBI jdbi;
+    private final ProvidersDAO providersDAO;
+    private final BotsDAO botsDAO;
 
     MessageHandler(DBI jdbi, Client jerseyClient) {
         this.jerseyClient = jerseyClient;
-        this.jdbi = jdbi;
+        providersDAO = jdbi.onDemand(ProvidersDAO.class);
+        botsDAO = jdbi.onDemand(BotsDAO.class);
     }
 
     @Override
     public boolean onNewBot(NewBot newBot, String auth) {
         Provider provider = getProvider(auth);
-        jdbi.onDemand(BotsDAO.class).insert(newBot.id, provider.id);
+        botsDAO.insert(newBot.id, provider.id);
 
         UUID botId = newBot.id;
         OutgoingMessage message = new OutgoingMessage();
@@ -186,13 +188,12 @@ public class MessageHandler extends MessageHandlerBase {
         if (!send)
             Logger.warning("onBotRemoved: failed to deliver message to: bot: %s", botId);
 
-        BotsDAO botsDAO = jdbi.onDemand(BotsDAO.class);
         botsDAO.remove(botId);
     }
 
     private boolean send(OutgoingMessage message) {
-        UUID providerId = jdbi.onDemand(BotsDAO.class).getProviderId(message.botId);
-        Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
+        UUID providerId = botsDAO.getProviderId(message.botId);
+        Provider provider = providersDAO.get(providerId);
         if (provider == null) {
             Logger.error("MessageHandler.send: provider == null. providerId: %s, bot: %s",
                     providerId, message.botId);
@@ -230,7 +231,7 @@ public class MessageHandler extends MessageHandlerBase {
             client.sendDirectPicture(new DeliveryReceipt(messageId), userId);
         } catch (Exception e) {
             Logger.error("sendDeliveryReceipt: failed to deliver the receipt for message: %s, bot: %s",
-                    messageId,
+                    e,
                     client.getId());
         }
     }
@@ -247,14 +248,14 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     private Provider getProvider(String auth) {
-        final Provider provider = jdbi.onDemand(ProvidersDAO.class).getByAuth(auth);
+        final Provider provider = providersDAO.getByAuth(auth);
         if (provider == null)
             throw new RuntimeException("Unknown auth");
         return provider;
     }
 
     private UUID validate(UUID botId) {
-        UUID providerId = jdbi.onDemand(BotsDAO.class).getProviderId(botId);
+        UUID providerId = botsDAO.getProviderId(botId);
         if (providerId == null)
             throw new RuntimeException("Unknown botId: " + botId.toString());
         return providerId;
