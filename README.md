@@ -106,18 +106,18 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 }
 ```
 
-- `conversation.poll.action`: When user clicks on a button from a poll
+- `conversation.poll.action`: When the user clicks the button in the Poll
 
 ```
 {
-  "botId" : "5ea53c35-918f-4117-930f-9dffeb997cb6",
-  "userId" : "4675d199-ac0d-483c-b423-1ba026681719",
-  "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
+  "botId" : "11b040df-7335-462e-bf93-c7a5adaa7e79",
+  "userId" : "2e06e56f-7e99-41e9-b3ba-185669bd52c1",
+  "messageId" : "7d9badd8-11ad-4f96-b214-6526dc19a976",
   "type" : "conversation.poll.action",
-  "token" : "eyJhbGciOiJIUzM4NCJ9.eyJpc3MiOiJodHRwczovL3dpcmUuY29tIiwic3ViIjoiNWVhNTNjMzUtOTE4Zi00MTE3LTkzMGYtOWRmZmViOTk3Y2I2In0.OQxwaGWKt8vUmmeo9H9ZNSGBUeQlMrYK1IpB96EkrEKy3xNlbsVsr1XheUgwgqh_",
-  "pollAnswer" : {
-    "pollId" : "f55d395c-0a9a-406f-a9a3-12c1bb4a3b34",
-    "buttonId" : "1"
+  "token" : "eyJhbGciOiJIUzM4NCJ9...",
+  "poll" : {
+    "id" : "24166f23-3477-4f2f-a7ca-44863d456fc8",
+    "offset" : "1"
   }
 }
 ```
@@ -128,14 +128,14 @@ If the event contains `token` field this `token` can be used to respond to this 
 Example:
 ```
 POST https://proxy.services.wire.com/conversation -d '{"type": "text", "text": "Hello!"}' \
--H'Authorization:Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
+-H'Authorization: Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
 ```
 
 In order to post text or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
 You must also specify the HTTP header as `Authorization:Bearer <token>` where `token` was obtained in `init` or other events
  like: `new_text` or `new_image`.
 
-_Outgoing Message_ can be of 3 types:
+_Outgoing Message_ can be of 4 types:
 - **Text message**
 ```
 {
@@ -152,7 +152,7 @@ _Outgoing Message_ can be of 3 types:
 }     
 ```
 
-- **New Poll message**
+- **New Poll message** - To create new Poll
 ```
 {
   "type" : "poll.new",
@@ -164,7 +164,7 @@ _Outgoing Message_ can be of 3 types:
 }
 ```   
 
-- **Poll Action Confirmation**
+- **Poll Action Confirmation** - To confirm the Poll Answer was recorded
 ```
 {
   "type" : "poll.action.confirmation",
