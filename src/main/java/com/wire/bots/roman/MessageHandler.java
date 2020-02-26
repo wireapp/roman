@@ -144,7 +144,7 @@ public class MessageHandler extends MessageHandlerBase {
             message.token = generateToken(botId);
             message.poll = new Poll();
             message.poll.id = UUID.fromString(action.getReferenceMessageId());
-            message.poll.offset = action.getButtonId();
+            message.poll.offset = Integer.parseInt(action.getButtonId());
 
             if (!send(message)) {
                 Logger.warning("onEvent: failed to deliver message to bot: %s", botId);

@@ -19,6 +19,6 @@ public class Poll {
 
     public ArrayList<String> buttons;
 
-    public String offset;
+    public Integer offset;
     public UUID userId;
 }

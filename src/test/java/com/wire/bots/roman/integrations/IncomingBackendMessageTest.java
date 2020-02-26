@@ -82,7 +82,7 @@ public class IncomingBackendMessageTest {
         Response res = newOtrMessageFromBackend(botId, userId, cypher);
         assertThat(res.getStatus()).isEqualTo(200);
 
-        // Create a poll
+        // Post new poll into conv
         final UUID pollId = UUID.randomUUID();
         ArrayList<String> buttons = new ArrayList<>();
         buttons.add("First");
@@ -97,6 +97,7 @@ public class IncomingBackendMessageTest {
         res = newOtrMessageFromBackend(botId, userId, cypher);
         assertThat(res.getStatus()).isEqualTo(200);
 
+        // Post PollActionConfirmation message into conv
         res = newPollActionConfirmationFromBot(pollId, buttonId, userId, botId);
         assertThat(res.getStatus()).isEqualTo(200);
 
@@ -151,7 +152,7 @@ public class IncomingBackendMessageTest {
                 .post(Entity.entity(payload, MediaType.APPLICATION_JSON_TYPE));
     }
 
-    Response newPollMessageFromBot(UUID pollId, String body, ArrayList<String> buttons, UUID botId) {
+    private Response newPollMessageFromBot(UUID pollId, String body, ArrayList<String> buttons, UUID botId) {
         String token = Tools.generateToken(botId);
 
         IncomingMessage message = new IncomingMessage();
@@ -169,14 +170,14 @@ public class IncomingBackendMessageTest {
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
     }
 
-    Response newPollActionConfirmationFromBot(UUID pollId, int buttonId, UUID userId, UUID botId) {
+    private Response newPollActionConfirmationFromBot(UUID pollId, int buttonId, UUID userId, UUID botId) {
         String token = Tools.generateToken(botId);
 
         IncomingMessage message = new IncomingMessage();
         message.type = "poll.action.confirmation";
         message.poll = new Poll();
         message.poll.id = pollId;
-        message.poll.offset = "" + buttonId;
+        message.poll.offset = buttonId;
         message.poll.userId = userId;
 
         return client

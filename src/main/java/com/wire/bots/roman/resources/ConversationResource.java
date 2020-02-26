@@ -133,7 +133,9 @@ public class ConversationResource {
                 }
                 break;
                 case "poll.action.confirmation": {
-                    ButtonActionConfirmation confirmation = new ButtonActionConfirmation(message.poll.id, message.poll.offset);
+                    ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
+                            message.poll.id,
+                            message.poll.offset.toString());
                     try {
                         client.sendDirectPicture(confirmation, message.poll.userId);
                     } catch (Exception e) {
