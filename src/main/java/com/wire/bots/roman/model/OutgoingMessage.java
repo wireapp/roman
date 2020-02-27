@@ -26,4 +26,5 @@ public class OutgoingMessage {
     public String handle;
     public String locale;
     public Poll poll;
+    public UUID quotedMessageId;
 }

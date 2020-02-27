@@ -190,7 +190,9 @@ public class IncomingBackendMessageTest {
 
     private byte[] generateTextMessage(String content) {
         Messages.Text.Builder text = Messages.Text.newBuilder()
-                .setContent(content);
+                .setContent(content)
+                .setQuote(Messages.Quote.newBuilder().setQuotedMessageId(UUID.randomUUID().toString()));
+        
         return Messages.GenericMessage.newBuilder()
                 .setMessageId(UUID.randomUUID().toString())
                 .setText(text)

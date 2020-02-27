@@ -89,6 +89,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.botId = botId;
         message.userId = msg.getUserId();
         message.messageId = msg.getMessageId();
+        message.quotedMessageId = msg.getQuotedMessageId();
         message.type = "conversation.new_text";
         message.text = msg.getText();
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
@@ -209,7 +210,7 @@ public class MessageHandler extends MessageHandlerBase {
                     .header("Authorization", "Bearer " + provider.serviceAuth)
                     .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
-            Logger.info("MessageHandler.send: `%s` bot: %s, provider: %s, status: %d",
+            Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, status: %d",
                     message.type,
                     message.botId,
                     providerId,
