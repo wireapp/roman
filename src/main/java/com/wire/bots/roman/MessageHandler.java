@@ -68,7 +68,7 @@ public class MessageHandler extends MessageHandlerBase {
 
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
-        message.userId = msg.from;
+        message.userId = msg.conversation.creator;
         message.messageId = msg.id;
         message.type = "conversation.init";
         message.text = msg.conversation.name;
@@ -229,7 +229,7 @@ public class MessageHandler extends MessageHandlerBase {
 
     private void sendDeliveryReceipt(WireClient client, UUID messageId, UUID userId) {
         try {
-            client.sendDirectPicture(new DeliveryReceipt(messageId), userId);
+            client.send(new DeliveryReceipt(messageId), userId);
         } catch (Exception e) {
             Logger.error("sendDeliveryReceipt: failed to deliver the receipt for message: %s, bot: %s",
                     e,

@@ -92,7 +92,7 @@ public class ConversationResource {
         }
     }
 
-    private Response send(IncomingMessage message, UUID botId) throws Exception {
+    private Response send(IncomingMessage message, UUID botId) {
         PostMessageResult result = new PostMessageResult();
 
         try (WireClient client = repo.getClient(botId)) {
@@ -112,6 +112,7 @@ public class ConversationResource {
                     poll.addText(message.poll.body);
 
                     StringBuilder sb = new StringBuilder(message.poll.body);
+                    sb.append("\n");
                     for (int i = 0; i < message.poll.buttons.size(); i++) {
                         final String caption = message.poll.buttons.get(i);
 
@@ -124,12 +125,8 @@ public class ConversationResource {
 
                     Logger.info("poll.new: pollId: %s", message.poll.id);
 
-                    try {
-                        client.send(text);
-                        client.send(poll);
-                    } catch (Exception e) {
-                        Logger.error("Send: %s", e);
-                    }
+                    client.send(text);  //todo remove this once Clients add support for Polls
+                    client.send(poll);
 
                     result.messageId = text.getMessageId();
                 }
@@ -141,11 +138,8 @@ public class ConversationResource {
 
                     Logger.info("poll.action.confirmation: pollId: %s, offset: %s", message.poll.id, message.poll.offset);
 
-                    try {
-                        client.sendDirectPicture(confirmation, message.poll.userId);
-                    } catch (Exception e) {
-                        Logger.error("Send: %s", e);
-                    }
+                    client.send(confirmation, message.poll.userId);
+
                     result.messageId = confirmation.getMessageId();
                 }
                 break;
