@@ -117,7 +117,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
   "token" : "eyJhbGciOiJIUzM4NCJ9...",
   "poll" : {
     "id" : "24166f23-3477-4f2f-a7ca-44863d456fc8",
-    "offset" : "1"
+    "offset" : 1
   }
 }
 ```
