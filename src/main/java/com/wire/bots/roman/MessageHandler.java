@@ -89,7 +89,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.botId = botId;
         message.userId = msg.getUserId();
         message.messageId = msg.getMessageId();
-        message.quotedMessageId = msg.getQuotedMessageId();
+        message.refMessageId = msg.getQuotedMessageId();
         message.type = "conversation.new_text";
         message.text = msg.getText();
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
