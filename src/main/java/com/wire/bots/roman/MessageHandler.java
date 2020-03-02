@@ -11,6 +11,8 @@ import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.assets.DeliveryReceipt;
 import com.wire.bots.sdk.models.ImageMessage;
+import com.wire.bots.sdk.models.MessageBase;
+import com.wire.bots.sdk.models.ReactionMessage;
 import com.wire.bots.sdk.models.TextMessage;
 import com.wire.bots.sdk.server.model.NewBot;
 import com.wire.bots.sdk.server.model.SystemMessage;
@@ -33,6 +35,7 @@ import static com.wire.bots.roman.Tools.generateToken;
 
 public class MessageHandler extends MessageHandlerBase {
 
+    private static final int TOKEN_DURATION = 30;
     private final Client jerseyClient;
     private final ProvidersDAO providersDAO;
     private final BotsDAO botsDAO;
@@ -81,18 +84,16 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onText(WireClient client, TextMessage msg) {
+        final String type = "conversation.new_text";
+
         UUID botId = client.getId();
 
         validate(botId);
 
-        OutgoingMessage message = new OutgoingMessage();
-        message.botId = botId;
-        message.userId = msg.getUserId();
-        message.messageId = msg.getMessageId();
+        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+
         message.refMessageId = msg.getQuotedMessageId();
-        message.type = "conversation.new_text";
         message.text = msg.getText();
-        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
 
         if (send(message)) {
             sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
@@ -102,24 +103,37 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     @Override
+    public void onReaction(WireClient client, ReactionMessage msg) {
+        final String type = "conversation.reaction";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+
+        message.refMessageId = msg.getReactionMessageId();
+        message.text = msg.getEmoji();
+
+        send(message);
+    }
+
+    @Override
     public void onImage(WireClient client, ImageMessage msg) {
+        final String type = "conversation.new_image";
+
         UUID botId = client.getId();
 
         validate(botId);
 
         try {
+            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+
             byte[] img = client.downloadAsset(msg.getAssetKey(),
                     msg.getAssetToken(),
                     msg.getSha256(),
                     msg.getOtrKey());
-
-            OutgoingMessage message = new OutgoingMessage();
-            message.botId = botId;
-            message.userId = msg.getUserId();
-            message.messageId = msg.getMessageId();
-            message.type = "conversation.new_image";
             message.image = Base64.getEncoder().encodeToString(img);
-            message.token = generateToken(botId);
 
             if (send(message)) {
                 sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
@@ -163,7 +177,7 @@ public class MessageHandler extends MessageHandlerBase {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.type = "conversation.user_joined";
-        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
 
         for (UUID userId : msg.users) {
             try {
@@ -190,6 +204,16 @@ public class MessageHandler extends MessageHandlerBase {
             Logger.warning("onBotRemoved: failed to deliver message to: bot: %s", botId);
 
         botsDAO.remove(botId);
+    }
+
+    private OutgoingMessage getOutgoingMessage(UUID botId, String type, MessageBase msg) {
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.type = type;
+        message.userId = msg.getUserId();
+        message.messageId = msg.getMessageId();
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
+        return message;
     }
 
     private boolean send(OutgoingMessage message) {

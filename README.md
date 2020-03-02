@@ -87,10 +87,11 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.new_text",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // Author of this message
-    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
-    "text": "Hi everybody!",
-    "token": "..."                                    // Use this token to reply to this message - valid for 20 sec
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",        // Author of this message
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",     
+    "token": "..."                                           // Use this token to reply to this message - valid for 20 sec
+    "refMessageId" : "caf93012-23f2-429e-b76a-b7649511db2e", // reference msgId in case of Reply, Reaction,.. (can be null)
+    "text": "Hi everybody!"
 }
 ```
 - `new_image`: When an image is posted in a conversation where this bot is present
