@@ -8,7 +8,6 @@ import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.assets.ButtonActionConfirmation;
-import com.wire.bots.sdk.assets.MessageText;
 import com.wire.bots.sdk.assets.Picture;
 import com.wire.bots.sdk.assets.Poll;
 import com.wire.bots.sdk.exceptions.MissingStateException;
@@ -111,24 +110,16 @@ public class ConversationResource {
                     poll.setMessageId(message.poll.id);
                     poll.addText(message.poll.body);
 
-                    StringBuilder sb = new StringBuilder(message.poll.body);
-                    sb.append("\n");
                     for (int i = 0; i < message.poll.buttons.size(); i++) {
                         final String caption = message.poll.buttons.get(i);
-
-                        sb.append(String.format("\n[%s](%s)", caption, i));
                         poll.addButton("" + i, caption);
                     }
 
-                    MessageText text = new MessageText(sb.toString())
-                            .setMessageId(message.poll.id);
-
                     Logger.info("poll.new: pollId: %s", message.poll.id);
 
-                    client.send(text);  //todo remove this once Clients add support for Polls
                     client.send(poll);
 
-                    result.messageId = text.getMessageId();
+                    result.messageId = poll.getMessageId();
                 }
                 break;
                 case "poll.action.confirmation": {
