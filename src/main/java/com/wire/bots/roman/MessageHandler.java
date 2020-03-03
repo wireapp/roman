@@ -35,7 +35,7 @@ import static com.wire.bots.roman.Tools.generateToken;
 
 public class MessageHandler extends MessageHandlerBase {
 
-    private static final int TOKEN_DURATION = 30;
+    private static final int TOKEN_DURATION = 20;
     private final Client jerseyClient;
     private final ProvidersDAO providersDAO;
     private final BotsDAO botsDAO;
@@ -57,6 +57,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.userId = newBot.origin.id;
         message.handle = newBot.origin.handle;
         message.locale = newBot.locale;
+        message.token = generateToken(botId);
 
         message.type = "conversation.bot_request";
 
@@ -75,7 +76,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.messageId = msg.id;
         message.type = "conversation.init";
         message.text = msg.conversation.name;
-        message.token = generateToken(botId);
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
 
         boolean send = send(message);
         if (!send)

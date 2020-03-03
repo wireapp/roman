@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY pom.xml ./
 
-RUN mvn verify --fail-never
+RUN mvn verify --fail-never -U
 
 COPY . ./
 

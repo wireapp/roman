@@ -62,8 +62,9 @@ wss://proxy.services.wire.com/await/`<app_key>`
     "type": "conversation.bot_request",
     "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",  // Unique identifier for this bot
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who requested this bot
-    "handle": "dejan_wire", // username of the user who requested this bot
-    "locale": "en_US"       // locale of the user who requested this bot
+    "handle": "dejan_wire",  // username of the user who requested this bot
+    "locale": "en_US",       // locale of the user who requested this bot    
+    "token": "..."           // Access token. Store this token so the bot can post back later
 }
 ```
 
@@ -77,7 +78,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "type": "conversation.init",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who originally created this conversation
-    "token": "...",                                   // Access token. Store this token so the bot can post back later
+    "token": "...",                                   // Use this token to reply to this message - valid for 20 sec
     "text": "Bot Example Conversation"                // Conversation name
 }
 ```
