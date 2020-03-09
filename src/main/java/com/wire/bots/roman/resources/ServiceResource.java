@@ -45,12 +45,10 @@ public class ServiceResource {
     private static final String PROFILE_KEY = "3-1-c9262f6f-892f-40d5-9349-fbeb62c8aba4";
 
     private final ProviderClient providerClient;
-    private final DBI jdbi;
     private final ProvidersDAO providersDAO;
 
     public ServiceResource(DBI jdbi, ProviderClient providerClient) {
         this.providerClient = providerClient;
-        this.jdbi = jdbi;
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
     }
 
@@ -121,8 +119,8 @@ public class ServiceResource {
 
             _Result result = new _Result();
             result.auth = provider.serviceAuth;
-            result.code = String.format("%s:%s", providerId, provider.serviceId);
             result.key = token;
+            result.code = String.format("%s:%s", providerId, provider.serviceId);
             result.url = provider.serviceUrl;
             result.service = provider.serviceName;
 

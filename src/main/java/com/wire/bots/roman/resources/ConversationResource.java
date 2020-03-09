@@ -110,12 +110,12 @@ public class ConversationResource {
                     poll.setMessageId(message.poll.id);
                     poll.addText(message.poll.body);
 
-                    for (int i = 0; i < message.poll.buttons.size(); i++) {
-                        final String caption = message.poll.buttons.get(i);
-                        poll.addButton("" + i, caption);
+                    int i = 0;
+                    for (String caption : message.poll.buttons) {
+                        poll.addButton("" + i++, caption);
                     }
 
-                    Logger.info("poll.new: pollId: %s", message.poll.id);
+                    Logger.info("poll.new: id: %s", message.poll.id);
 
                     client.send(poll);
 
