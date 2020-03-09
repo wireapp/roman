@@ -23,6 +23,8 @@ public class IncomingMessage {
     @JsonProperty
     public String image;
     @JsonProperty
+    public String attachment;
+    @JsonProperty
     public Poll poll;
 
     @JsonIgnore
