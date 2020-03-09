@@ -6,7 +6,7 @@ server:
           - type: status-filter-factory
 
 logging:
-  level: ${LOG_LEVEL:-INFO}
+  level: INFO
   loggers:
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
@@ -38,6 +38,6 @@ database:
   baseline: ${DB_BASELINE:-}
 
 key: ${APP_KEY:-}
-domain: ${DOMAIN:-https://proxy.services.wire.com}
-apiHost: ${BACKEND:-https://prod-nginz-https.wire.com}
+domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com}
+apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
 

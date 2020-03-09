@@ -62,8 +62,9 @@ wss://proxy.services.wire.com/await/`<app_key>`
     "type": "conversation.bot_request",
     "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",  // Unique identifier for this bot
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who requested this bot
-    "handle": "dejan_wire", // username of the user who requested this bot
-    "locale": "en_US"       // locale of the user who requested this bot
+    "handle": "dejan_wire",  // username of the user who requested this bot
+    "locale": "en_US",       // locale of the user who requested this bot    
+    "token": "..."           // Access token. Store this token so the bot can post back later
 }
 ```
 
@@ -76,8 +77,8 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.init",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who added this bot into conversation
-    "token": "...",                                   // Access token. Store this token so the bot can post back later
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who originally created this conversation
+    "token": "...",                                   // Use this token to reply to this message - valid for 20 sec
     "text": "Bot Example Conversation"                // Conversation name
 }
 ```
@@ -87,9 +88,11 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.new_text",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // Author of this message
-    "text": "Hi everybody!",
-    "token": "..."                                    // Use this token to reply to this message - valid for 20 sec
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",        // Author of this message
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",     
+    "token": "..."                                           // Use this token to reply to this message - valid for 20 sec
+    "refMessageId" : "caf93012-23f2-429e-b76a-b7649511db2e", // reference msgId in case of Reply, Reaction,.. (can be null)
+    "text": "Hi everybody!"
 }
 ```
 - `new_image`: When an image is posted in a conversation where this bot is present
@@ -98,21 +101,26 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.new_image",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
     "token": "...", // Use this token to reply to this message - valid for 20 sec
     "image": "..."  // Base64 encoded image
 }
 ```
 
-- `new_image`: When an image is posted in a conversation where this bot is present
+- `conversation.poll.action`: When the user clicks the button in the Poll
 
 ```
 {
-    "type": "conversation.new_image",
-    "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",
-    "token": "...", // Use this token to reply to this message - valid for 20 sec
-    "image": "..."  // Base64 encoded image
+  "botId" : "11b040df-7335-462e-bf93-c7a5adaa7e79",
+  "userId" : "2e06e56f-7e99-41e9-b3ba-185669bd52c1",
+  "messageId" : "7d9badd8-11ad-4f96-b214-6526dc19a976",
+  "type" : "conversation.poll.action",
+  "token" : "eyJhbGciOiJIUzM4NCJ9...",
+  "poll" : {
+    "id" : "24166f23-3477-4f2f-a7ca-44863d456fc8",
+    "offset" : 1
+  }
 }
 ```
 ### Posting back to Wire conversation
@@ -122,14 +130,14 @@ If the event contains `token` field this `token` can be used to respond to this 
 Example:
 ```
 POST https://proxy.services.wire.com/conversation -d '{"type": "text", "text": "Hello!"}' \
--H'Authorization:Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
+-H'Authorization: Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
 ```
 
 In order to post text or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
 You must also specify the HTTP header as `Authorization:Bearer <token>` where `token` was obtained in `init` or other events
  like: `new_text` or `new_image`.
 
-_Outgoing Message_ can be of 2 types:
+_Outgoing Message_ can be of 4 types:
 - **Text message**
 ```
 {
@@ -146,11 +154,27 @@ _Outgoing Message_ can be of 2 types:
 }     
 ```
 
-- **Poll message**
+- **New Poll message** - To create new Poll
 ```
 {
-    "type": "poll",
-    "poll": { "body": "...", "buttons": ["choice 1", "choice 2"]}
+  "type" : "poll.new",
+  "poll" : {
+    "id" : "24166f23-3477-4f2f-a7ca-44863d456fc8",
+    "body" : "This is a poll",
+    "buttons" : [ "First", "Second" ]
+  }
+}
+```   
+
+- **Poll Action Confirmation** - To confirm the Poll Answer was recorded
+```
+{
+  "type" : "poll.action.confirmation",
+  "poll" : {
+    "id" : "24166f23-3477-4f2f-a7ca-44863d456fc8",
+    "offset" : 1,
+    "userId" : "2e06e56f-7e99-41e9-b3ba-185669bd52c1"
+  }
 }
 ```
 Full description: https://proxy.services.wire.com/swagger#!/default/post
@@ -169,8 +193,8 @@ docker build -t $DOCKER_USERNAME/roman:latest .
 docker run \     
 -e LD_LIBRARY_PATH='/opt/wire/lib' \
 -e APP_KEY='this_is_some_long_key' \  
--e DOMAIN='https://myproxy.mydomain.com' \  
--e BACKEND='https://prod-nginz-https.wire.com' \  
+-e PROXY_DOMAIN='https://myproxy.mydomain.com' \  
+-e WIRE_API_HOST='https://prod-nginz-https.wire.com' \  
 -e DB_URL='jdbc:postgresql://docker.for.mac.localhost/roman' \
 -e DB_USER='postgres' \ 
 -e DB_PASSWORD='secret' \
@@ -183,8 +207,8 @@ docker run \
 ```         
 LOG_LEVEL       # ERROR, WARN, INFO, DEBUG. INFO by default 
 APP_KEY         # 32 alphanumeric key used to generate tokens 
-DOMAIN          # Domain where your proxy will be exposed 
-BACKEND         # Wire Backed API URL. `https://prod-nginz-https.wire.com` by default 
+PROXY_DOMAIN    # Domain where your proxy will be exposed 
+WIRE_API_HOST   # Wire Backed API URL. `https://prod-nginz-https.wire.com` by default 
 DB_URL          # Postgres URL. format: jdbc:postgresql://<HOST>:<PORT>/<DB_NAME>  
 DB_USER         # Postgres user. null by defaul
 DB_PASSWORD     # Postgres user's password. null by defaul  

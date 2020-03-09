@@ -7,6 +7,7 @@ import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.Tools;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.IncomingMessage;
+import com.wire.bots.roman.model.Poll;
 import com.wire.bots.sdk.crypto.CryptoFile;
 import com.wire.bots.sdk.models.otr.PreKeys;
 import com.wire.bots.sdk.models.otr.Recipients;
@@ -59,7 +60,6 @@ public class IncomingBackendMessageTest {
         final UUID botId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
         final UUID convId = UUID.randomUUID();
-        final UUID messageId = UUID.randomUUID();
         final UUID providerId = UUID.randomUUID();
         final String email = String.format("%s@email.com", serviceAuth);
 
@@ -77,21 +77,29 @@ public class IncomingBackendMessageTest {
         PreKeys preKeys = new PreKeys(newBotResponseModel.preKeys, USER_CLIENT_DUMMY, userId);
 
         // Test new Text message is sent to Roman by the BE. BE calls POST /bots/{botId}/messages with Payload obj
-        Recipients encrypt = crypto.encrypt(preKeys, generateTextMessage(messageId, "Hello Bob"));
+        Recipients encrypt = crypto.encrypt(preKeys, generateTextMessage("Hello Bob"));
         String cypher = encrypt.get(userId, USER_CLIENT_DUMMY);
         Response res = newOtrMessageFromBackend(botId, userId, cypher);
         assertThat(res.getStatus()).isEqualTo(200);
 
+        // Post new poll into conv
+        final UUID pollId = UUID.randomUUID();
         ArrayList<String> buttons = new ArrayList<>();
         buttons.add("First");
         buttons.add("Second");
-        res = newPollMessageFromBot("This is a poll", buttons, botId);
+        res = newPollMessageFromBot(pollId, "This is a poll", buttons, botId);
+        //assertThat(res.getStatus()).isEqualTo(200);
 
         // Test new PollAnswer message is sent to Roman by the BE.
-        encrypt = crypto.encrypt(preKeys, generatePollAnswerMessage(UUID.randomUUID(), UUID.randomUUID(), 1));
+        final int buttonId = 1;
+        encrypt = crypto.encrypt(preKeys, generatePollAnswerMessage(pollId, buttonId));
         cypher = encrypt.get(userId, USER_CLIENT_DUMMY);
         res = newOtrMessageFromBackend(botId, userId, cypher);
         assertThat(res.getStatus()).isEqualTo(200);
+
+        // Post PollActionConfirmation message into conv
+        res = newPollActionConfirmationFromBot(pollId, buttonId, userId, botId);
+        //assertThat(res.getStatus()).isEqualTo(200);
 
         crypto.close();
     }
@@ -144,12 +152,13 @@ public class IncomingBackendMessageTest {
                 .post(Entity.entity(payload, MediaType.APPLICATION_JSON_TYPE));
     }
 
-    Response newPollMessageFromBot(String body, ArrayList<String> buttons, UUID botId) {
+    private Response newPollMessageFromBot(UUID pollId, String body, ArrayList<String> buttons, UUID botId) {
         String token = Tools.generateToken(botId);
 
         IncomingMessage message = new IncomingMessage();
-        message.type = "poll";
-        message.poll = new IncomingMessage.Poll();
+        message.type = "poll.new";
+        message.poll = new Poll();
+        message.poll.id = pollId;
         message.poll.body = body;
         message.poll.buttons = buttons;
 
@@ -161,24 +170,44 @@ public class IncomingBackendMessageTest {
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
     }
 
-    private byte[] generateTextMessage(UUID messageId, String content) {
+    private Response newPollActionConfirmationFromBot(UUID pollId, int buttonId, UUID userId, UUID botId) {
+        String token = Tools.generateToken(botId);
+
+        IncomingMessage message = new IncomingMessage();
+        message.type = "poll.action.confirmation";
+        message.poll = new Poll();
+        message.poll.id = pollId;
+        message.poll.offset = buttonId;
+        message.poll.userId = userId;
+
+        return client
+                .target("http://localhost:" + SUPPORT.getLocalPort())
+                .path("conversation")
+                .request()
+                .header("Authorization", "Bearer " + token)
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
+    }
+
+    private byte[] generateTextMessage(String content) {
         Messages.Text.Builder text = Messages.Text.newBuilder()
-                .setContent(content);
+                .setContent(content)
+                .setQuote(Messages.Quote.newBuilder().setQuotedMessageId(UUID.randomUUID().toString()));
+        
         return Messages.GenericMessage.newBuilder()
-                .setMessageId(messageId.toString())
+                .setMessageId(UUID.randomUUID().toString())
                 .setText(text)
                 .build()
                 .toByteArray();
     }
 
-    private byte[] generatePollAnswerMessage(UUID messageId, UUID pollId, int choice) {
-        Messages.PollAnswer.Builder pollAnswer = Messages.PollAnswer.newBuilder()
-                .setPollId(pollId.toString())
-                .setChoice(choice);
+    private byte[] generatePollAnswerMessage(UUID pollId, int buttonId) {
+        Messages.ButtonAction.Builder pollAnswer = Messages.ButtonAction.newBuilder()
+                .setReferenceMessageId(pollId.toString())
+                .setButtonId("" + buttonId);
 
         return Messages.GenericMessage.newBuilder()
-                .setMessageId(messageId.toString())
-                .setPollAnswer(pollAnswer)
+                .setMessageId(UUID.randomUUID().toString())
+                .setButtonAction(pollAnswer)
                 .build()
                 .toByteArray();
     }

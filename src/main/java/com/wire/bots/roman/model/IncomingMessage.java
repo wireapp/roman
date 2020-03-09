@@ -3,17 +3,18 @@ package com.wire.bots.roman.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.validation.OneOf;
 import io.dropwizard.validation.ValidationMethod;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class IncomingMessage {
     @NotNull
-    @OneOf(value = {"text", "image", "poll"})
+    @OneOf(value = {"text", "image", "poll.new", "poll.action.confirmation"})
     @JsonProperty
     public String type;
 
@@ -40,8 +41,21 @@ public class IncomingMessage {
         return text != null && !text.isEmpty();
     }
 
-    public static class Poll {
-        public String body;
-        public ArrayList<String> buttons;
+    @JsonIgnore
+    @ValidationMethod(message = "`offset` & `userId` cannot be null")
+    public boolean isValidPollActionConfirmation() {
+        if (!type.equals("poll.action.confirmation"))
+            return true;
+        if (poll == null)
+            return false;
+        return poll.userId != null && poll.offset != null;
+    }
+
+    @JsonIgnore
+    @ValidationMethod(message = "`poll` cannot be null")
+    public boolean isValidPollNew() {
+        if (!type.equals("poll.new"))
+            return true;
+        return poll != null;
     }
 }

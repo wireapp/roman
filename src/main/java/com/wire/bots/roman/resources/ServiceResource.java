@@ -45,11 +45,11 @@ public class ServiceResource {
     private static final String PROFILE_KEY = "3-1-c9262f6f-892f-40d5-9349-fbeb62c8aba4";
 
     private final ProviderClient providerClient;
-    private final DBI jdbi;
+    private final ProvidersDAO providersDAO;
 
     public ServiceResource(DBI jdbi, ProviderClient providerClient) {
         this.providerClient = providerClient;
-        this.jdbi = jdbi;
+        providersDAO = jdbi.onDemand(ProvidersDAO.class);
     }
 
     @POST
@@ -61,7 +61,7 @@ public class ServiceResource {
         try {
             UUID providerId = (UUID) context.getProperty("providerid");
 
-            Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
+            Provider provider = providersDAO.get(providerId);
 
             Logger.debug("ServiceResource.create: provider: %s, %s", provider.id, provider.email);
 
@@ -113,15 +113,16 @@ public class ServiceResource {
                         build();
             }
 
-            jdbi.onDemand(ProvidersDAO.class)
-                    .update(providerId, payload.url, service.auth, service.id, payload.name);
+            providersDAO.update(providerId, payload.url, service.auth, service.id, payload.name);
+
+            provider = providersDAO.get(providerId);
 
             _Result result = new _Result();
-            result.auth = service.auth;
-            result.code = String.format("%s:%s", providerId, service.id);
+            result.auth = provider.serviceAuth;
             result.key = token;
-            result.url = payload.url;
-            result.service = payload.name;
+            result.code = String.format("%s:%s", providerId, provider.serviceId);
+            result.url = provider.serviceUrl;
+            result.service = provider.serviceName;
 
             Logger.info("ServiceResource.create: service authentication %s, code: %s", result.auth, result.code);
 
@@ -146,8 +147,6 @@ public class ServiceResource {
                            @ApiParam(hidden = true) @CookieParam("zroman") String token,
                            @ApiParam @Valid _UpdateService payload) {
         try {
-            ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
-
             UUID providerId = (UUID) context.getProperty("providerid");
 
             Provider provider = providersDAO.get(providerId);
@@ -191,7 +190,7 @@ public class ServiceResource {
 
             Logger.debug("ServiceResource.get: provider: %s", providerId);
 
-            Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
+            Provider provider = providersDAO.get(providerId);
 
             _Result result = new _Result();
             result.key = token;

@@ -5,11 +5,14 @@ import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.OutgoingMessage;
+import com.wire.bots.roman.model.Poll;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.assets.DeliveryReceipt;
 import com.wire.bots.sdk.models.ImageMessage;
+import com.wire.bots.sdk.models.MessageBase;
+import com.wire.bots.sdk.models.ReactionMessage;
 import com.wire.bots.sdk.models.TextMessage;
 import com.wire.bots.sdk.server.model.NewBot;
 import com.wire.bots.sdk.server.model.SystemMessage;
@@ -32,18 +35,21 @@ import static com.wire.bots.roman.Tools.generateToken;
 
 public class MessageHandler extends MessageHandlerBase {
 
+    private static final int TOKEN_DURATION = 20;
     private final Client jerseyClient;
-    private final DBI jdbi;
+    private final ProvidersDAO providersDAO;
+    private final BotsDAO botsDAO;
 
     MessageHandler(DBI jdbi, Client jerseyClient) {
         this.jerseyClient = jerseyClient;
-        this.jdbi = jdbi;
+        providersDAO = jdbi.onDemand(ProvidersDAO.class);
+        botsDAO = jdbi.onDemand(BotsDAO.class);
     }
 
     @Override
     public boolean onNewBot(NewBot newBot, String auth) {
         Provider provider = getProvider(auth);
-        jdbi.onDemand(BotsDAO.class).insert(newBot.id, provider.id);
+        botsDAO.insert(newBot.id, provider.id);
 
         UUID botId = newBot.id;
         OutgoingMessage message = new OutgoingMessage();
@@ -51,6 +57,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.userId = newBot.origin.id;
         message.handle = newBot.origin.handle;
         message.locale = newBot.locale;
+        message.token = generateToken(botId);
 
         message.type = "conversation.bot_request";
 
@@ -65,11 +72,11 @@ public class MessageHandler extends MessageHandlerBase {
 
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
-        message.userId = msg.from;
+        message.userId = msg.conversation.creator;
         message.messageId = msg.id;
         message.type = "conversation.init";
         message.text = msg.conversation.name;
-        message.token = generateToken(botId);
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
 
         boolean send = send(message);
         if (!send)
@@ -78,47 +85,59 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onText(WireClient client, TextMessage msg) {
+        final String type = "conversation.new_text";
+
         UUID botId = client.getId();
 
         validate(botId);
 
-        OutgoingMessage message = new OutgoingMessage();
-        message.botId = botId;
-        message.userId = msg.getUserId();
-        message.messageId = msg.getMessageId();
-        message.type = "conversation.new_text";
+        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+
+        message.refMessageId = msg.getQuotedMessageId();
         message.text = msg.getText();
-        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
 
         if (send(message)) {
-            sendDeliveryReceipt(client, msg.getMessageId());
+            sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
         } else {
             Logger.warning("onText: failed to deliver message to bot: %s", botId);
         }
     }
 
     @Override
+    public void onReaction(WireClient client, ReactionMessage msg) {
+        final String type = "conversation.reaction";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+
+        message.refMessageId = msg.getReactionMessageId();
+        message.text = msg.getEmoji();
+
+        send(message);
+    }
+
+    @Override
     public void onImage(WireClient client, ImageMessage msg) {
+        final String type = "conversation.new_image";
+
         UUID botId = client.getId();
 
         validate(botId);
 
         try {
+            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+
             byte[] img = client.downloadAsset(msg.getAssetKey(),
                     msg.getAssetToken(),
                     msg.getSha256(),
                     msg.getOtrKey());
-
-            OutgoingMessage message = new OutgoingMessage();
-            message.botId = botId;
-            message.userId = msg.getUserId();
-            message.messageId = msg.getMessageId();
-            message.type = "conversation.new_image";
             message.image = Base64.getEncoder().encodeToString(img);
-            message.token = generateToken(botId);
 
             if (send(message)) {
-                sendDeliveryReceipt(client, msg.getMessageId());
+                sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
             } else {
                 Logger.warning("onImage: failed to deliver message to bot: %s", botId);
             }
@@ -132,22 +151,20 @@ public class MessageHandler extends MessageHandlerBase {
         UUID botId = client.getId();
         UUID messageId = UUID.fromString(event.getMessageId());
 
-        if (event.hasPollAnswer()) {
-            Messages.PollAnswer pollAnswer = event.getPollAnswer();
+        if (event.hasButtonAction()) {
+            Messages.ButtonAction action = event.getButtonAction();
 
             OutgoingMessage message = new OutgoingMessage();
             message.botId = botId;
             message.userId = userId;
             message.messageId = messageId;
-            message.type = "conversation.poll.answer";
+            message.type = "conversation.poll.action";
             message.token = generateToken(botId);
-            message.pollAnswer = new OutgoingMessage.PollAnswer();
-            message.pollAnswer.pollId = UUID.fromString(pollAnswer.getPollId());
-            message.pollAnswer.choice = pollAnswer.getChoice();
+            message.poll = new Poll();
+            message.poll.id = UUID.fromString(action.getReferenceMessageId());
+            message.poll.offset = Integer.parseInt(action.getButtonId());
 
-            if (send(message)) {
-                sendDeliveryReceipt(client, messageId);
-            } else {
+            if (!send(message)) {
                 Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
             }
         }
@@ -161,7 +178,7 @@ public class MessageHandler extends MessageHandlerBase {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.type = "conversation.user_joined";
-        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(30));
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
 
         for (UUID userId : msg.users) {
             try {
@@ -187,13 +204,22 @@ public class MessageHandler extends MessageHandlerBase {
         if (!send)
             Logger.warning("onBotRemoved: failed to deliver message to: bot: %s", botId);
 
-        BotsDAO botsDAO = jdbi.onDemand(BotsDAO.class);
         botsDAO.remove(botId);
     }
 
+    private OutgoingMessage getOutgoingMessage(UUID botId, String type, MessageBase msg) {
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.type = type;
+        message.userId = msg.getUserId();
+        message.messageId = msg.getMessageId();
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
+        return message;
+    }
+
     private boolean send(OutgoingMessage message) {
-        UUID providerId = jdbi.onDemand(BotsDAO.class).getProviderId(message.botId);
-        Provider provider = jdbi.onDemand(ProvidersDAO.class).get(providerId);
+        UUID providerId = botsDAO.getProviderId(message.botId);
+        Provider provider = providersDAO.get(providerId);
         if (provider == null) {
             Logger.error("MessageHandler.send: provider == null. providerId: %s, bot: %s",
                     providerId, message.botId);
@@ -209,7 +235,7 @@ public class MessageHandler extends MessageHandlerBase {
                     .header("Authorization", "Bearer " + provider.serviceAuth)
                     .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
-            Logger.info("MessageHandler.send: `%s` bot: %s, provider: %s, status: %d",
+            Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, status: %d",
                     message.type,
                     message.botId,
                     providerId,
@@ -226,12 +252,12 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
-    private void sendDeliveryReceipt(WireClient client, UUID messageId) {
+    private void sendDeliveryReceipt(WireClient client, UUID messageId, UUID userId) {
         try {
-            client.send(new DeliveryReceipt(messageId));
+            client.send(new DeliveryReceipt(messageId), userId);
         } catch (Exception e) {
             Logger.error("sendDeliveryReceipt: failed to deliver the receipt for message: %s, bot: %s",
-                    messageId,
+                    e,
                     client.getId());
         }
     }
@@ -248,14 +274,14 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     private Provider getProvider(String auth) {
-        final Provider provider = jdbi.onDemand(ProvidersDAO.class).getByAuth(auth);
+        final Provider provider = providersDAO.getByAuth(auth);
         if (provider == null)
             throw new RuntimeException("Unknown auth");
         return provider;
     }
 
     private UUID validate(UUID botId) {
-        UUID providerId = jdbi.onDemand(BotsDAO.class).getProviderId(botId);
+        UUID providerId = botsDAO.getProviderId(botId);
         if (providerId == null)
             throw new RuntimeException("Unknown botId: " + botId.toString());
         return providerId;

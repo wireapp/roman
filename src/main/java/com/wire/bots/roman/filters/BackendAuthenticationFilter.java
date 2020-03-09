@@ -18,6 +18,10 @@ public class BackendAuthenticationFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) {
         String auth = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (auth == null) {
+            Exception cause = new IllegalArgumentException("Missing Authorization");
+            throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);
+        }
 
         String[] split = auth.split(" ");
 
