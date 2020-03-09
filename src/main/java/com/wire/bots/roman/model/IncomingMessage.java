@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class IncomingMessage {
     @NotNull
-    @OneOf(value = {"text", "image", "poll.new", "poll.action.confirmation"})
+    @OneOf(value = {"text", "image", "poll.new", "poll.action.confirmation", "attachment"})
     @JsonProperty
     public String type;
 
@@ -33,6 +33,14 @@ public class IncomingMessage {
         if (!type.equals("image"))
             return true;
         return image != null && image.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
+    }
+
+    @JsonIgnore
+    @ValidationMethod(message = "`attachment` is not a Base64 encoded string")
+    public boolean isValidAttachment() {
+        if (!type.equals("attachment"))
+            return true;
+        return attachment != null && attachment.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
     }
 
     @JsonIgnore
