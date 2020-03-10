@@ -18,13 +18,11 @@
 
 package com.wire.bots.roman.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wire.bots.sdk.Configuration;
 
 import javax.validation.constraints.NotNull;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Config extends Configuration {
     @NotNull
     @JsonProperty

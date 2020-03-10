@@ -10,10 +10,7 @@ import com.wire.bots.roman.model.Provider;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.assets.DeliveryReceipt;
-import com.wire.bots.sdk.models.ImageMessage;
-import com.wire.bots.sdk.models.MessageBase;
-import com.wire.bots.sdk.models.ReactionMessage;
-import com.wire.bots.sdk.models.TextMessage;
+import com.wire.bots.sdk.models.*;
 import com.wire.bots.sdk.server.model.NewBot;
 import com.wire.bots.sdk.server.model.SystemMessage;
 import com.wire.bots.sdk.server.model.User;
@@ -135,6 +132,7 @@ public class MessageHandler extends MessageHandlerBase {
                     msg.getSha256(),
                     msg.getOtrKey());
             message.image = Base64.getEncoder().encodeToString(img);
+            message.mimeType = msg.getMimeType();
 
             if (send(message)) {
                 sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
@@ -146,11 +144,40 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
+    public void onAttachment(WireClient client, AttachmentMessage msg) {
+        final String type = "conversation.file.new";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+
+            byte[] img = client.downloadAsset(msg.getAssetKey(),
+                    msg.getAssetToken(),
+                    msg.getSha256(),
+                    msg.getOtrKey());
+            message.attachment = Base64.getEncoder().encodeToString(img);
+            message.text = msg.getName();
+            message.mimeType = msg.getMimeType();
+
+            if (send(message)) {
+                sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
+            } else {
+                Logger.warning("onAttachment: failed to deliver message to bot: %s", botId);
+            }
+        } catch (Exception e) {
+            Logger.error("onAttachment: %s %s", botId, e);
+        }
+    }
+
     @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
         UUID botId = client.getId();
         UUID messageId = UUID.fromString(event.getMessageId());
 
+        // User clicked on a Poll Button
         if (event.hasButtonAction()) {
             Messages.ButtonAction action = event.getButtonAction();
 

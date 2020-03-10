@@ -80,6 +80,7 @@ public class ServiceResource {
 
             Service service = newService();
             service.name = payload.name;
+            service.summary = payload.summary;
 
             if (payload.avatar != null) {
                 byte[] image = Base64.getDecoder().decode(payload.avatar);
@@ -157,7 +158,34 @@ public class ServiceResource {
                         build();
             }
 
-            providersDAO.updateUrl(provider.id, payload.url);
+            if (payload.url != null) {
+                providersDAO.updateUrl(provider.id, payload.url);
+            }
+
+            Response login = providerClient.login(provider.email, provider.password);
+
+            Logger.debug("ServiceResource.create: login status: %d", login.getStatus());
+
+            if (login.getStatus() >= 400) {
+                return Response.
+                        ok(login.readEntity(String.class)).
+                        status(login.getStatus()).
+                        build();
+            }
+
+            NewCookie cookie = login.getCookies().get("zprovider");
+
+            if (payload.name != null) {
+                providersDAO.updateServiceName(provider.id, payload.name);
+                providerClient.updateServiceName(cookie, provider.serviceId, payload.name);
+            }
+
+            if (payload.avatar != null) {
+                byte[] image = Base64.getDecoder().decode(payload.avatar);
+                Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
+                String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mediumImage.getMimeType());
+                providerClient.updateServiceAvatar(cookie, provider.serviceId, key);
+            }
 
             provider = providersDAO.get(providerId);
 
@@ -166,6 +194,7 @@ public class ServiceResource {
             result.auth = provider.serviceAuth;
             result.code = String.format("%s:%s", provider.id, provider.serviceId);
             result.url = provider.serviceUrl;
+            result.service = provider.serviceName;
 
             return Response.
                     ok(result).
@@ -238,6 +267,43 @@ public class ServiceResource {
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class _NewService {
         @NotNull
+        @Length(min = 3, max = 64)
+        @JsonProperty
+        public String name;
+
+        @JsonProperty
+        public String url;
+
+        @JsonProperty
+        public String avatar;
+
+        @JsonProperty
+        @NotNull
+        @Length(min = 3, max = 128)
+        public String summary;
+
+        @ValidationMethod(message = "`url` is not a valid URL")
+        @JsonIgnore
+        public boolean isUrlValid() {
+            if (url == null)
+                return true;
+            try {
+                new URL(url).toURI();
+                return true;
+            } catch (URISyntaxException | MalformedURLException e) {
+                return false;
+            }
+        }
+
+        @ValidationMethod(message = "`avatar` is not a Base64 encoded string")
+        @JsonIgnore
+        public boolean isAvatarValid() {
+            return avatar == null || avatar.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class _UpdateService {
         @Length(min = 3, max = 128)
         @JsonProperty
         public String name;
@@ -261,29 +327,10 @@ public class ServiceResource {
             }
         }
 
-        @ValidationMethod(message = "`image` is not a Base64 encoded string")
+        @ValidationMethod(message = "`avatar` is not a Base64 encoded string")
         @JsonIgnore
         public boolean isAvatarValid() {
             return avatar == null || avatar.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    static class _UpdateService {
-        @JsonProperty
-        public String url;
-
-        @ValidationMethod(message = "`url` is not a valid URL")
-        @JsonIgnore
-        public boolean isUrlValid() {
-            if (url == null)
-                return true;
-            try {
-                new URL(url).toURI();
-                return true;
-            } catch (URISyntaxException | MalformedURLException e) {
-                return false;
-            }
         }
     }
 

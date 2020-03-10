@@ -3,14 +3,14 @@ package com.wire.bots.roman.resources;
 import com.codahale.metrics.annotation.Metered;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.filters.ProxyAuthorization;
+import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
-import com.wire.bots.sdk.assets.ButtonActionConfirmation;
-import com.wire.bots.sdk.assets.Picture;
-import com.wire.bots.sdk.assets.Poll;
+import com.wire.bots.sdk.assets.*;
 import com.wire.bots.sdk.exceptions.MissingStateException;
+import com.wire.bots.sdk.models.AssetKey;
 import com.wire.bots.sdk.server.model.Conversation;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
@@ -103,6 +103,24 @@ public class ConversationResource {
                 case "image": {
                     Picture picture = new Picture(Base64.getDecoder().decode(message.image));
                     result.messageId = client.sendPicture(picture.getImageData(), picture.getMimeType());
+                }
+                break;
+                case "attachment": {
+                    UUID messageId = UUID.randomUUID();
+
+                    final Attachment attachment = message.attachment;
+                    final byte[] decode = Base64.getDecoder().decode(attachment.data);
+
+                    FileAssetPreview preview = new FileAssetPreview(attachment.filename, attachment.mimeType, decode.length, messageId);
+                    FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
+
+                    client.send(preview);
+                    final AssetKey assetKey = client.uploadAsset(asset);
+                    asset.setAssetKey(assetKey.key);
+                    asset.setAssetToken(assetKey.token);
+                    client.send(asset);
+
+                    result.messageId = messageId;
                 }
                 break;
                 case "poll.new": {

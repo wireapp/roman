@@ -23,8 +23,10 @@ public class OutgoingMessage {
 
     public String text;
     public String image;
+    public String attachment;
     public String handle;
     public String locale;
     public Poll poll;
     public UUID refMessageId;
+    public String mimeType;
 }

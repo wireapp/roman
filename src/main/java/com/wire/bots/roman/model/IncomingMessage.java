@@ -14,16 +14,21 @@ import javax.validation.constraints.NotNull;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class IncomingMessage {
     @NotNull
-    @OneOf(value = {"text", "image", "poll.new", "poll.action.confirmation"})
+    @OneOf(value = {"text", "image", "poll.new", "poll.action.confirmation", "attachment"})
     @JsonProperty
     public String type;
 
     @JsonProperty
     public String text;
+
     @JsonProperty
     public String image;
+
     @JsonProperty
     public Poll poll;
+
+    @JsonProperty
+    public Attachment attachment;
 
     @JsonIgnore
     @ValidationMethod(message = "`image` is not a Base64 encoded string")
