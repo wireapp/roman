@@ -165,10 +165,10 @@ public class MessageHandler extends MessageHandlerBase {
             if (send(message)) {
                 sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
             } else {
-                Logger.warning("onImage: failed to deliver message to bot: %s", botId);
+                Logger.warning("onAttachment: failed to deliver message to bot: %s", botId);
             }
         } catch (Exception e) {
-            Logger.error("onImage: %s %s", botId, e);
+            Logger.error("onAttachment: %s %s", botId, e);
         }
     }
 
@@ -177,6 +177,7 @@ public class MessageHandler extends MessageHandlerBase {
         UUID botId = client.getId();
         UUID messageId = UUID.fromString(event.getMessageId());
 
+        // User clicked on a Poll Button
         if (event.hasButtonAction()) {
             Messages.ButtonAction action = event.getButtonAction();
 

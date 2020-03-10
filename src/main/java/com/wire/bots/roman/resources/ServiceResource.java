@@ -267,7 +267,7 @@ public class ServiceResource {
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class _NewService {
         @NotNull
-        @Length(min = 3, max = 128)
+        @Length(min = 3, max = 64)
         @JsonProperty
         public String name;
 
@@ -278,6 +278,8 @@ public class ServiceResource {
         public String avatar;
 
         @JsonProperty
+        @NotNull
+        @Length(min = 3, max = 128)
         public String summary;
 
         @ValidationMethod(message = "`url` is not a valid URL")

@@ -3,6 +3,7 @@ package com.wire.bots.roman.resources;
 import com.codahale.metrics.annotation.Metered;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.filters.ProxyAuthorization;
+import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.sdk.ClientRepo;
@@ -13,7 +14,6 @@ import com.wire.bots.sdk.models.AssetKey;
 import com.wire.bots.sdk.server.model.Conversation;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
-import com.wire.bots.sdk.tools.Util;
 import io.swagger.annotations.*;
 
 import javax.validation.Valid;
@@ -106,11 +106,13 @@ public class ConversationResource {
                 }
                 break;
                 case "attachment": {
-                    final byte[] decode = Base64.getDecoder().decode(message.attachment);
-                    final String mimeType = Util.extractMimeType(decode);
                     UUID messageId = UUID.randomUUID();
-                    FileAssetPreview preview = new FileAssetPreview("attachment", mimeType, decode.length, messageId);
-                    FileAsset asset = new FileAsset(decode, mimeType, messageId);
+
+                    final Attachment attachment = message.attachment;
+                    final byte[] decode = Base64.getDecoder().decode(attachment.data);
+
+                    FileAssetPreview preview = new FileAssetPreview(attachment.filename, attachment.mimeType, decode.length, messageId);
+                    FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
 
                     client.send(preview);
                     final AssetKey assetKey = client.uploadAsset(asset);
