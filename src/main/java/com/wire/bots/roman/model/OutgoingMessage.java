@@ -29,4 +29,5 @@ public class OutgoingMessage {
     public Poll poll;
     public UUID refMessageId;
     public String mimeType;
+    public UUID conversationId;
 }

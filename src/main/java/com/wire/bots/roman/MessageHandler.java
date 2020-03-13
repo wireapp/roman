@@ -51,6 +51,7 @@ public class MessageHandler extends MessageHandlerBase {
         UUID botId = newBot.id;
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
+        message.conversationId = newBot.conversation.id;
         message.userId = newBot.origin.id;
         message.handle = newBot.origin.handle;
         message.locale = newBot.locale;
@@ -69,6 +70,7 @@ public class MessageHandler extends MessageHandlerBase {
 
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
+        message.conversationId = msg.conversation.id;
         message.userId = msg.conversation.creator;
         message.messageId = msg.id;
         message.type = "conversation.init";
@@ -90,6 +92,7 @@ public class MessageHandler extends MessageHandlerBase {
 
         OutgoingMessage message = getOutgoingMessage(botId, type, msg);
 
+        message.conversationId = client.getConversationId();
         message.refMessageId = msg.getQuotedMessageId();
         message.text = msg.getText();
 
@@ -112,6 +115,7 @@ public class MessageHandler extends MessageHandlerBase {
 
         message.refMessageId = msg.getReactionMessageId();
         message.text = msg.getEmoji();
+        message.conversationId = client.getConversationId();
 
         send(message);
     }
@@ -133,6 +137,7 @@ public class MessageHandler extends MessageHandlerBase {
                     msg.getOtrKey());
             message.image = Base64.getEncoder().encodeToString(img);
             message.mimeType = msg.getMimeType();
+            message.conversationId = client.getConversationId();
 
             if (send(message)) {
                 sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
@@ -161,6 +166,7 @@ public class MessageHandler extends MessageHandlerBase {
             message.attachment = Base64.getEncoder().encodeToString(img);
             message.text = msg.getName();
             message.mimeType = msg.getMimeType();
+            message.conversationId = client.getConversationId();
 
             if (send(message)) {
                 sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());

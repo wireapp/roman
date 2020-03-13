@@ -61,7 +61,8 @@ wss://proxy.services.wire.com/await/`<app_key>`
 {
     "type": "conversation.bot_request",
     "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",  // Unique identifier for this bot
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who requested this bot
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who requested this bot  
+    "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
     "handle": "dejan_wire",  // username of the user who requested this bot
     "locale": "en_US",       // locale of the user who requested this bot    
     "token": "..."           // Access token. Store this token so the bot can post back later
@@ -77,7 +78,8 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.init",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who originally created this conversation
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who originally created this conversation    
+    "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
     "token": "...",                                   // Use this token to reply to this message - valid for 20 sec
     "text": "Bot Example Conversation"                // Conversation name
 }
@@ -88,7 +90,8 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.new_text",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",        // Author of this message
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",        // Author of this message      
+    "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
     "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",     
     "token": "..."                                           // Use this token to reply to this message - valid for 20 sec
     "refMessageId" : "caf93012-23f2-429e-b76a-b7649511db2e", // reference msgId in case of Reply, Reaction,.. (can be null)
