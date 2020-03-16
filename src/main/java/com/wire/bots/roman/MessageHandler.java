@@ -91,11 +91,12 @@ public class MessageHandler extends MessageHandlerBase {
         validate(botId);
 
         OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-
         message.conversationId = client.getConversationId();
         message.refMessageId = msg.getQuotedMessageId();
         message.text = msg.getText();
-
+        for (TextMessage.Mention mention : msg.getMentions())
+            message.addMention(mention.userId, mention.offset, mention.length);
+        
         if (send(message)) {
             sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
         } else {
