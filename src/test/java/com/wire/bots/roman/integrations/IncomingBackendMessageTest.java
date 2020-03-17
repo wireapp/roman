@@ -8,6 +8,7 @@ import com.wire.bots.roman.Tools;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Poll;
+import com.wire.bots.roman.model.Text;
 import com.wire.bots.sdk.crypto.CryptoFile;
 import com.wire.bots.sdk.models.otr.PreKeys;
 import com.wire.bots.sdk.models.otr.Recipients;
@@ -152,14 +153,16 @@ public class IncomingBackendMessageTest {
                 .post(Entity.entity(payload, MediaType.APPLICATION_JSON_TYPE));
     }
 
-    private Response newPollMessageFromBot(UUID pollId, String body, ArrayList<String> buttons, UUID botId) {
+    private Response newPollMessageFromBot(UUID pollId, String text, ArrayList<String> buttons, UUID botId) {
         String token = Tools.generateToken(botId);
 
         IncomingMessage message = new IncomingMessage();
-        message.type = "poll.new";
+        message.type = "poll";
+        message.text = new Text();
+        message.text.data = text;
         message.poll = new Poll();
         message.poll.id = pollId;
-        message.poll.body = body;
+        message.poll.type = "create";
         message.poll.buttons = buttons;
 
         return client
@@ -174,9 +177,10 @@ public class IncomingBackendMessageTest {
         String token = Tools.generateToken(botId);
 
         IncomingMessage message = new IncomingMessage();
-        message.type = "poll.action.confirmation";
+        message.type = "poll";
         message.poll = new Poll();
         message.poll.id = pollId;
+        message.poll.type = "confirmation";
         message.poll.offset = buttonId;
         message.poll.userId = userId;
 
