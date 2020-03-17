@@ -145,25 +145,28 @@ _Outgoing Message_ can be of 4 types:
 ```
 {
     "type": "text",
-    "text": "Hello!"
+    "text": { ... }
 }
 ```
 
 - **Image message**
 ```
 {
-    "type": "image",
-    "image": "..." // Base64 encoded image
+    "type": "attachment",
+    "image": {  ... } 
 }     
 ```
 
-- **New Poll message** - To create new Poll
+- **Create Poll message** - To create new Poll
 ```
 {
-  "type" : "poll.new",
+  "type" : "poll",
+  "text" : {
+    "data" : "This is a poll"
+  },
   "poll" : {
-    "id" : "24166f23-3477-4f2f-a7ca-44863d456fc8",
-    "body" : "This is a poll",
+    "id" : "88d0dcc1-1e27-4bab-9416-a736ae4b6a3e",
+    "type" : "create",
     "buttons" : [ "First", "Second" ]
   }
 }
@@ -172,9 +175,10 @@ _Outgoing Message_ can be of 4 types:
 - **Poll Action Confirmation** - To confirm the Poll Answer was recorded
 ```
 {
-  "type" : "poll.action.confirmation",
-  "poll" : {
+  "type" : "poll",
+  "poll" : {       
     "id" : "24166f23-3477-4f2f-a7ca-44863d456fc8",
+    "type" : "confirmation",
     "offset" : 1,
     "userId" : "2e06e56f-7e99-41e9-b3ba-185669bd52c1"
   }
