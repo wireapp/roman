@@ -4,23 +4,21 @@ package com.wire.bots.roman.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OutgoingMessage {
     @NotNull
     public UUID botId;
-
+    @NotNull
+    public String type;
     @NotNull
     public UUID userId;
 
     public UUID messageId;
-
-    @NotNull
-    public String type;
-
+    public UUID conversationId;
     public String token;
-
     public String text;
     public String image;
     public String attachment;
@@ -29,5 +27,14 @@ public class OutgoingMessage {
     public Poll poll;
     public UUID refMessageId;
     public String mimeType;
-    public UUID conversationId;
+    public ArrayList<Mention> mentions = new ArrayList<>();
+
+    public void addMention(UUID userId, int offset, int len) {
+        Mention mention = new Mention();
+        mention.userId = userId;
+        mention.offset = offset;
+        mention.length = len;
+
+        mentions.add(mention);
+    }
 }

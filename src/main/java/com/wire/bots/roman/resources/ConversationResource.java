@@ -97,7 +97,9 @@ public class ConversationResource {
         try (WireClient client = repo.getClient(botId)) {
             switch (message.type) {
                 case "text": {
-                    result.messageId = client.sendText(message.text);
+                    MessageText text = new MessageText(message.text);
+                    client.send(text);
+                    result.messageId = text.getMessageId();
                 }
                 break;
                 case "image": {
