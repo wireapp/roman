@@ -154,9 +154,15 @@ public class ConversationResource {
     }
 
     private UUID sendNewPoll(IncomingMessage message, WireClient client) throws Exception {
+        MessageText messageText = new MessageText(message.text.data);
+        if (message.text.mentions != null) {
+            for (Mention mention : message.text.mentions)
+                messageText.addMention(mention.userId, mention.offset, mention.length);
+        }
+        
         Poll poll = new Poll();
         poll.setMessageId(message.poll.id);
-        poll.addText(message.text.data);
+        poll.addText(messageText);
 
         int i = 0;
         for (String caption : message.poll.buttons) {

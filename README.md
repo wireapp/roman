@@ -132,7 +132,7 @@ If the event contains `token` field this `token` can be used to respond to this 
 
 Example:
 ```
-POST https://proxy.services.wire.com/conversation -d '{"type": "text", "text": "Hello!"}' \
+POST https://proxy.services.wire.com/conversation -d '{"type": "text", "text": {"data": "Hello!"} }' \
 -H'Authorization: Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
 ```
 
@@ -145,7 +145,9 @@ _Outgoing Message_ can be of 4 types:
 ```
 {
     "type": "text",
-    "text": { ... }
+    "text": { 
+      "data": "Hello!"
+    }
 }
 ```
 
@@ -153,7 +155,7 @@ _Outgoing Message_ can be of 4 types:
 ```
 {
     "type": "attachment",
-    "image": {  ... } 
+    "attachment": {  ... } 
 }     
 ```
 
