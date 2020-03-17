@@ -14,7 +14,6 @@ public class Attachment {
     public String data;
 
     @JsonProperty
-    @NotNull
     public String filename;
 
     @JsonProperty

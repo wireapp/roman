@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
+import com.wire.bots.roman.model.Mention;
 import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
@@ -51,12 +52,18 @@ public class ConversationResource {
     @Metered
     public Response post(@Context ContainerRequestContext context,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
-        try {
-            trace(message);
+        UUID botId = (UUID) context.getProperty("botid");
 
-            UUID botId = (UUID) context.getProperty("botid");
+        trace(message);
 
-            return send(message, botId);
+        try (WireClient client = repo.getClient(botId)) {
+            return send(message, client);
+        } catch (MissingStateException e) {
+            Logger.info("ConversationResource bot: %s err: %s", botId, e);
+            return Response.
+                    ok(new ErrorMessage("Unknown bot. This bot might be deleted by the user")).
+                    status(409).
+                    build();
         } catch (Exception e) {
             Logger.error("ConversationResource.post: %s", e);
             e.printStackTrace();
@@ -91,92 +98,93 @@ public class ConversationResource {
         }
     }
 
-    private Response send(IncomingMessage message, UUID botId) {
+    private Response send(IncomingMessage message, WireClient client) throws Exception {
         PostMessageResult result = new PostMessageResult();
 
-        try (WireClient client = repo.getClient(botId)) {
-            switch (message.type) {
-                case "text": {
-                    MessageText text = new MessageText(message.text);
-                    client.send(text);
-                    result.messageId = text.getMessageId();
-                }
-                break;
-                case "image": {
-                    Picture picture = new Picture(Base64.getDecoder().decode(message.image));
-                    result.messageId = client.sendPicture(picture.getImageData(), picture.getMimeType());
-                }
-                break;
-                case "attachment": {
-                    UUID messageId = UUID.randomUUID();
+        switch (message.type) {
+            case "text": {
+                MessageText text = new MessageText(message.text.data);
+                for (Mention mention : message.text.mentions)
+                    text.addMention(mention.userId, mention.offset, mention.length);
 
-                    final Attachment attachment = message.attachment;
-                    final byte[] decode = Base64.getDecoder().decode(attachment.data);
-
-                    FileAssetPreview preview = new FileAssetPreview(attachment.filename, attachment.mimeType, decode.length, messageId);
-                    FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
-
-                    client.send(preview);
-                    final AssetKey assetKey = client.uploadAsset(asset);
-                    asset.setAssetKey(assetKey.key);
-                    asset.setAssetToken(assetKey.token);
-                    client.send(asset);
-
-                    result.messageId = messageId;
-                }
-                break;
-                case "poll.new": {
-                    Poll poll = new Poll();
-                    poll.setMessageId(message.poll.id);
-                    poll.addText(message.poll.body);
-
-                    int i = 0;
-                    for (String caption : message.poll.buttons) {
-                        poll.addButton("" + i++, caption);
-                    }
-
-                    Logger.info("poll.new: id: %s", message.poll.id);
-
-                    client.send(poll);
-
-                    result.messageId = poll.getMessageId();
-                }
-                break;
-                case "poll.action.confirmation": {
-                    ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
-                            message.poll.id,
-                            message.poll.offset.toString());
-
-                    Logger.info("poll.action.confirmation: pollId: %s, offset: %s", message.poll.id, message.poll.offset);
-
-                    client.send(confirmation, message.poll.userId);
-
-                    result.messageId = confirmation.getMessageId();
-                }
-                break;
-                default:
-                    return Response.
-                            ok(new ErrorMessage("Unknown message type: " + message.type)).
-                            status(400).
-                            build();
+                client.send(text);
+                result.messageId = text.getMessageId();
             }
-
-            return Response.
-                    ok(result).
-                    build();
-        } catch (MissingStateException e) {
-            Logger.info("ConversationResource bot: %s err: %s", botId, e);
-            return Response.
-                    ok(new ErrorMessage("Unknown bot. This bot might be deleted by the user")).
-                    status(409).
-                    build();
-        } catch (Exception e) {
-            Logger.error("ConversationResource bot: %s err: %s", botId, e);
-            return Response.
-                    ok(new ErrorMessage(e.getMessage())).
-                    status(503).
-                    build();
+            break;
+            case "attachment": {
+                if (message.attachment.mimeType.startsWith("image")) {
+                    final byte[] decode = Base64.getDecoder().decode(message.attachment.data);
+                    result.messageId = client.sendPicture(decode, message.attachment.mimeType);
+                } else {
+                    result.messageId = sendAttachment(message, client);
+                }
+            }
+            break;
+            case "poll": {
+                if (message.poll.type.equals("create")) {
+                    result.messageId = sendNewPoll(message, client);
+                }
+                if (message.poll.type.equals("confirmation")) {
+                    result.messageId = sendPollConfirmation(message, client);
+                }
+            }
+            break;
+            default:
+                return Response.
+                        ok(new ErrorMessage("Unknown message type: " + message.type)).
+                        status(400).
+                        build();
         }
+
+        return Response.
+                ok(result).
+                build();
+    }
+
+    private UUID sendPollConfirmation(IncomingMessage message, WireClient client) throws Exception {
+        ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
+                message.poll.id,
+                message.poll.offset.toString());
+
+        Logger.info("poll.confirmation: pollId: %s, offset: %s", message.poll.id, message.poll.offset);
+
+        client.send(confirmation, message.poll.userId);
+
+        return confirmation.getMessageId();
+    }
+
+    private UUID sendNewPoll(IncomingMessage message, WireClient client) throws Exception {
+        Poll poll = new Poll();
+        poll.setMessageId(message.poll.id);
+        poll.addText(message.text.data);
+
+        int i = 0;
+        for (String caption : message.poll.buttons) {
+            poll.addButton("" + i++, caption);
+        }
+
+        Logger.info("poll.create: id: %s", message.poll.id);
+
+        client.send(poll);
+
+        return poll.getMessageId();
+    }
+
+    private UUID sendAttachment(IncomingMessage message, WireClient client) throws Exception {
+        UUID messageId = UUID.randomUUID();
+
+        final Attachment attachment = message.attachment;
+        final byte[] decode = Base64.getDecoder().decode(attachment.data);
+
+        FileAssetPreview preview = new FileAssetPreview(attachment.filename, attachment.mimeType, decode.length, messageId);
+        FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
+
+        client.send(preview);
+        final AssetKey assetKey = client.uploadAsset(asset);
+        asset.setAssetKey(assetKey.key);
+        asset.setAssetToken(assetKey.token);
+        client.send(asset);
+        return messageId;
     }
 
     private void trace(IncomingMessage message) {
