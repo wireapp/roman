@@ -5,10 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.IncomingMessage;
+import com.wire.bots.roman.model.Mention;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
-import com.wire.bots.sdk.assets.Picture;
+import com.wire.bots.sdk.assets.MessageText;
 import com.wire.bots.sdk.exceptions.MissingStateException;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
@@ -98,16 +99,20 @@ public class BroadcastResource {
         }
     }
 
-    private boolean send(UUID botId, @ApiParam @NotNull @Valid IncomingMessage message) {
+    private boolean send(UUID botId, @NotNull @Valid IncomingMessage message) {
         try (WireClient client = repo.getClient(botId)) {
             switch (message.type) {
                 case "text": {
-                    client.sendText(message.text);
+                    MessageText text = new MessageText(message.text.data);
+                    for (Mention mention : message.text.mentions)
+                        text.addMention(mention.userId, mention.offset, mention.length);
+
+                    client.send(text);
                 }
                 break;
-                case "image": {
-                    Picture picture = new Picture(Base64.getDecoder().decode(message.image));
-                    client.sendPicture(picture.getImageData(), picture.getMimeType());
+                case "attachment": {
+                    final byte[] decode = Base64.getDecoder().decode(message.attachment.data);
+                    client.sendPicture(decode, message.attachment.mimeType);
                 }
                 break;
             }

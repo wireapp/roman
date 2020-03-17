@@ -2,6 +2,7 @@ package com.wire.bots.roman.resources;
 
 import com.wire.bots.cryptobox.CryptoException;
 import com.wire.bots.roman.model.IncomingMessage;
+import com.wire.bots.roman.model.Text;
 import com.wire.bots.roman.resources.dummies.AuthenticationFeatureDummy;
 import com.wire.bots.roman.resources.dummies.Const;
 import com.wire.bots.roman.resources.dummies.WireClientDummy;
@@ -44,7 +45,8 @@ public class ConversationResourceTest {
     public void testPostIntoConversation() {
         IncomingMessage message = new IncomingMessage();
         message.type = "text";
-        message.text = "Hi there!";
+        message.text = new Text();
+        message.text.data = "Hi there!";
 
         final Response response = resources
                 .target("conversation")

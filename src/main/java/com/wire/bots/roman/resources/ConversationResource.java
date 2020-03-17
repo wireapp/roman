@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
+import com.wire.bots.roman.model.Mention;
 import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.WireClient;
@@ -97,61 +98,65 @@ public class ConversationResource {
         try (WireClient client = repo.getClient(botId)) {
             switch (message.type) {
                 case "text": {
-                    MessageText text = new MessageText(message.text);
+                    MessageText text = new MessageText(message.text.data);
+                    for (Mention mention : message.text.mentions)
+                        text.addMention(mention.userId, mention.offset, mention.length);
+
                     client.send(text);
                     result.messageId = text.getMessageId();
                 }
                 break;
-                case "image": {
-                    Picture picture = new Picture(Base64.getDecoder().decode(message.image));
-                    result.messageId = client.sendPicture(picture.getImageData(), picture.getMimeType());
-                }
-                break;
                 case "attachment": {
-                    UUID messageId = UUID.randomUUID();
+                    if (message.attachment.mimeType.startsWith("image")) {
+                        final byte[] decode = Base64.getDecoder().decode(message.attachment.data);
+                        result.messageId = client.sendPicture(decode, message.attachment.mimeType);
+                    } else {
+                        UUID messageId = UUID.randomUUID();
 
-                    final Attachment attachment = message.attachment;
-                    final byte[] decode = Base64.getDecoder().decode(attachment.data);
+                        final Attachment attachment = message.attachment;
+                        final byte[] decode = Base64.getDecoder().decode(attachment.data);
 
-                    FileAssetPreview preview = new FileAssetPreview(attachment.filename, attachment.mimeType, decode.length, messageId);
-                    FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
+                        FileAssetPreview preview = new FileAssetPreview(attachment.filename, attachment.mimeType, decode.length, messageId);
+                        FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
 
-                    client.send(preview);
-                    final AssetKey assetKey = client.uploadAsset(asset);
-                    asset.setAssetKey(assetKey.key);
-                    asset.setAssetToken(assetKey.token);
-                    client.send(asset);
+                        client.send(preview);
+                        final AssetKey assetKey = client.uploadAsset(asset);
+                        asset.setAssetKey(assetKey.key);
+                        asset.setAssetToken(assetKey.token);
+                        client.send(asset);
 
-                    result.messageId = messageId;
-                }
-                break;
-                case "poll.new": {
-                    Poll poll = new Poll();
-                    poll.setMessageId(message.poll.id);
-                    poll.addText(message.poll.body);
-
-                    int i = 0;
-                    for (String caption : message.poll.buttons) {
-                        poll.addButton("" + i++, caption);
+                        result.messageId = messageId;
                     }
-
-                    Logger.info("poll.new: id: %s", message.poll.id);
-
-                    client.send(poll);
-
-                    result.messageId = poll.getMessageId();
                 }
                 break;
-                case "poll.action.confirmation": {
-                    ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
-                            message.poll.id,
-                            message.poll.offset.toString());
+                case "poll": {
+                    if (message.poll.type.equalsIgnoreCase("create")) {
+                        Poll poll = new Poll();
+                        poll.setMessageId(message.poll.id);
+                        poll.addText(message.text.data);
 
-                    Logger.info("poll.action.confirmation: pollId: %s, offset: %s", message.poll.id, message.poll.offset);
+                        int i = 0;
+                        for (String caption : message.poll.buttons) {
+                            poll.addButton("" + i++, caption);
+                        }
 
-                    client.send(confirmation, message.poll.userId);
+                        Logger.info("poll: id: %s", message.poll.id);
 
-                    result.messageId = confirmation.getMessageId();
+                        client.send(poll);
+
+                        result.messageId = poll.getMessageId();
+                    }
+                    if (message.poll.type.equalsIgnoreCase("confirmation")) {
+                        ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
+                                message.poll.id,
+                                message.poll.offset.toString());
+
+                        Logger.info("poll.action.confirmation: pollId: %s, offset: %s", message.poll.id, message.poll.offset);
+
+                        client.send(confirmation, message.poll.userId);
+
+                        result.messageId = confirmation.getMessageId();
+                    }
                 }
                 break;
                 default:
