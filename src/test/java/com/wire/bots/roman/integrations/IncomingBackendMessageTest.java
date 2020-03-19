@@ -5,10 +5,7 @@ import com.wire.bots.cryptobox.CryptoException;
 import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.Tools;
-import com.wire.bots.roman.model.Config;
-import com.wire.bots.roman.model.IncomingMessage;
-import com.wire.bots.roman.model.Poll;
-import com.wire.bots.roman.model.Text;
+import com.wire.bots.roman.model.*;
 import com.wire.bots.sdk.crypto.CryptoFile;
 import com.wire.bots.sdk.models.otr.PreKeys;
 import com.wire.bots.sdk.models.otr.Recipients;
@@ -156,10 +153,17 @@ public class IncomingBackendMessageTest {
     private Response newPollMessageFromBot(UUID pollId, String text, ArrayList<String> buttons, UUID botId) {
         String token = Tools.generateToken(botId);
 
+        final String mention = "@mention";
+        Mention mnt = new Mention();
+        mnt.userId = UUID.randomUUID();
+        mnt.offset = text.length();
+        mnt.length = mention.length();
         IncomingMessage message = new IncomingMessage();
         message.type = "poll";
         message.text = new Text();
-        message.text.data = text;
+        message.text.data = text + " " + mention;
+        message.text.mentions = new ArrayList<>();
+        message.text.mentions.add(mnt);
         message.poll = new Poll();
         message.poll.id = pollId;
         message.poll.type = "create";
@@ -196,7 +200,7 @@ public class IncomingBackendMessageTest {
         Messages.Text.Builder text = Messages.Text.newBuilder()
                 .setContent(content)
                 .setQuote(Messages.Quote.newBuilder().setQuotedMessageId(UUID.randomUUID().toString()));
-        
+
         return Messages.GenericMessage.newBuilder()
                 .setMessageId(UUID.randomUUID().toString())
                 .setText(text)
