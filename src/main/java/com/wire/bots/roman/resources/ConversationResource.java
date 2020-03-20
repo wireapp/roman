@@ -104,9 +104,10 @@ public class ConversationResource {
         switch (message.type) {
             case "text": {
                 MessageText text = new MessageText(message.text.data);
-                for (Mention mention : message.text.mentions)
-                    text.addMention(mention.userId, mention.offset, mention.length);
-
+                if (message.text.mentions != null) {
+                    for (Mention mention : message.text.mentions)
+                        text.addMention(mention.userId, mention.offset, mention.length);
+                }
                 client.send(text);
                 result.messageId = text.getMessageId();
             }
@@ -159,7 +160,7 @@ public class ConversationResource {
             for (Mention mention : message.text.mentions)
                 messageText.addMention(mention.userId, mention.offset, mention.length);
         }
-        
+
         Poll poll = new Poll();
         poll.setMessageId(message.poll.id);
         poll.addText(messageText);
