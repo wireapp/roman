@@ -1,0 +1,28 @@
+name: CI/CD
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set envs
+        # use latest tag as release version
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_SHA}
+
+      - name: Build docker image, push if the branch is master
+        uses: docker/build-push-action@v1
+        with:
+          repository: wire-bot/roman
+          # login to repo
+          registry: eu.gcr.io
+          # see https://github.com/marketplace/actions/docker-build-push#google-container-registry-gcr
+          username: _json_key
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          # pass release_version
+          build_args: release_version=${{ env.RELEASE_VERSION }}
+          # tag the image with latest git tag
+          tag_with_ref: true
+          # push only if this is master
+          push: ${{ startsWith(github.ref, 'refs/heads/master') }}
