@@ -29,7 +29,7 @@ public class VersionResource {
     }
 
     private Version getVersion() {
-        String path = System.getenv("RELEASE_FILE_PATH");
+        final String path = System.getenv("RELEASE_FILE_PATH");
         final Version version = new Version();
 
         if (path != null) {
