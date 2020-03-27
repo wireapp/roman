@@ -35,6 +35,10 @@ public interface ProvidersDAO {
     void updateUrl(@Bind("id") UUID id,
                    @Bind("url") String url);
 
+    @SqlUpdate("UPDATE Providers SET service_name = :name WHERE id = :id")
+    void updateServiceName(@Bind("id") UUID id,
+                           @Bind("name") String name);
+
     @SqlQuery("SELECT * FROM Providers WHERE email = :email")
     @RegisterMapper(ProviderMapper.class)
     Provider get(@Bind("email") String email);

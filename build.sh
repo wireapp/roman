@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-mvn package -DskipTests=true -Dmaven.javadoc.skip=true
-docker build -t $DOCKER_USERNAME/roman:1.1.0 .
-docker push $DOCKER_USERNAME/roman
+#mvn package -DskipTests=true -Dmaven.javadoc.skip=true
+docker build -t eu.gcr.io/wire-bot/roman:latest .
+docker push eu.gcr.io/wire-bot/roman
+kubectl delete pod -l name=roman -n staging
+kubectl get pods -l name=roman -n staging
+

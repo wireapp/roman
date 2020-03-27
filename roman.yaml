@@ -1,16 +1,17 @@
 server:
-  rootPath: /proxy/*
   requestLog:
-    appenders: []
+    appenders:
+      - type: console
+        filterFactories:
+          - type: status-filter-factory
 
 logging:
   level: INFO
   loggers:
-    "com.wire.bots.logger": INFO
+    "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
 swagger:
   resourcePackage: com.wire.bots.roman.resources
-  uriPrefix: /proxy
   schemes:
     - http
     - https
@@ -21,30 +22,22 @@ jerseyClient:
   connectionRequestTimeout: 4s
   keepAlive: 0ms
   retries: 3
-
-auth: ${SERVICE_TOKEN}
-
-db:
-  driver: postgresql
-  host: ${POSTGRES_HOST}
-  user: postgres
-  password: ${POSTGRES_PASSWORD}
-  port: 5432
-
-key: ${APP_KEY}
+  userAgent: roman
+  tls:
+    protocol: TLSv1.2
+    provider: SunJSSE
+    supportedProtocols:
+      - TLSv1.1
+      - TLSv1.2
 
 database:
   driverClass: org.postgresql.Driver
-  user: postgres
-  password: ${POSTGRES_PASSWORD}
-  url: ${POSTGRES_URL}
-  properties:
-    charSet: UTF-8
-  maxWaitForConnection: 1s
-  validationQuery: "/* MyService Health Check */ SELECT 1"
-  minSize: 8
-  maxSize: 32
-  checkConnectionWhileIdle: false
-  evictionInterval: 10s
-  minIdleTime: 1 minute
+  url: ${DB_URL:-jdbc:postgresql://localhost/roman}
+  user: ${DB_USER:-}
+  password: ${DB_PASSWORD:-}
+  baseline: ${DB_BASELINE:-}
+
+key: ${APP_KEY:-}
+domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com}
+apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
 

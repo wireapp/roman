@@ -6,6 +6,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
+import java.net.URI;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Base64;
@@ -22,7 +23,7 @@ public class Tools {
                 .getSubject();
     }
 
-    static String generateToken(UUID botId) {
+    public static String generateToken(UUID botId) {
         return Jwts.builder()
                 .setIssuer("https://wire.com")
                 .setSubject(botId.toString())
@@ -42,7 +43,8 @@ public class Tools {
 
     public static String getPubkey(String hostname) throws IOException {
         String str = null;
-        PublicKey publicKey = getPublicKey(hostname);
+        String raw_hostname = URI.create(hostname).getHost();
+        PublicKey publicKey = getPublicKey(raw_hostname);
         if (publicKey != null)
             str = Base64.getEncoder().encodeToString(publicKey.getEncoded());
         final String start = "-----BEGIN PUBLIC KEY-----";

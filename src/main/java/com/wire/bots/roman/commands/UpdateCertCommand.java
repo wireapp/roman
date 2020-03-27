@@ -47,7 +47,7 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
                 bootstrap.getClassLoader());
 
         Client client = new JerseyClientBuilder(environment)
-                .using(config.getJerseyClientConfiguration())
+                .using(config.jerseyClient)
                 .withProvider(JacksonJsonProvider.class)
                 .build(getName());
 
