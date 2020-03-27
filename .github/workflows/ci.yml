@@ -22,7 +22,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           # pass release_version
           build_args: release_version=${{ env.RELEASE_VERSION }}
-          # build everything as latest
+          # build as latest
           tags: latest
           # add labels based on the build - see https://github.com/opencontainers/image-spec/blob/master/annotations.md
           add_git_labels: true
