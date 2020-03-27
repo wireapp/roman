@@ -17,8 +17,14 @@ COPY --from=build-env /app/target/roman.jar /opt/roman/
 
 COPY roman.yaml         /etc/roman/
 
+# create version file
+ARG release_version=development
+ENV RELEASE_FILE_PATH=/opt/roman/release.txt
+RUN echo $release_version > /opt/roman/release.txt
+
 WORKDIR /opt/roman
 
 EXPOSE  8080 8081 8082
 
 ENTRYPOINT ["java", "-javaagent:/opt/wire/lib/jmx_prometheus_javaagent.jar=8082:/opt/wire/lib/metrics.yaml", "-jar", "roman.jar", "server", "/etc/roman/roman.yaml"]
+
