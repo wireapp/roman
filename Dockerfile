@@ -27,3 +27,4 @@ WORKDIR /opt/roman
 EXPOSE  8080 8081 8082
 
 ENTRYPOINT ["java", "-javaagent:/opt/wire/lib/jmx_prometheus_javaagent.jar=8082:/opt/wire/lib/metrics.yaml", "-jar", "roman.jar", "server", "/etc/roman/roman.yaml"]
+
