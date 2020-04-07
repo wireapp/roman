@@ -92,7 +92,6 @@ public class Application extends Server<Config> {
         addResource(new UsersResource(getRepo()));
         addResource(new BroadcastResource(jdbi, getRepo()));
         addResource(new MessagesResource());
-        addResource(new VersionResource());
     }
 
     @Override
