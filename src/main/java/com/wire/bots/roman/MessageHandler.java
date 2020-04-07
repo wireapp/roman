@@ -96,12 +96,8 @@ public class MessageHandler extends MessageHandlerBase {
         message.text = msg.getText();
         for (TextMessage.Mention mention : msg.getMentions())
             message.addMention(mention.userId, mention.offset, mention.length);
-        
-        if (send(message)) {
-            sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
-        } else {
-            Logger.warning("onText: failed to deliver message to bot: %s", botId);
-        }
+
+        send(message);
     }
 
     @Override
@@ -140,11 +136,7 @@ public class MessageHandler extends MessageHandlerBase {
             message.mimeType = msg.getMimeType();
             message.conversationId = client.getConversationId();
 
-            if (send(message)) {
-                sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
-            } else {
-                Logger.warning("onImage: failed to deliver message to bot: %s", botId);
-            }
+            send(message);
         } catch (Exception e) {
             Logger.error("onImage: %s %s", botId, e);
         }
@@ -169,11 +161,7 @@ public class MessageHandler extends MessageHandlerBase {
             message.mimeType = msg.getMimeType();
             message.conversationId = client.getConversationId();
 
-            if (send(message)) {
-                sendDeliveryReceipt(client, msg.getMessageId(), msg.getUserId());
-            } else {
-                Logger.warning("onAttachment: failed to deliver message to bot: %s", botId);
-            }
+            send(message);
         } catch (Exception e) {
             Logger.error("onAttachment: %s %s", botId, e);
         }
@@ -234,8 +222,8 @@ public class MessageHandler extends MessageHandlerBase {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.type = "conversation.bot_removed";
-        boolean send = send(message);
-        if (!send)
+
+        if (!send(message))
             Logger.warning("onBotRemoved: failed to deliver message to: bot: %s", botId);
 
         botsDAO.remove(botId);
