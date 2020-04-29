@@ -27,7 +27,6 @@ import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
 import io.dropwizard.bundles.redirect.PathRedirect;
 import io.dropwizard.bundles.redirect.RedirectBundle;
-import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.websockets.WebsocketBundle;
@@ -79,7 +78,6 @@ public class Application extends Server<Config> {
     @Override
     protected void initialize(Config config, Environment env) {
         this.key = Keys.hmacShaKeyFor(config.key.getBytes());
-        this.jdbi = new DBIFactory().build(environment, config.database, "roman");
     }
 
     @Override
