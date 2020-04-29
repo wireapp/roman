@@ -91,6 +91,8 @@ jobs:
 
       # K8s is set up, deploy the app
       - name: Deploy the Service
+        env:
+          SERVICE: ${{ env.SERVICE_NAME }}
         run: |-
           kubectl apply -f "rubicon/prod/services/$SERVICE/$SERVICE.yaml"
 
