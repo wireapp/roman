@@ -57,14 +57,10 @@ jobs:
           IMAGE: ${{ env.DOCKER_IMAGE }}
           SERVICE: ${{ env.SERVICE_NAME }}
           VERSION: ${{ env.RELEASE_VERSION }}
-        run: |-
-          # go to directory with configuration
+        run: |
           cd "rubicon/prod/services/$SERVICE"
-          # escape literals for the sed
           export SED_PREPARED=$(echo $IMAGE  | awk '{ gsub("/", "\\/", $1); print $1 }')
-          # update final yaml
           sed -i".bak" "s/image: $SED_PREPARED.*/image: $SED_PREPARED:$VERSION/g" "$SERVICE.yaml"
-          # delete bakup file
           rm "$SERVICE.yaml.bak"
 
       # Setup gcloud CLI
@@ -78,7 +74,7 @@ jobs:
 
       # Configure Docker to use the gcloud command-line tool
       - name: Configure Docker Google cloud
-        run: |-
+        run: |
           gcloud --quiet auth configure-docker
 
       # Get the GKE credentials so we can deploy to the cluster
@@ -86,14 +82,14 @@ jobs:
         env:
           GKE_CLUSTER: anayotto
           GKE_ZONE: europe-west1-c
-        run: |-
+        run: |
           gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
       # K8s is set up, deploy the app
       - name: Deploy the Service
         env:
           SERVICE: ${{ env.SERVICE_NAME }}
-        run: |-
+        run: |
           kubectl apply -f "rubicon/prod/services/$SERVICE/$SERVICE.yaml"
 
       # Commit all data to Rubicon and open PR
