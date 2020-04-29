@@ -12,7 +12,12 @@ import java.util.UUID;
 
 public interface ProvidersDAO {
     @SqlUpdate("INSERT INTO Providers (name, id, email, hash, password) " +
-            "VALUES (:name, :id, :email, :hash, :password)")
+            " VALUES (:name, :id, :email, :hash, :password) " +
+            " ON CONFLICT (email) DO UPDATE SET " +
+            " name = EXCLUDED.name " +
+            " hash = EXCLUDED.hash " +
+            " password = EXCLUDED.password " +
+            " id = EXCLUDED.id ")
     int insert(@Bind("name") String name,
                @Bind("id") UUID id,
                @Bind("email") String email,

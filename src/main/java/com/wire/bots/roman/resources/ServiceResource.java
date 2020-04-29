@@ -135,7 +135,7 @@ public class ServiceResource {
             e.printStackTrace();
             Logger.error("ServiceResource.create: %s", e);
             return Response
-                    .ok(new ErrorMessage(e.getMessage()))
+                    .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
                     .build();
         }
@@ -203,7 +203,7 @@ public class ServiceResource {
             e.printStackTrace();
             Logger.error("ServiceResource.update: %s", e);
             return Response
-                    .ok(new ErrorMessage(e.getMessage()))
+                    .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
                     .build();
         }
@@ -237,7 +237,7 @@ public class ServiceResource {
             e.printStackTrace();
             Logger.error("ServiceResource.get: %s", e);
             return Response
-                    .ok(new ErrorMessage(e.getMessage()))
+                    .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
                     .build();
         }
