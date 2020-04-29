@@ -37,9 +37,7 @@ import java.security.Key;
 
 public class Application extends Server<Config> {
     private static Application instance;
-
     private Key key;
-    private DBI jdbi;
 
     public static void main(String[] args) throws Exception {
         new Application().run(args);
