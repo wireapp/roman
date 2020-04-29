@@ -161,8 +161,7 @@ public class ConversationResource {
                 messageText.addMention(mention.userId, mention.offset, mention.length);
         }
 
-        Poll poll = new Poll();
-        poll.setMessageId(message.poll.id);
+        Poll poll = new Poll(message.poll.id);
         poll.addText(messageText);
 
         int i = 0;

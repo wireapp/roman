@@ -72,7 +72,7 @@ public class ProviderResource {
         } catch (Exception e) {
             Logger.error("RegisterResource.register: %s", e);
             return Response
-                    .ok(new ErrorMessage(e.getMessage()))
+                    .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
                     .build();
         }
@@ -116,7 +116,7 @@ public class ProviderResource {
         } catch (Exception e) {
             Logger.error("RegisterResource.login: %s", e);
             return Response
-                    .ok(new ErrorMessage(e.getMessage()))
+                    .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
                     .build();
         }

@@ -12,7 +12,12 @@ import java.util.UUID;
 
 public interface ProvidersDAO {
     @SqlUpdate("INSERT INTO Providers (name, id, email, hash, password) " +
-            "VALUES (:name, :id, :email, :hash, :password)")
+            " VALUES (:name, :id, :email, :hash, :password) " +
+            " ON CONFLICT (email) DO UPDATE SET " +
+            " name = EXCLUDED.name, " +
+            " hash = EXCLUDED.hash, " +
+            " password = EXCLUDED.password, " +
+            " id = EXCLUDED.id ")
     int insert(@Bind("name") String name,
                @Bind("id") UUID id,
                @Bind("email") String email,
@@ -32,12 +37,12 @@ public interface ProvidersDAO {
                @Bind("serviceName") String serviceName);
 
     @SqlUpdate("UPDATE Providers SET url = :url WHERE id = :id")
-    void updateUrl(@Bind("id") UUID id,
-                   @Bind("url") String url);
+    int updateUrl(@Bind("id") UUID id,
+                  @Bind("url") String url);
 
     @SqlUpdate("UPDATE Providers SET service_name = :name WHERE id = :id")
-    void updateServiceName(@Bind("id") UUID id,
-                           @Bind("name") String name);
+    int updateServiceName(@Bind("id") UUID id,
+                          @Bind("name") String name);
 
     @SqlQuery("SELECT * FROM Providers WHERE email = :email")
     @RegisterMapper(ProviderMapper.class)
@@ -50,9 +55,6 @@ public interface ProvidersDAO {
     @SqlQuery("SELECT * FROM Providers WHERE id = :id")
     @RegisterMapper(ProviderMapper.class)
     Provider get(@Bind("id") UUID id);
-
-    @SqlQuery("SELECT url FROM Providers WHERE service_auth = :auth")
-    String getUrl(@Bind("auth") String auth);
 
     @SqlQuery("SELECT * FROM Providers WHERE service_auth = :auth")
     @RegisterMapper(ProviderMapper.class)
