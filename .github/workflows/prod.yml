@@ -58,9 +58,13 @@ jobs:
           SERVICE: ${{ env.SERVICE_NAME }}
           VERSION: ${{ env.RELEASE_VERSION }}
         run: |
+          # go to directory with configuration
           cd "rubicon/prod/services/$SERVICE"
-          export SED_PREPARED=$(echo $IMAGE  | awk '{ gsub("/", "\\/", $1); print $1 }')
+          # escape literals for the sed and set output with GCR
+          export SED_PREPARED=$(echo $IMAGE  | awk '{ gsub("/", "\\/", $1); print "eu.gcr.io\\/"$1 }')
+          # update final yaml
           sed -i".bak" "s/image: $SED_PREPARED.*/image: $SED_PREPARED:$VERSION/g" "$SERVICE.yaml"
+          # delete bakup file
           rm "$SERVICE.yaml.bak"
 
       # Setup gcloud CLI
