@@ -6,9 +6,22 @@ https://proxy.services.wire.com/swagger
 
 ### Register as Wire Bot Developer
  - [register](https://proxy.services.wire.com/swagger#!/default/register)
+```
+ {
+  "name": "ACME ltd.",
+  "email": "acme@email.com",
+  "password": "S3cr3t!"
+}
+```
 
 ### Login
  - [login](https://proxy.services.wire.com/swagger#!/default/login)
+```
+ {
+  "email": "acme@email.com",
+  "password": "S3cr3t!"
+}
+```
 
 ### Create a service
  - [create service](https://proxy.services.wire.com/swagger#!/default/create)
@@ -191,8 +204,9 @@ Full description: https://proxy.services.wire.com/swagger#!/default/post
 **Note:** `token` that comes with `conversation.init` events is _lifelong_. It should be stored for later usage. `token`
  that comes with other event types has lifespan of 20 seconds.
 
-### Bot Example
+### Bot Examples
 - Echo bot in Java: https://github.com/dkovacevic/demo-proxy
+- Poll bot in Kotlin: https://github.com/wireapp/poll-bot
 
 ## Build docker image from source code
 docker build -t $DOCKER_USERNAME/roman:latest .
