@@ -31,7 +31,6 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.websockets.WebsocketBundle;
 import io.jsonwebtoken.security.Keys;
-import org.skife.jdbi.v2.DBI;
 
 import java.security.Key;
 
@@ -88,10 +87,5 @@ public class Application extends Server<Config> {
         addResource(new UsersResource(getRepo()));
         addResource(new BroadcastResource(jdbi, getRepo()));
         addResource(new MessagesResource());
-    }
-
-    @Override
-    public DBI getJdbi() {
-        return jdbi;
     }
 }

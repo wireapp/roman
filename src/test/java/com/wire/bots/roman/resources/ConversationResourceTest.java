@@ -1,7 +1,9 @@
 package com.wire.bots.roman.resources;
 
 import com.wire.bots.cryptobox.CryptoException;
+import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
+import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.roman.model.Text;
 import com.wire.bots.roman.resources.dummies.AuthenticationFeatureDummy;
 import com.wire.bots.roman.resources.dummies.Const;
@@ -42,7 +44,7 @@ public class ConversationResourceTest {
     }
 
     @Test
-    public void testPostIntoConversation() {
+    public void testPostTextIntoConversation() {
         IncomingMessage message = new IncomingMessage();
         message.type = "text";
         message.text = new Text();
@@ -54,6 +56,27 @@ public class ConversationResourceTest {
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
 
         assertThat(response.getStatus()).isEqualTo(200);
+        final PostMessageResult result = response.readEntity(PostMessageResult.class);
+        assertThat(result.messageId).isNotNull();
+    }
+
+    @Test
+    public void testPostImageIntoConversation() {
+        IncomingMessage message = new IncomingMessage();
+        message.type = "attachment";
+        message.attachment = new Attachment();
+        message.attachment.mimeType = "image/jpeg";
+        message.attachment.data = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aH" +
+                "BwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zND";
+
+        final Response response = resources
+                .target("conversation")
+                .request()
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        final PostMessageResult result = response.readEntity(PostMessageResult.class);
+        assertThat(result.messageId).isNotNull();
     }
 
     @Test
