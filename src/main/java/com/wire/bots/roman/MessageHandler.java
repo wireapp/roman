@@ -190,6 +190,24 @@ public class MessageHandler extends MessageHandlerBase {
                 Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
             }
         }
+        if (event.hasComposite()) {
+            final Messages.Composite composite = event.getComposite();
+            OutgoingMessage message = new OutgoingMessage();
+            message.botId = botId;
+            message.userId = userId;
+            message.messageId = messageId;
+            message.type = "conversation.poll.new";
+            message.token = generateToken(botId);
+            for (Messages.Composite.Item item : composite.getItemsList()) {
+                if (item.hasText()) {
+                    message.text = item.getText().getContent();
+                }
+            }
+
+            if (!send(message)) {
+                Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
+            }
+        }
     }
 
     @Override
