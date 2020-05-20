@@ -16,7 +16,7 @@ public class Poll {
     public UUID id;
 
     @NotNull
-    @OneOf(value = {"create", "confirmation"})
+    @OneOf(value = {"create", "confirmation", "new"})
     @JsonProperty
     public String type;
 

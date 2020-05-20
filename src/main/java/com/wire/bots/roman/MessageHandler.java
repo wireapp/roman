@@ -23,6 +23,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -190,6 +191,7 @@ public class MessageHandler extends MessageHandlerBase {
                 Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
             }
         }
+        // New Poll has been created
         if (event.hasComposite()) {
             final Messages.Composite composite = event.getComposite();
             OutgoingMessage message = new OutgoingMessage();
@@ -198,9 +200,16 @@ public class MessageHandler extends MessageHandlerBase {
             message.messageId = messageId;
             message.type = "conversation.poll.new";
             message.token = generateToken(botId);
+            message.poll = new Poll();
+            message.poll.id = messageId;
+            message.poll.type = "new";
+            message.poll.buttons = new ArrayList<>();
             for (Messages.Composite.Item item : composite.getItemsList()) {
                 if (item.hasText()) {
                     message.text = item.getText().getContent();
+                }
+                if (item.hasButton()) {
+                    message.poll.buttons.add(item.getButton().getText());
                 }
             }
 
