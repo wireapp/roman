@@ -2,7 +2,7 @@
 Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API
 
 ### API documentation:
-https://proxy.services.wire.com/swagger
+[swagger](https://proxy.services.wire.com/swagger#/default)
 
 ### Register as Wire Bot Developer
  - [register](https://proxy.services.wire.com/swagger#!/default/register)
