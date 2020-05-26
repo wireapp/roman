@@ -23,8 +23,11 @@ import com.wire.bots.roman.filters.ProxyAuthenticationFilter;
 import com.wire.bots.roman.filters.ServiceAuthenticationFilter;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.resources.*;
+import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
+import com.wire.bots.sdk.factories.CryptoFactory;
+import com.wire.bots.sdk.factories.StorageFactory;
 import io.dropwizard.bundles.redirect.PathRedirect;
 import io.dropwizard.bundles.redirect.RedirectBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -87,5 +90,12 @@ public class Application extends Server<Config> {
         addResource(new UsersResource(getRepo()));
         addResource(new BroadcastResource(jdbi, getRepo()));
         addResource(new MessagesResource());
+    }
+
+    @Override
+    protected ClientRepo createClientRepo() {
+        StorageFactory storageFactory = getStorageFactory();
+        CryptoFactory cryptoFactory = getCryptoFactory();
+        return new CachedClientRepo(getClient(), cryptoFactory, storageFactory);
     }
 }
