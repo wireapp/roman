@@ -36,6 +36,7 @@ database:
   user: ${DB_USER:-}
   password: ${DB_PASSWORD:-}
   baseline: ${DB_BASELINE:-}
+  maxSize: 33
 
 key: ${APP_KEY:-}
 domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com}
