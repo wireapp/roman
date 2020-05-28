@@ -300,6 +300,8 @@ public class MessageHandler extends MessageHandlerBase {
                     providerId,
                     post.getStatus());
 
+            final String entity = post.readEntity(String.class);
+            post.close();
             return post.getStatus() == 200;
         }
 
