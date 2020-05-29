@@ -16,7 +16,7 @@ services:
       - DB_USER=roman
       - DB_PASSWORD=roman
       # randomly generated for local testing
-      - APP_KEY=0fb0f7f1-99aa-456c-a2bd-9e1132d0e9f4
+      - APP_KEY=b53181dd-6400-4960-8988-f775545588ff-0949f503-421e-4588-a2c5-f64fd9c180fd
     depends_on:
       - db
 
