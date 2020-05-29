@@ -22,6 +22,8 @@ RUN mvn -Dmaven.test.skip=true package
 # runtime
 FROM dejankovacevic/bots.runtime:2.10.3
 
+RUN apt install netcat -y
+
 COPY --from=build /app/target/roman.jar /opt/roman/
 
 # create configuration
@@ -45,11 +47,12 @@ WORKDIR $APP_DIR
 EXPOSE  8080 8081 8082
 
 # create entrypoint
-RUN echo '\
+RUN echo "\
+cd $APP_DIR && \
 java    -javaagent:/opt/wire/lib/jmx_prometheus_javaagent.jar=8082:/opt/wire/lib/metrics.yaml \
         -jar roman.jar \
-        server /etc/roman/roman.yaml'\
->> entrypoint.sh
-RUN chmod +x entrypoint.sh
+        server /etc/roman/roman.yaml"\
+>> /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT $APP_DIR/entrypoint.sh
+ENTRYPOINT /entrypoint.sh
