@@ -1,0 +1,7 @@
+.git
+.idea
+target
+Dockerfile
+docker-compose.yml
+README.md
+roman.iml

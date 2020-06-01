@@ -1,12 +1,14 @@
 server:
   requestLog:
     appenders:
-      - type: console
+      - type: ${APPENDER_TYPE:-console}
         filterFactories:
           - type: status-filter-factory
 
 logging:
   level: INFO
+  appenders:
+    - type: ${APPENDER_TYPE:-console}
   loggers:
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
