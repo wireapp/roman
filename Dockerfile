@@ -23,7 +23,8 @@ COPY roman.yaml         /etc/roman/
 ARG release_version=development
 ENV RELEASE_FILE_PATH=/opt/roman/release.txt
 RUN echo $release_version > /opt/roman/release.txt
-ENV APPENDER_TYPE=json-console
+# TODO - uncomment this when migration to JSON logging is finalized
+#ENV APPENDER_TYPE=json-console
 
 WORKDIR /opt/roman
 
