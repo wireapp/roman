@@ -40,11 +40,7 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
 
     @Override
     public void run(Bootstrap<Config> bootstrap, Namespace namespace, Config config) throws IOException {
-        Environment environment = new Environment(getName(),
-                bootstrap.getObjectMapper(),
-                bootstrap.getValidatorFactory().getValidator(),
-                bootstrap.getMetricRegistry(),
-                bootstrap.getClassLoader());
+        Environment environment = new Environment("UpdateCertCommand");
 
         Client client = new JerseyClientBuilder(environment)
                 .using(config.getJerseyClient())

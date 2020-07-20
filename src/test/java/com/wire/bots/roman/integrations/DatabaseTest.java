@@ -1,7 +1,5 @@
 package com.wire.bots.roman.integrations;
 
-import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
@@ -19,7 +17,7 @@ public class DatabaseTest {
         Config.Database db = new Config.Database();
         db.setUrl("jdbc:postgresql://localhost/roman");
         db.setDriverClass("org.postgresql.Driver");
-        Environment env = new Environment("DatabaseTest", new ObjectMapper(), null, new MetricRegistry(), null);
+        Environment env = new Environment("DatabaseTest");
         final DBI dbi = new DBIFactory().build(env, db, "roman");
 
         providersDAO = dbi.onDemand(ProvidersDAO.class);
