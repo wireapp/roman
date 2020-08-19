@@ -19,7 +19,7 @@
     </repositories>
 
     <properties>
-        <lithium.version>2.36.4</lithium.version>
+        <lithium.version>2.36.5</lithium.version>
     </properties>
 
     <dependencies>
