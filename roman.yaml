@@ -19,9 +19,9 @@ swagger:
     - https
 
 jerseyClient:
-  timeout: 20s
-  connectionTimeout: 4s
-  connectionRequestTimeout: 4s
+  timeout: 40s
+  connectionTimeout: 40s
+  connectionRequestTimeout: 40s
   keepAlive: 0ms
   retries: 3
   userAgent: roman
@@ -40,6 +40,7 @@ database:
   baseline: ${DB_BASELINE:-}
   maxSize: 33
 
+token: dummy
 key: ${APP_KEY:-}
 domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com}
 apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
