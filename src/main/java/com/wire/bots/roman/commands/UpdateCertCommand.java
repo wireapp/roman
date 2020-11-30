@@ -47,7 +47,7 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
                 .withProvider(JacksonJsonProvider.class)
                 .build(getName());
 
-        ProviderClient providerClient = new ProviderClient(client);
+        ProviderClient providerClient = new ProviderClient(client, config.apiHost);
 
         DBI jdbi = new DBIFactory().build(environment, config.database, "postgresql");
         ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);

@@ -77,12 +77,13 @@ public class Application extends Server<Config> {
 
     @Override
     protected void initialize(Config config, Environment env) {
+        this.config = config;
         this.key = Keys.hmacShaKeyFor(config.key.getBytes());
     }
 
     @Override
     protected void onRun(Config config, Environment env) {
-        ProviderClient providerClient = new ProviderClient(getClient());
+        ProviderClient providerClient = new ProviderClient(getClient(), config.apiHost);
 
         addResource(new ProviderResource(jdbi, providerClient));
         addResource(new ServiceResource(jdbi, providerClient));

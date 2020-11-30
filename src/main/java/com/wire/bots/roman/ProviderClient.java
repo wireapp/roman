@@ -2,7 +2,6 @@ package com.wire.bots.roman;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Service;
 import com.wire.bots.roman.model.SignIn;
 import com.wire.bots.sdk.models.AssetKey;
@@ -26,9 +25,8 @@ public class ProviderClient {
     private final WebTarget servicesTarget;
     private final WebTarget providerTarget;
 
-    public ProviderClient(Client jerseyClient) {
-        Config config = Application.getInstance().getConfig();
-        providerTarget = jerseyClient.target(config.apiHost)
+    public ProviderClient(Client jerseyClient, String apiHost) {
+        providerTarget = jerseyClient.target(apiHost)
                 .path("provider");
         servicesTarget = providerTarget
                 .path("services");
