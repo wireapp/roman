@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.List;
 
 public class UpdateCertCommand extends ConfiguredCommand<Config> {
-
     public UpdateCertCommand() {
         super("cert", "Updates certificates for all services");
     }
@@ -62,15 +61,9 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
         System.out.printf("Updating %s cert for %d providers...\n\n", hostname, providers.size());
 
         for (Provider provider : providers) {
-            updateCert(providerClient, pubkey, provider);
-        }
-    }
-
-    private void updateCert(ProviderClient providerClient, String pubkey, Provider provider) {
-        try {
             if (provider.serviceId == null) {
                 System.out.printf("Skipping provider: %s, name: %s\n", provider.id, provider.name);
-                return;
+                continue;
             }
 
             Response login = providerClient.login(provider.email, provider.password);
@@ -80,11 +73,18 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
                         provider.id,
                         login.getStatus(),
                         login.readEntity(String.class));
-                return;
+                continue;
             }
 
             NewCookie cookie = login.getCookies().get("zprovider");
 
+            updateCert(providerClient, pubkey, provider, cookie);
+            updateURL(providerClient, provider, config.domain, cookie);
+        }
+    }
+
+    private void updateCert(ProviderClient providerClient, String pubkey, Provider provider, NewCookie cookie) {
+        try {
             Response response = providerClient.updateServicePubKey(cookie, provider.serviceId, provider.password, pubkey);
 
             System.out.printf("Updated cert for provider: %s, name: %s. Status: %d\n",
@@ -93,6 +93,20 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
                     response.getStatus());
         } catch (Exception e) {
             System.err.printf("ERROR updateCert provider: %s, error: %s\n", provider.id, e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void updateURL(ProviderClient providerClient, Provider provider, String url, NewCookie cookie) {
+        try {
+            Response response = providerClient.updateServiceURL(cookie, provider.serviceId, provider.password, url);
+
+            System.out.printf("Updated URL for provider: %s, name: %s. Status: %d\n",
+                    provider.id,
+                    provider.name,
+                    response.getStatus());
+        } catch (Exception e) {
+            System.err.printf("ERROR updateURL provider: %s, error: %s\n", provider.id, e.getMessage());
             e.printStackTrace();
         }
     }

@@ -121,6 +121,19 @@ public class ProviderClient {
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
 
+    public Response updateServiceURL(NewCookie zprovider, UUID serviceId, String password, String url) {
+        _UpdateService updateService = new _UpdateService();
+        updateService.baseUrl = url;
+        updateService.password = password;
+
+        return servicesTarget
+                .path(serviceId.toString())
+                .path("connection")
+                .request(MediaType.APPLICATION_JSON)
+                .cookie(zprovider)
+                .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
+    }
+
     public String uploadProfilePicture(Cookie cookie, byte[] image, String mimeType) throws Exception {
         final boolean isPublic = true;
         final String retention = "eternal";
@@ -183,6 +196,9 @@ public class ProviderClient {
 
         @JsonProperty("public_keys")
         public String[] pubKeys;
+
+        @JsonProperty("base_url")
+        public String baseUrl;
 
         @JsonProperty
         public ArrayList<_Asset> assets;
