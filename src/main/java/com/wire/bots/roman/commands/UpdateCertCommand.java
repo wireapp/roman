@@ -80,13 +80,18 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
 
             updateCert(providerClient, pubkey, provider, cookie);
             updateURL(providerClient, provider, config.domain, cookie);
+            // slow down a bit, BE will otherwise rate limit us
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private void updateCert(ProviderClient providerClient, String pubkey, Provider provider, NewCookie cookie) {
         try {
             Response response = providerClient.updateServicePubKey(cookie, provider.serviceId, provider.password, pubkey);
-
             System.out.printf("Updated cert for provider: %s, name: %s. Status: %d\n",
                     provider.id,
                     provider.name,
@@ -102,6 +107,13 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
             Response response = providerClient.updateServiceURL(cookie, provider.serviceId, provider.password, url);
 
             System.out.printf("Updated URL for provider: %s, name: %s. Status: %d\n",
+                    provider.id,
+                    provider.name,
+                    response.getStatus());
+            // reenable when the URL was changed
+            providerClient.enableService(cookie, provider.serviceId, provider.password);
+
+            System.out.printf("Service enabled: %s, name: %s. Status: %d\n",
                     provider.id,
                     provider.name,
                     response.getStatus());
