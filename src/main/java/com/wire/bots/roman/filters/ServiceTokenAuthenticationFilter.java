@@ -2,6 +2,7 @@ package com.wire.bots.roman.filters;
 
 import com.wire.bots.roman.Application;
 import com.wire.bots.roman.Const;
+import com.wire.bots.sdk.tools.Logger;
 import io.jsonwebtoken.Jwts;
 
 import javax.ws.rs.WebApplicationException;
@@ -21,6 +22,7 @@ public class ServiceTokenAuthenticationFilter implements ContainerRequestFilter 
         String token = requestContext.getHeaderString(Const.APP_KEY);
 
         if (token == null) {
+            Logger.info("ServiceTokenAuthenticationFilter: missing token");
             Exception cause = new IllegalArgumentException("Missing Authorization");
             throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);
         }
@@ -35,6 +37,7 @@ public class ServiceTokenAuthenticationFilter implements ContainerRequestFilter 
             UUID providerId = UUID.fromString(subject);
             requestContext.setProperty(Const.PROVIDER_ID, providerId);
         } catch (Exception e) {
+            Logger.info("ServiceTokenAuthenticationFilter: %s %s", token, e);
             Exception cause = new IllegalArgumentException(e.getMessage());
             throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);
         }
