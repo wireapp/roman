@@ -109,9 +109,10 @@ public class BroadcastResource {
             switch (message.type) {
                 case "text": {
                     MessageText text = new MessageText(message.text.data);
-                    for (Mention mention : message.text.mentions)
-                        text.addMention(mention.userId, mention.offset, mention.length);
-
+                    if (message.text.mentions != null) {
+                        for (Mention mention : message.text.mentions)
+                            text.addMention(mention.userId, mention.offset, mention.length);
+                    }
                     client.send(text);
                 }
                 break;
@@ -126,6 +127,7 @@ public class BroadcastResource {
             Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
             jdbi.onDemand(BotsDAO.class).remove(botId);
         } catch (Exception e) {
+            e.printStackTrace();
             Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
         }
 
