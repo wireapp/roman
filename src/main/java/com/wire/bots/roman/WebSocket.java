@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.wire.bots.roman.Const.APP_KEY;
 
-@ServerEndpoint(value = "/await/{app_key}", encoders = MessageEncoder.class)
+@ServerEndpoint(value = "/await/{app-key}", encoders = MessageEncoder.class)
 public class WebSocket {
     private final static ConcurrentHashMap<UUID, Session> sessions = new ConcurrentHashMap<>();// ProviderId, Session,
 
