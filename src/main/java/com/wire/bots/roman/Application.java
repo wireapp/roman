@@ -21,6 +21,7 @@ import com.wire.bots.roman.commands.UpdateCertCommand;
 import com.wire.bots.roman.filters.BackendAuthenticationFilter;
 import com.wire.bots.roman.filters.ProxyAuthenticationFilter;
 import com.wire.bots.roman.filters.ServiceAuthenticationFilter;
+import com.wire.bots.roman.filters.ServiceTokenAuthenticationFilter;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.resources.*;
 import com.wire.bots.sdk.ClientRepo;
@@ -72,6 +73,7 @@ public class Application extends Server<Config> {
     protected void registerFeatures() {
         environment.jersey().register(ProxyAuthenticationFilter.ProxyAuthenticationFeature.class);
         environment.jersey().register(ServiceAuthenticationFilter.ServiceAuthenticationFeature.class);
+        environment.jersey().register(ServiceTokenAuthenticationFilter.ServiceTokenAuthenticationFeature.class);
         environment.jersey().register(BackendAuthenticationFilter.BackendAuthenticationFeature.class);
     }
 

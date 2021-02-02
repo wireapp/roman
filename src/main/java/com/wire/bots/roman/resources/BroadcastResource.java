@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Metered;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.filters.ServiceTokenAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Mention;
 import com.wire.bots.roman.model.Provider;
@@ -23,6 +24,8 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Base64;
@@ -30,7 +33,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import static com.wire.bots.roman.Tools.validateToken;
+import static com.wire.bots.roman.Const.APP_KEY;
+import static com.wire.bots.roman.Const.PROVIDER_ID;
 
 @Api
 @Path("/broadcast")
@@ -51,13 +55,14 @@ public class BroadcastResource {
             @ApiResponse(code = 404, message = "Unknown access token")
     })
     @Metered
-    public Response post(@ApiParam @NotNull @HeaderParam("access_token") String token,
+    @ServiceTokenAuthorization
+    public Response post(@Context ContainerRequestContext context,
+                         @ApiParam @HeaderParam(APP_KEY) String token,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
             trace(message);
 
-            String subject = validateToken(token);
-            UUID providerId = UUID.fromString(subject);
+            UUID providerId = (UUID) context.getProperty(PROVIDER_ID);
 
             ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
             Provider provider = providersDAO.get(providerId);
@@ -99,7 +104,7 @@ public class BroadcastResource {
         }
     }
 
-    private boolean send(UUID botId, @NotNull @Valid IncomingMessage message) {
+    private boolean send(UUID botId, IncomingMessage message) {
         try (WireClient client = repo.getClient(botId)) {
             switch (message.type) {
                 case "text": {

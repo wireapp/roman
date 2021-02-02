@@ -14,11 +14,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import java.util.UUID;
 
+import static com.wire.bots.roman.Const.PROVIDER_ID;
+import static com.wire.bots.roman.Const.Z_ROMAN;
+
 @Provider
 public class ServiceAuthenticationFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) {
-        Cookie authCookie = requestContext.getCookies().get("zroman");
+        Cookie authCookie = requestContext.getCookies().get(Z_ROMAN);
 
         if (authCookie == null) {
             Exception cause = new IllegalArgumentException("Missing Authorization");
@@ -35,7 +38,7 @@ public class ServiceAuthenticationFilter implements ContainerRequestFilter {
                     .getSubject();
 
             UUID providerId = UUID.fromString(subject);
-            requestContext.setProperty("providerid", providerId);
+            requestContext.setProperty(PROVIDER_ID, providerId);
         } catch (Exception e) {
             Exception cause = new IllegalArgumentException(e.getMessage());
             throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);
