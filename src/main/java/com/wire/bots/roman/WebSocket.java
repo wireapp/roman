@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint(value = "/await/{access_token}", encoders = MessageEncoder.class)
+import static com.wire.bots.roman.Const.APP_KEY;
+
+@ServerEndpoint(value = "/await/{app_key}", encoders = MessageEncoder.class)
 public class WebSocket {
     private final static ConcurrentHashMap<UUID, Session> sessions = new ConcurrentHashMap<>();// ProviderId, Session,
 
@@ -29,7 +31,7 @@ public class WebSocket {
     }
 
     @OnOpen
-    public void onOpen(Session session, @PathParam("access_token") String token) {
+    public void onOpen(Session session, @PathParam(APP_KEY) String token) {
         String subject = Tools.validateToken(token);
         UUID providerId = UUID.fromString(subject);
 

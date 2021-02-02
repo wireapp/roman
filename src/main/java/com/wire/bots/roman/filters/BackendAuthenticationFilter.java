@@ -13,6 +13,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import java.util.Objects;
 
+import static com.wire.bots.roman.Const.WIRE_AUTH;
+
 @Provider
 public class BackendAuthenticationFilter implements ContainerRequestFilter {
     @Override
@@ -38,7 +40,7 @@ public class BackendAuthenticationFilter implements ContainerRequestFilter {
             throw new WebApplicationException(cause, Response.Status.BAD_REQUEST);
         }
 
-        requestContext.setProperty("wire-auth", token);
+        requestContext.setProperty(WIRE_AUTH, token);
     }
 
     @Provider

@@ -31,6 +31,8 @@ import java.util.Base64;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import static com.wire.bots.roman.Const.BOT_ID;
+
 @Api
 @Path("/conversation")
 @Produces(MediaType.APPLICATION_JSON)
@@ -52,7 +54,7 @@ public class ConversationResource {
     @Metered
     public Response post(@Context ContainerRequestContext context,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
-        UUID botId = (UUID) context.getProperty("botid");
+        UUID botId = (UUID) context.getProperty(BOT_ID);
 
         trace(message);
 
@@ -84,7 +86,7 @@ public class ConversationResource {
     @ProxyAuthorization
     @Metered
     public Response get(@Context ContainerRequestContext context) {
-        try (WireClient client = repo.getClient((UUID) context.getProperty("botid"))) {
+        try (WireClient client = repo.getClient((UUID) context.getProperty(BOT_ID))) {
             return Response
                     .ok(client.getConversation())
                     .build();

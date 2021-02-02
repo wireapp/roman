@@ -4,11 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.wire.bots.roman.Application;
+import com.wire.bots.roman.*;
 import com.wire.bots.roman.DAO.ProvidersDAO;
-import com.wire.bots.roman.ImageProcessor;
-import com.wire.bots.roman.ProviderClient;
-import com.wire.bots.roman.Tools;
 import com.wire.bots.roman.filters.ServiceAuthorization;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
@@ -38,6 +35,9 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.UUID;
 
+import static com.wire.bots.roman.Const.Z_PROVIDER;
+import static com.wire.bots.roman.Const.Z_ROMAN;
+
 @Api
 @Path("/service")
 @Produces(MediaType.APPLICATION_JSON)
@@ -55,11 +55,11 @@ public class ServiceResource {
     @POST
     @ApiOperation(value = "Create new Service", response = _Result.class)
     @ServiceAuthorization
-    public Response create(@ApiParam(hidden = true) @CookieParam("zroman") String token,
+    public Response create(@ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
                            @Context ContainerRequestContext context,
                            @ApiParam @Valid _NewService payload) {
         try {
-            UUID providerId = (UUID) context.getProperty("providerid");
+            UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
 
             Provider provider = providersDAO.get(providerId);
 
@@ -76,7 +76,7 @@ public class ServiceResource {
                         build();
             }
 
-            NewCookie cookie = login.getCookies().get("zprovider");
+            NewCookie cookie = login.getCookies().get(Z_PROVIDER);
 
             Service service = newService();
             service.name = payload.name;
@@ -145,7 +145,7 @@ public class ServiceResource {
     @ApiOperation(value = "Update Service", response = _Result.class)
     @ServiceAuthorization
     public Response update(@Context ContainerRequestContext context,
-                           @ApiParam(hidden = true) @CookieParam("zroman") String token,
+                           @ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
                            @ApiParam @Valid _UpdateService payload) {
         try {
             UUID providerId = (UUID) context.getProperty("providerid");
@@ -173,7 +173,7 @@ public class ServiceResource {
                         build();
             }
 
-            NewCookie cookie = login.getCookies().get("zprovider");
+            NewCookie cookie = login.getCookies().get(Z_PROVIDER);
 
             if (payload.name != null) {
                 providersDAO.updateServiceName(provider.id, payload.name);
@@ -212,10 +212,10 @@ public class ServiceResource {
     @GET
     @ApiOperation(value = "Get the Service", response = _Result.class)
     @ServiceAuthorization
-    public Response get(@ApiParam(hidden = true) @CookieParam("zroman") String token,
+    public Response get(@ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
                         @Context ContainerRequestContext context) {
         try {
-            UUID providerId = (UUID) context.getProperty("providerid");
+            UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
 
             Logger.debug("ServiceResource.get: provider: %s", providerId);
 
