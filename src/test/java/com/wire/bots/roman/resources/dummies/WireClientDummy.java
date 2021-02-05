@@ -4,14 +4,12 @@ import com.wire.bots.sdk.WireClient;
 import com.wire.bots.sdk.WireClientBase;
 import com.wire.bots.sdk.assets.IAsset;
 import com.wire.bots.sdk.assets.IGeneric;
-import com.wire.bots.sdk.exceptions.HttpException;
 import com.wire.bots.sdk.models.AssetKey;
 import com.wire.bots.sdk.models.otr.PreKey;
 import com.wire.bots.sdk.server.model.Conversation;
 import com.wire.bots.sdk.server.model.User;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,160 +21,164 @@ public class WireClientDummy extends WireClientBase implements WireClient {
     }
 
     @Override
-    public UUID sendText(String txt) throws Exception {
+    public void send(IGeneric message) {
+    }
+
+    @Override
+    public UUID sendText(String txt) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendText(String txt, long expires) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendText(String txt, UUID mention) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendDirectText(String txt, UUID userId) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendLinkPreview(String url, String title, IGeneric image) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendDirectLinkPreview(String url, String title, IGeneric image, UUID userId) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendPicture(byte[] bytes, String mimeType) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendDirectPicture(byte[] bytes, String mimeType, UUID userId) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendPicture(IGeneric image) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendDirectPicture(IGeneric image, UUID userId) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendAudio(byte[] bytes, String name, String mimeType, long duration) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendVideo(byte[] bytes, String name, String mimeType, long duration, int h, int w) {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID sendFile(File file, String mime) {
         return null;
     }
 
     @Override
-    public UUID sendText(String txt, long expires) throws Exception {
-        return null;
+    public UUID sendDirectFile(File file, String mime, UUID userId) {
+        return UUID.randomUUID();
     }
 
     @Override
-    public UUID sendText(String txt, UUID mention) throws Exception {
-        return null;
+    public UUID sendDirectFile(IGeneric preview, IGeneric asset, UUID userId) {
+        return UUID.randomUUID();
     }
 
     @Override
-    public UUID sendDirectText(String txt, UUID userId) throws Exception {
-        return null;
+    public UUID ping() {
+        return UUID.randomUUID();
     }
 
     @Override
-    public UUID sendLinkPreview(String url, String title, IGeneric image) throws Exception {
-        return null;
+    public UUID sendReaction(UUID msgId, String emoji) {
+        return UUID.randomUUID();
     }
 
     @Override
-    public UUID sendDirectLinkPreview(String url, String title, IGeneric image, UUID userId) throws Exception {
-        return null;
+    public UUID deleteMessage(UUID msgId) {
+        return UUID.randomUUID();
     }
 
     @Override
-    public UUID sendPicture(byte[] bytes, String mimeType) throws Exception {
-        return null;
+    public UUID editMessage(UUID replacingMessageId, String text) {
+        return UUID.randomUUID();
     }
 
     @Override
-    public UUID sendDirectPicture(byte[] bytes, String mimeType, UUID userId) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID sendPicture(IGeneric image) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID sendDirectPicture(IGeneric image, UUID userId) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID sendAudio(byte[] bytes, String name, String mimeType, long duration) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID sendVideo(byte[] bytes, String name, String mimeType, long duration, int h, int w) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID sendFile(File file, String mime) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID sendDirectFile(File file, String mime, UUID userId) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID sendDirectFile(IGeneric preview, IGeneric asset, UUID userId) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID ping() throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID sendReaction(UUID msgId, String emoji) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID deleteMessage(UUID msgId) throws Exception {
-        return null;
-    }
-
-    @Override
-    public UUID editMessage(UUID replacingMessageId, String text) throws Exception {
-        return null;
-    }
-
-    @Override
-    public byte[] downloadAsset(String assetKey, String assetToken, byte[] sha256Challenge, byte[] otrKey) throws Exception {
+    public byte[] downloadAsset(String assetKey, String assetToken, byte[] sha256Challenge, byte[] otrKey) {
         return new byte[0];
     }
 
     @Override
-    public User getSelf() throws HttpException {
-        return null;
+    public User getSelf() {
+        return new User();
     }
 
     @Override
-    public Collection<User> getUsers(Collection<UUID> userIds) throws HttpException {
+    public Collection<User> getUsers(Collection<UUID> userIds) {
         return Collections.singleton(getUser(Const.USER_ID));
     }
 
     @Override
-    public User getUser(UUID userId) throws HttpException {
+    public User getUser(UUID userId) {
         User user = new User();
         user.id = userId;
         return user;
     }
 
     @Override
-    public Conversation getConversation() throws IOException {
+    public Conversation getConversation() {
         Conversation conversation = new Conversation();
         conversation.id = Const.CONV_ID;
         return conversation;
     }
 
     @Override
-    public void acceptConnection(UUID user) throws Exception {
+    public void acceptConnection(UUID user) {
 
     }
 
     @Override
-    public void uploadPreKeys(ArrayList<PreKey> preKeys) throws IOException {
+    public void uploadPreKeys(ArrayList<PreKey> preKeys) {
 
     }
 
     @Override
     public ArrayList<Integer> getAvailablePrekeys() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
-    public byte[] downloadProfilePicture(String assetKey) throws Exception {
+    public byte[] downloadProfilePicture(String assetKey) {
         return new byte[0];
     }
 
     @Override
-    public AssetKey uploadAsset(IAsset asset) throws Exception {
-        return null;
+    public AssetKey uploadAsset(IAsset asset) {
+        return new AssetKey();
     }
 
     @Override
-    public void call(String content) throws Exception {
+    public void call(String content) {
 
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
     }
 }

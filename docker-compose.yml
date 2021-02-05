@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  roman:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - release_version=docker-compose
+    image: eu.gcr.io/wire-bot/roman
+    ports:
+      - 8080:8080
+      - 8081:8081
+      - 8082:8082
+    environment:
+      - DB_URL=jdbc:postgresql://db:5432/roman
+      - DB_USER=roman
+      - DB_PASSWORD=roman
+      # randomly generated for local testing
+      - APP_KEY=b53181dd-6400-4960-8988-f775545588ff-0949f503-421e-4588-a2c5-f64fd9c180fd
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13.1
+    # just for local development
+    environment:
+      - POSTGRES_USER=roman
+      - POSTGRES_PASSWORD=roman
+      - POSTGRES_DB=roman
+    ports:
+      - 5432:5432
+    volumes:
+      - roman-db:/var/lib/postgresql/data/
+
+volumes:
+  roman-db:

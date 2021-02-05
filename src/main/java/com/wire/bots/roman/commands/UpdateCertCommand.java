@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.List;
 
 public class UpdateCertCommand extends ConfiguredCommand<Config> {
-
     public UpdateCertCommand() {
         super("cert", "Updates certificates for all services");
     }
@@ -40,18 +39,14 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
 
     @Override
     public void run(Bootstrap<Config> bootstrap, Namespace namespace, Config config) throws IOException {
-        Environment environment = new Environment(getName(),
-                bootstrap.getObjectMapper(),
-                bootstrap.getValidatorFactory().getValidator(),
-                bootstrap.getMetricRegistry(),
-                bootstrap.getClassLoader());
+        Environment environment = new Environment("UpdateCertCommand");
 
         Client client = new JerseyClientBuilder(environment)
                 .using(config.getJerseyClient())
                 .withProvider(JacksonJsonProvider.class)
                 .build(getName());
 
-        ProviderClient providerClient = new ProviderClient(client);
+        ProviderClient providerClient = new ProviderClient(client, config.apiHost);
 
         DBI jdbi = new DBIFactory().build(environment, config.database, "postgresql");
         ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
@@ -66,15 +61,9 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
         System.out.printf("Updating %s cert for %d providers...\n\n", hostname, providers.size());
 
         for (Provider provider : providers) {
-            updateCert(providerClient, pubkey, provider);
-        }
-    }
-
-    private void updateCert(ProviderClient providerClient, String pubkey, Provider provider) {
-        try {
             if (provider.serviceId == null) {
                 System.out.printf("Skipping provider: %s, name: %s\n", provider.id, provider.name);
-                return;
+                continue;
             }
 
             Response login = providerClient.login(provider.email, provider.password);
@@ -84,19 +73,52 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
                         provider.id,
                         login.getStatus(),
                         login.readEntity(String.class));
-                return;
+                continue;
             }
 
             NewCookie cookie = login.getCookies().get("zprovider");
 
-            Response response = providerClient.updateServicePubKey(cookie, provider.serviceId, provider.password, pubkey);
+            updateCert(providerClient, pubkey, provider, cookie);
+            updateURL(providerClient, provider, config.domain, cookie);
+            // slow down a bit, BE will otherwise rate limit us
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
+    private void updateCert(ProviderClient providerClient, String pubkey, Provider provider, NewCookie cookie) {
+        try {
+            Response response = providerClient.updateServicePubKey(cookie, provider.serviceId, provider.password, pubkey);
             System.out.printf("Updated cert for provider: %s, name: %s. Status: %d\n",
                     provider.id,
                     provider.name,
                     response.getStatus());
         } catch (Exception e) {
             System.err.printf("ERROR updateCert provider: %s, error: %s\n", provider.id, e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void updateURL(ProviderClient providerClient, Provider provider, String url, NewCookie cookie) {
+        try {
+            Response response = providerClient.updateServiceURL(cookie, provider.serviceId, provider.password, url);
+
+            System.out.printf("Updated URL for provider: %s, name: %s. Status: %d\n",
+                    provider.id,
+                    provider.name,
+                    response.getStatus());
+            // reenable when the URL was changed
+            providerClient.enableService(cookie, provider.serviceId, provider.password);
+
+            System.out.printf("Service enabled: %s, name: %s. Status: %d\n",
+                    provider.id,
+                    provider.name,
+                    response.getStatus());
+        } catch (Exception e) {
+            System.err.printf("ERROR updateURL provider: %s, error: %s\n", provider.id, e.getMessage());
             e.printStackTrace();
         }
     }

@@ -2,13 +2,26 @@
 Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API
 
 ### API documentation:
-https://proxy.services.wire.com/swagger
+[swagger](https://proxy.services.wire.com/swagger#/default)
 
 ### Register as Wire Bot Developer
  - [register](https://proxy.services.wire.com/swagger#!/default/register)
+```
+ {
+  "name": "ACME Ltd.",
+  "email": "acme@email.com",
+  "password": "S3cr3t!"
+}
+```
 
 ### Login
  - [login](https://proxy.services.wire.com/swagger#!/default/login)
+```
+ {
+  "email": "acme@email.com",
+  "password": "S3cr3t!"
+}
+```
 
 ### Create a service
  - [create service](https://proxy.services.wire.com/swagger#!/default/create)
@@ -16,7 +29,7 @@ https://proxy.services.wire.com/swagger
 ```
 {
   "name": "My Cool Bot",
-  "url": "https://my.server.com/webhook",
+  "url": "https://my.server.com/webhook",  // Pass _null_ if you prefere websockets
   "avatar": "..." // Base64 encoded image 
 }
 ```
@@ -28,16 +41,16 @@ Leave `url` _null_ if you prefer _Websocket_. `avatar` for your bot is optional 
 After creating your Service the following json is returned:
 ```
 {
-  "email": "dejan@wire.com",
-  "company": "ACME",
-  "service": "ACME Integration",
+  "email": "acme@email.com",
+  "company": "ACME Ltd.",
+  "service": "My Cool Bot",
   "service_code": "8d935243-828f-45d8-b52e-cdc1385334fc:d8371f5e-cd41-4528-a2bb-f3feefea160f",
   "service_authentication": "g_ZiEfOnMdVnbbpyKIWCVZIk",
   "app_key": "..."  // Needed when connecting using a websocket
 }
 ```
 
-Go to your Team Settings page and navigate to _Services_ tab. Add this `service_code` and enable this service for your team.
+Go to your _Team Settings_ page and navigate to _Services_ tab. Add this `service_code` and enable this service for your team.
 Now your team members should be able to see your _Service_ when they open _people picker_ and navigate to _services_ tab.
 
 ### Webhook
@@ -155,7 +168,7 @@ _Outgoing Message_ can be of 4 types:
 ```
 {
     "type": "attachment",
-    "attachment": {  ... } 
+    "attachment": {  "mimeType" : "image/jpeg", "data" : "..." } 
 }     
 ```
 
@@ -191,8 +204,9 @@ Full description: https://proxy.services.wire.com/swagger#!/default/post
 **Note:** `token` that comes with `conversation.init` events is _lifelong_. It should be stored for later usage. `token`
  that comes with other event types has lifespan of 20 seconds.
 
-### Bot Example
+### Bot Examples
 - Echo bot in Java: https://github.com/dkovacevic/demo-proxy
+- Poll bot in Kotlin: https://github.com/wireapp/poll-bot
 
 ## Build docker image from source code
 docker build -t $DOCKER_USERNAME/roman:latest .

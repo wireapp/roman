@@ -41,7 +41,7 @@ public class IncomingBackendMessageTest {
     private DBI jdbi;
 
     @Before
-    public void beforeClass() {
+    public void beforeClass() throws Exception {
         SUPPORT.before();
         Application app = SUPPORT.getApplication();
         client = app.getClient();

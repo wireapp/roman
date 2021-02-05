@@ -23,6 +23,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -169,26 +170,62 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
-        UUID botId = client.getId();
-        UUID messageId = UUID.fromString(event.getMessageId());
+        final UUID botId = client.getId();
 
         // User clicked on a Poll Button
         if (event.hasButtonAction()) {
-            Messages.ButtonAction action = event.getButtonAction();
+            onButtonAction(botId, userId, event);
+        }
+        // New Poll has been created
+        if (event.hasComposite()) {
+            onComposite(botId, userId, event);
+        }
+    }
 
-            OutgoingMessage message = new OutgoingMessage();
-            message.botId = botId;
-            message.userId = userId;
-            message.messageId = messageId;
-            message.type = "conversation.poll.action";
-            message.token = generateToken(botId);
-            message.poll = new Poll();
-            message.poll.id = UUID.fromString(action.getReferenceMessageId());
-            message.poll.offset = Integer.parseInt(action.getButtonId());
+    private void onComposite(UUID botId, UUID userId, Messages.GenericMessage event) {
+        final Messages.Composite composite = event.getComposite();
+        final UUID messageId = UUID.fromString(event.getMessageId());
 
-            if (!send(message)) {
-                Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.userId = userId;
+        message.messageId = messageId;
+        message.type = "conversation.poll.new";
+        message.token = generateToken(botId);
+        message.poll = new Poll();
+        message.poll.id = messageId;
+        message.poll.type = "new";
+        message.poll.buttons = new ArrayList<>();
+        for (Messages.Composite.Item item : composite.getItemsList()) {
+            if (item.hasText()) {
+                message.text = item.getText().getContent();
             }
+            if (item.hasButton()) {
+                message.poll.buttons.add(item.getButton().getText());
+            }
+        }
+
+        if (!send(message)) {
+            Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
+        }
+    }
+
+    private void onButtonAction(UUID botId, UUID userId, Messages.GenericMessage event) {
+        final Messages.ButtonAction action = event.getButtonAction();
+        final UUID messageId = UUID.fromString(event.getMessageId());
+
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.userId = userId;
+        message.messageId = messageId;
+        message.type = "conversation.poll.action";
+        message.token = generateToken(botId);
+        message.poll = new Poll();
+        message.poll.id = UUID.fromString(action.getReferenceMessageId());
+        message.poll.offset = Integer.parseInt(action.getButtonId());
+
+        if (!send(message)) {
+            Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
         }
     }
 
@@ -263,6 +300,8 @@ public class MessageHandler extends MessageHandlerBase {
                     providerId,
                     post.getStatus());
 
+            final String entity = post.readEntity(String.class);
+            post.close();
             return post.getStatus() == 200;
         }
 

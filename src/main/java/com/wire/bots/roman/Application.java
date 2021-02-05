@@ -21,17 +21,20 @@ import com.wire.bots.roman.commands.UpdateCertCommand;
 import com.wire.bots.roman.filters.BackendAuthenticationFilter;
 import com.wire.bots.roman.filters.ProxyAuthenticationFilter;
 import com.wire.bots.roman.filters.ServiceAuthenticationFilter;
+import com.wire.bots.roman.filters.ServiceTokenAuthenticationFilter;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.resources.*;
+import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.MessageHandlerBase;
 import com.wire.bots.sdk.Server;
+import com.wire.bots.sdk.factories.CryptoFactory;
+import com.wire.bots.sdk.factories.StorageFactory;
 import io.dropwizard.bundles.redirect.PathRedirect;
 import io.dropwizard.bundles.redirect.RedirectBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.websockets.WebsocketBundle;
 import io.jsonwebtoken.security.Keys;
-import org.skife.jdbi.v2.DBI;
 
 import java.security.Key;
 
@@ -70,17 +73,19 @@ public class Application extends Server<Config> {
     protected void registerFeatures() {
         environment.jersey().register(ProxyAuthenticationFilter.ProxyAuthenticationFeature.class);
         environment.jersey().register(ServiceAuthenticationFilter.ServiceAuthenticationFeature.class);
+        environment.jersey().register(ServiceTokenAuthenticationFilter.ServiceTokenAuthenticationFeature.class);
         environment.jersey().register(BackendAuthenticationFilter.BackendAuthenticationFeature.class);
     }
 
     @Override
     protected void initialize(Config config, Environment env) {
+        this.config = config;
         this.key = Keys.hmacShaKeyFor(config.key.getBytes());
     }
 
     @Override
     protected void onRun(Config config, Environment env) {
-        ProviderClient providerClient = new ProviderClient(getClient());
+        ProviderClient providerClient = new ProviderClient(getClient(), config.apiHost);
 
         addResource(new ProviderResource(jdbi, providerClient));
         addResource(new ServiceResource(jdbi, providerClient));
@@ -91,7 +96,9 @@ public class Application extends Server<Config> {
     }
 
     @Override
-    public DBI getJdbi() {
-        return jdbi;
+    protected ClientRepo createClientRepo() {
+        StorageFactory storageFactory = getStorageFactory();
+        CryptoFactory cryptoFactory = getCryptoFactory();
+        return new CachedClientRepo(getClient(), cryptoFactory, storageFactory);
     }
 }

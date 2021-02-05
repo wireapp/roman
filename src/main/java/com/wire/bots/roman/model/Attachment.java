@@ -21,13 +21,13 @@ public class Attachment {
     public String mimeType;
 
     @JsonIgnore
-    @ValidationMethod(message = "`attachment` is not a Base64 encoded string")
+    @ValidationMethod(message = "`data` is not a Base64 encoded string")
     public boolean isValidAttachment() {
         return data.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
     }
 
     @JsonIgnore
-    @ValidationMethod(message = "`attachment` is not a Base64 encoded string")
+    @ValidationMethod(message = "Invalid `mimeType`")
     public boolean isValidMimeType() {
         return mimeType.contains("/");
     }

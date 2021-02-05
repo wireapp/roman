@@ -1,12 +1,14 @@
 server:
   requestLog:
     appenders:
-      - type: console
+      - type: ${APPENDER_TYPE:-console}
         filterFactories:
           - type: status-filter-factory
 
 logging:
   level: INFO
+  appenders:
+    - type: ${APPENDER_TYPE:-console}
   loggers:
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
@@ -17,9 +19,9 @@ swagger:
     - https
 
 jerseyClient:
-  timeout: 20s
-  connectionTimeout: 4s
-  connectionRequestTimeout: 4s
+  timeout: 40s
+  connectionTimeout: 40s
+  connectionRequestTimeout: 40s
   keepAlive: 0ms
   retries: 3
   userAgent: roman
@@ -36,7 +38,9 @@ database:
   user: ${DB_USER:-}
   password: ${DB_PASSWORD:-}
   baseline: ${DB_BASELINE:-}
+  maxSize: 33
 
+token: dummy
 key: ${APP_KEY:-}
 domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com}
 apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
