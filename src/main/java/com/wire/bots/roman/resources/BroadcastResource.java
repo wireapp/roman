@@ -106,6 +106,9 @@ public class BroadcastResource {
 
     private boolean send(UUID botId, IncomingMessage message) {
         try (WireClient client = repo.getClient(botId)) {
+            if (client == null)
+                return false;
+
             switch (message.type) {
                 case "text": {
                     MessageText text = new MessageText(message.text.data);

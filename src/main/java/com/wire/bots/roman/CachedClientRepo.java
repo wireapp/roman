@@ -11,6 +11,7 @@ import com.wire.bots.sdk.factories.StorageFactory;
 import com.wire.bots.sdk.models.otr.Missing;
 import com.wire.bots.sdk.models.otr.Recipients;
 import com.wire.bots.sdk.server.model.NewBot;
+import com.wire.bots.sdk.tools.Logger;
 
 import javax.ws.rs.client.Client;
 import java.util.UUID;
@@ -34,6 +35,7 @@ public class CachedClientRepo extends ClientRepo {
                         API api = new API(httpClient, state.token);
                         return new _BotClient(state, crypto, api);
                     } catch (Exception e) {
+                        Logger.warning("CachedClientRepo: bot: %s %s", botId, e);
                         return null;
                     }
                 }
