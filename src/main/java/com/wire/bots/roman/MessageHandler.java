@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.OutgoingMessage;
 import com.wire.bots.roman.model.Poll;
 import com.wire.bots.roman.model.Provider;
@@ -17,12 +18,10 @@ import com.wire.bots.sdk.server.model.User;
 import com.wire.bots.sdk.tools.Logger;
 import org.skife.jdbi.v2.DBI;
 
-import javax.websocket.EncodeException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.UUID;
@@ -37,6 +36,7 @@ public class MessageHandler extends MessageHandlerBase {
     private final Client jerseyClient;
     private final ProvidersDAO providersDAO;
     private final BotsDAO botsDAO;
+    private Sender sender;
 
     MessageHandler(DBI jdbi, Client jerseyClient) {
         this.jerseyClient = jerseyClient;
@@ -278,36 +278,40 @@ public class MessageHandler extends MessageHandlerBase {
 
     private boolean send(OutgoingMessage message) {
         UUID providerId = botsDAO.getProviderId(message.botId);
-        Provider provider = providersDAO.get(providerId);
-        if (provider == null) {
-            Logger.error("MessageHandler.send: provider == null. providerId: %s, bot: %s",
-                    providerId, message.botId);
-            return false;
-        }
-
-        trace(message);
-
-        // Webhook
-        if (provider.serviceUrl != null) {
-            Response post = jerseyClient.target(provider.serviceUrl)
-                    .request(MediaType.APPLICATION_JSON)
-                    .header("Authorization", "Bearer " + provider.serviceAuth)
-                    .post(Entity.entity(message, MediaType.APPLICATION_JSON));
-
-            Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, status: %d",
-                    message.type,
-                    message.botId,
-                    providerId,
-                    post.getStatus());
-
-            final String entity = post.readEntity(String.class);
-            post.close();
-            return post.getStatus() == 200;
-        }
 
         try {
-            return WebSocket.send(provider.id, message);
-        } catch (IOException | EncodeException e) {
+            Provider provider = providersDAO.get(providerId);
+            if (provider == null) {
+                Logger.error("MessageHandler.send: provider == null. providerId: %s, bot: %s",
+                        providerId, message.botId);
+                return false;
+            }
+
+            trace(message);
+
+            // Webhook
+            if (provider.serviceUrl != null) {
+                Response post = jerseyClient.target(provider.serviceUrl)
+                        .request(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + provider.serviceAuth)
+                        .post(Entity.entity(message, MediaType.APPLICATION_JSON));
+
+                Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, status: %d",
+                        message.type,
+                        message.botId,
+                        providerId,
+                        post.getStatus());
+
+                final IncomingMessage incomingMessage = post.readEntity(IncomingMessage.class);
+                if (incomingMessage != null) {
+                    sender.send(incomingMessage, message.botId);
+                }
+
+                return post.getStatus() == 200;
+            } else {
+                return WebSocket.send(provider.id, message);
+            }
+        } catch (Exception e) {
             Logger.error("MessageHandler.send: bot: %s, provider: %s,  error %s", message.botId, providerId, e);
             return false;
         }
@@ -346,5 +350,9 @@ public class MessageHandler extends MessageHandlerBase {
         if (providerId == null)
             throw new RuntimeException("Unknown botId: " + botId.toString());
         return providerId;
+    }
+
+    public void setSender(Sender sender) {
+        this.sender = sender;
     }
 }
