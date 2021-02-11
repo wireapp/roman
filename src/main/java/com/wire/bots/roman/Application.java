@@ -41,6 +41,7 @@ import java.security.Key;
 public class Application extends Server<Config> {
     private static Application instance;
     private Key key;
+    private MessageHandler messageHandler;
 
     public static void main(String[] args) throws Exception {
         new Application().run(args);
@@ -66,7 +67,8 @@ public class Application extends Server<Config> {
 
     @Override
     protected MessageHandlerBase createHandler(Config config, Environment env) {
-        return new MessageHandler(jdbi, getClient());
+        this.messageHandler = new MessageHandler(jdbi, getClient());
+        return messageHandler;
     }
 
     @Override
@@ -86,13 +88,16 @@ public class Application extends Server<Config> {
     @Override
     protected void onRun(Config config, Environment env) {
         ProviderClient providerClient = new ProviderClient(getClient(), config.apiHost);
+        Sender sender = new Sender(getRepo());
 
         addResource(new ProviderResource(jdbi, providerClient));
         addResource(new ServiceResource(jdbi, providerClient));
-        addResource(new ConversationResource(getRepo()));
+        addResource(new ConversationResource(sender));
         addResource(new UsersResource(getRepo()));
-        addResource(new BroadcastResource(jdbi, getRepo()));
+        addResource(new BroadcastResource(jdbi, sender));
         addResource(new MessagesResource());
+
+        messageHandler.setSender(sender);
     }
 
     @Override
