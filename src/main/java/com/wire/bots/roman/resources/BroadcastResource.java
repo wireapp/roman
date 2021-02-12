@@ -4,13 +4,10 @@ import com.codahale.metrics.annotation.Metered;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ServiceTokenAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
-import com.wire.bots.roman.model.Mention;
 import com.wire.bots.roman.model.Provider;
-import com.wire.bots.sdk.ClientRepo;
-import com.wire.bots.sdk.WireClient;
-import com.wire.bots.sdk.assets.MessageText;
 import com.wire.bots.sdk.exceptions.MissingStateException;
 import com.wire.bots.sdk.server.model.ErrorMessage;
 import com.wire.bots.sdk.tools.Logger;
@@ -28,7 +25,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -41,11 +37,11 @@ import static com.wire.bots.roman.Const.PROVIDER_ID;
 @Produces(MediaType.APPLICATION_JSON)
 public class BroadcastResource {
     private final DBI jdbi;
-    private final ClientRepo repo;
+    private final Sender sender;
 
-    public BroadcastResource(DBI jdbi, ClientRepo repo) {
+    public BroadcastResource(DBI jdbi, Sender sender) {
         this.jdbi = jdbi;
-        this.repo = repo;
+        this.sender = sender;
     }
 
     @POST
@@ -105,27 +101,9 @@ public class BroadcastResource {
     }
 
     private boolean send(UUID botId, IncomingMessage message) {
-        try (WireClient client = repo.getClient(botId)) {
-            if (client == null)
-                return false;
-
-            switch (message.type) {
-                case "text": {
-                    MessageText text = new MessageText(message.text.data);
-                    if (message.text.mentions != null) {
-                        for (Mention mention : message.text.mentions)
-                            text.addMention(mention.userId, mention.offset, mention.length);
-                    }
-                    client.send(text);
-                }
-                break;
-                case "attachment": {
-                    final byte[] decode = Base64.getDecoder().decode(message.attachment.data);
-                    client.sendPicture(decode, message.attachment.mimeType);
-                }
-                break;
-            }
-            return true;
+        try {
+            final UUID messageId = sender.send(message, botId);
+            return messageId != null;
         } catch (MissingStateException e) {
             Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
             jdbi.onDemand(BotsDAO.class).remove(botId);

@@ -1,14 +1,12 @@
 package com.wire.bots.roman.resources;
 
-import com.wire.bots.cryptobox.CryptoException;
+import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.roman.model.Text;
 import com.wire.bots.roman.resources.dummies.AuthenticationFeatureDummy;
 import com.wire.bots.roman.resources.dummies.Const;
-import com.wire.bots.roman.resources.dummies.WireClientDummy;
-import com.wire.bots.sdk.ClientRepo;
 import com.wire.bots.sdk.server.model.Conversation;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.junit.After;
@@ -19,36 +17,40 @@ import org.junit.Test;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 public class ConversationResourceTest {
-    private static final ClientRepo clientRepo = mock(ClientRepo.class);
+    private static final Sender sender = mock(Sender.class);
+
     @ClassRule
     public static final ResourceTestRule resources = ResourceTestRule.builder()
             .addProvider(AuthenticationFeatureDummy.class)
-            .addResource(new ConversationResource(clientRepo))
+            .addResource(new ConversationResource(sender))
             .build();
-    private static final WireClientDummy botClient = new WireClientDummy();
 
     @Before
-    public void setup() throws IOException, CryptoException {
-        when(clientRepo.getClient(Const.BOT_ID)).thenReturn(botClient);
+    public void setup() throws Exception {
+        Conversation conversation = new Conversation();
+        conversation.id = Const.CONV_ID;
+
+        when(sender.getConversation(Const.BOT_ID)).thenReturn(conversation);
     }
 
     @After
     public void tearDown() {
-        reset(clientRepo);
+        reset(sender);
     }
 
     @Test
-    public void testPostTextIntoConversation() {
-        IncomingMessage message = new IncomingMessage();
+    public void testPostTextIntoConversation() throws Exception {
+        final IncomingMessage message = new IncomingMessage();
         message.type = "text";
         message.text = new Text();
         message.text.data = "Hi there!";
+
+        when(sender.send(message, Const.BOT_ID)).thenReturn(Const.MSG_ID);
 
         final Response response = resources
                 .target("conversation")
@@ -75,7 +77,7 @@ public class ConversationResourceTest {
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
 
         assertThat(response.getStatus()).isEqualTo(200);
-        final PostMessageResult result = response.readEntity(PostMessageResult.class);
+        PostMessageResult result = response.readEntity(PostMessageResult.class);
         assertThat(result.messageId).isNotNull();
     }
 

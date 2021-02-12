@@ -12,7 +12,7 @@ COPY . ./
 
 RUN mvn -Dmaven.test.skip=true package
 
-FROM dejankovacevic/bots.runtime:2.10.3
+FROM wirebot/runtime
 
 COPY --from=build /app/target/roman.jar /opt/roman/
 # COPY target/roman.jar   /opt/roman/roman.jar
@@ -30,5 +30,5 @@ WORKDIR /opt/roman
 
 EXPOSE  8080 8081 8082
 
-ENTRYPOINT ["java", "-javaagent:/opt/wire/lib/jmx_prometheus_javaagent.jar=8082:/opt/wire/lib/metrics.yaml", "-jar", "roman.jar", "server", "/etc/roman/roman.yaml"]
+ENTRYPOINT ["java", "-javaagent:/opt/wire/lib/prometheus-agent.jar=8082:/opt/wire/lib/metrics.yaml", "-jar", "roman.jar", "server", "/etc/roman/roman.yaml"]
 
