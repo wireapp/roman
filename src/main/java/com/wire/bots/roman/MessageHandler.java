@@ -71,8 +71,8 @@ public class MessageHandler extends MessageHandlerBase {
 
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
+        message.userId = msg.from;
         message.conversationId = msg.conversation.id;
-        message.userId = msg.conversation.creator;
         message.messageId = msg.id;
         message.type = "conversation.init";
         message.text = msg.conversation.name;
