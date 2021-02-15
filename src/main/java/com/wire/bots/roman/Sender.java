@@ -1,16 +1,15 @@
 package com.wire.bots.roman;
 
-
 import com.wire.bots.cryptobox.CryptoException;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Mention;
-import com.wire.bots.sdk.ClientRepo;
-import com.wire.bots.sdk.WireClient;
-import com.wire.bots.sdk.assets.*;
-import com.wire.bots.sdk.models.AssetKey;
-import com.wire.bots.sdk.server.model.Conversation;
-import com.wire.bots.sdk.tools.Logger;
+import com.wire.lithium.ClientRepo;
+import com.wire.xenon.WireClient;
+import com.wire.xenon.assets.*;
+import com.wire.xenon.backend.models.Conversation;
+import com.wire.xenon.models.AssetKey;
+import com.wire.xenon.tools.Logger;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -49,7 +48,12 @@ public class Sender {
             case "attachment": {
                 if (message.attachment.mimeType.startsWith("image")) {
                     final byte[] decode = Base64.getDecoder().decode(message.attachment.data);
-                    return client.sendPicture(decode, message.attachment.mimeType);
+                    final Picture picture = new Picture(decode, message.attachment.mimeType);
+                    final AssetKey assetKey = client.uploadAsset(picture);
+                    picture.setAssetToken(assetKey.token);
+                    picture.setAssetKey(assetKey.key);
+                    client.send(picture);
+                    return picture.getMessageId();
                 }
 
                 return sendAttachment(message, client);
@@ -96,7 +100,10 @@ public class Sender {
         final Attachment attachment = message.attachment;
         final byte[] decode = Base64.getDecoder().decode(attachment.data);
 
-        FileAssetPreview preview = new FileAssetPreview(attachment.filename, attachment.mimeType, decode.length, messageId);
+        FileAssetPreview preview = new FileAssetPreview(attachment.filename,
+                attachment.mimeType,
+                decode.length,
+                messageId);
         FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
 
         client.send(preview);

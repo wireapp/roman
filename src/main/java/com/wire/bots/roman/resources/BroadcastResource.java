@@ -8,12 +8,12 @@ import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ServiceTokenAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Provider;
-import com.wire.bots.sdk.exceptions.MissingStateException;
-import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.tools.Logger;
+import com.wire.xenon.backend.models.ErrorMessage;
+import com.wire.xenon.exceptions.MissingStateException;
+import com.wire.xenon.tools.Logger;
 import io.jsonwebtoken.JwtException;
 import io.swagger.annotations.*;
-import org.skife.jdbi.v2.DBI;
+import org.jdbi.v3.core.Jdbi;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -36,10 +36,10 @@ import static com.wire.bots.roman.Const.PROVIDER_ID;
 @Path("/broadcast")
 @Produces(MediaType.APPLICATION_JSON)
 public class BroadcastResource {
-    private final DBI jdbi;
+    private final Jdbi jdbi;
     private final Sender sender;
 
-    public BroadcastResource(DBI jdbi, Sender sender) {
+    public BroadcastResource(Jdbi jdbi, Sender sender) {
         this.jdbi = jdbi;
         this.sender = sender;
     }

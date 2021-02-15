@@ -9,15 +9,15 @@ import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.ProviderClient;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.SignIn;
-import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.tools.Logger;
+import com.wire.xenon.backend.models.ErrorMessage;
+import com.wire.xenon.tools.Logger;
 import io.dropwizard.validation.ValidationMethod;
 import io.jsonwebtoken.Jwts;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.Length;
-import org.skife.jdbi.v2.DBI;
+import org.jdbi.v3.core.Jdbi;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -36,7 +36,7 @@ public class ProviderResource {
     private final ProviderClient providerClient;
     private final ProvidersDAO providersDAO;
 
-    public ProviderResource(DBI jdbi, ProviderClient providerClient) {
+    public ProviderResource(Jdbi jdbi, ProviderClient providerClient) {
         this.providerClient = providerClient;
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
     }

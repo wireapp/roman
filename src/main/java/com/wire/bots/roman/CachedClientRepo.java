@@ -1,17 +1,17 @@
 package com.wire.bots.roman;
 
 import com.wire.bots.cryptobox.CryptoException;
-import com.wire.bots.sdk.API;
-import com.wire.bots.sdk.BotClient;
-import com.wire.bots.sdk.ClientRepo;
-import com.wire.bots.sdk.WireClient;
-import com.wire.bots.sdk.crypto.Crypto;
-import com.wire.bots.sdk.factories.CryptoFactory;
-import com.wire.bots.sdk.factories.StorageFactory;
-import com.wire.bots.sdk.models.otr.Missing;
-import com.wire.bots.sdk.models.otr.Recipients;
-import com.wire.bots.sdk.server.model.NewBot;
-import com.wire.bots.sdk.tools.Logger;
+import com.wire.lithium.API;
+import com.wire.lithium.BotClient;
+import com.wire.lithium.ClientRepo;
+import com.wire.xenon.WireClient;
+import com.wire.xenon.backend.models.NewBot;
+import com.wire.xenon.crypto.Crypto;
+import com.wire.xenon.factories.CryptoFactory;
+import com.wire.xenon.factories.StorageFactory;
+import com.wire.xenon.models.otr.Missing;
+import com.wire.xenon.models.otr.Recipients;
+import com.wire.xenon.tools.Logger;
 
 import javax.ws.rs.client.Client;
 import java.util.UUID;
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CachedClientRepo extends ClientRepo {
 
-    private ConcurrentHashMap<UUID, _BotClient> clients = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, _BotClient> clients = new ConcurrentHashMap<>();
 
     CachedClientRepo(Client httpClient, CryptoFactory cf, StorageFactory sf) {
         super(httpClient, cf, sf);
@@ -27,7 +27,6 @@ public class CachedClientRepo extends ClientRepo {
 
     @Override
     public WireClient getClient(UUID botId) {
-
         return clients.computeIfAbsent(botId, x -> {
                     try {
                         NewBot state = sf.create(botId).getState();
@@ -45,7 +44,7 @@ public class CachedClientRepo extends ClientRepo {
     private static class _BotClient extends BotClient {
 
         _BotClient(NewBot state, Crypto crypto, API api) {
-            super(state, crypto, api);
+            super(api, crypto, state);
         }
 
         @Override

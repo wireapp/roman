@@ -7,7 +7,7 @@ import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.roman.model.Text;
 import com.wire.bots.roman.resources.dummies.AuthenticationFeatureDummy;
 import com.wire.bots.roman.resources.dummies.Const;
-import com.wire.bots.sdk.server.model.Conversation;
+import com.wire.xenon.backend.models.Conversation;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.junit.After;
 import org.junit.Before;

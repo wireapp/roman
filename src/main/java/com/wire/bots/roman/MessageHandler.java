@@ -8,15 +8,15 @@ import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.OutgoingMessage;
 import com.wire.bots.roman.model.Poll;
 import com.wire.bots.roman.model.Provider;
-import com.wire.bots.sdk.MessageHandlerBase;
-import com.wire.bots.sdk.WireClient;
-import com.wire.bots.sdk.assets.DeliveryReceipt;
-import com.wire.bots.sdk.models.*;
-import com.wire.bots.sdk.server.model.NewBot;
-import com.wire.bots.sdk.server.model.SystemMessage;
-import com.wire.bots.sdk.server.model.User;
-import com.wire.bots.sdk.tools.Logger;
-import org.skife.jdbi.v2.DBI;
+import com.wire.xenon.MessageHandlerBase;
+import com.wire.xenon.WireClient;
+import com.wire.xenon.assets.DeliveryReceipt;
+import com.wire.xenon.backend.models.NewBot;
+import com.wire.xenon.backend.models.SystemMessage;
+import com.wire.xenon.backend.models.User;
+import com.wire.xenon.models.*;
+import com.wire.xenon.tools.Logger;
+import org.jdbi.v3.core.Jdbi;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -38,7 +38,7 @@ public class MessageHandler extends MessageHandlerBase {
     private final BotsDAO botsDAO;
     private Sender sender;
 
-    MessageHandler(DBI jdbi, Client jerseyClient) {
+    MessageHandler(Jdbi jdbi, Client jerseyClient) {
         this.jerseyClient = jerseyClient;
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
         botsDAO = jdbi.onDemand(BotsDAO.class);

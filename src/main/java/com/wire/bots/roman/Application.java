@@ -24,17 +24,16 @@ import com.wire.bots.roman.filters.ServiceAuthenticationFilter;
 import com.wire.bots.roman.filters.ServiceTokenAuthenticationFilter;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.resources.*;
-import com.wire.bots.sdk.ClientRepo;
-import com.wire.bots.sdk.MessageHandlerBase;
-import com.wire.bots.sdk.Server;
-import com.wire.bots.sdk.factories.CryptoFactory;
-import com.wire.bots.sdk.factories.StorageFactory;
-import io.dropwizard.bundles.redirect.PathRedirect;
-import io.dropwizard.bundles.redirect.RedirectBundle;
+import com.wire.lithium.ClientRepo;
+import com.wire.lithium.Server;
+import com.wire.xenon.MessageHandlerBase;
+import com.wire.xenon.factories.CryptoFactory;
+import com.wire.xenon.factories.StorageFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.websockets.WebsocketBundle;
 import io.jsonwebtoken.security.Keys;
+import org.jdbi.v3.core.Jdbi;
 
 import java.security.Key;
 
@@ -62,12 +61,11 @@ public class Application extends Server<Config> {
 
         bootstrap.addBundle(new WebsocketBundle(WebSocket.class));
         bootstrap.addCommand(new UpdateCertCommand());
-        bootstrap.addBundle(new RedirectBundle(new PathRedirect("/", "/swagger#/default")));
     }
 
     @Override
     protected MessageHandlerBase createHandler(Config config, Environment env) {
-        this.messageHandler = new MessageHandler(jdbi, getClient());
+        this.messageHandler = new MessageHandler(getJdbi(), getClient());
         return messageHandler;
     }
 
@@ -89,6 +87,8 @@ public class Application extends Server<Config> {
     protected void onRun(Config config, Environment env) {
         ProviderClient providerClient = new ProviderClient(getClient(), config.apiHost);
         Sender sender = new Sender(getRepo());
+
+        final Jdbi jdbi = getJdbi();
 
         addResource(new ProviderResource(jdbi, providerClient));
         addResource(new ServiceResource(jdbi, providerClient));
