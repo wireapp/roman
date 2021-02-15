@@ -6,10 +6,10 @@ import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.PostMessageResult;
-import com.wire.bots.sdk.exceptions.MissingStateException;
-import com.wire.bots.sdk.server.model.Conversation;
-import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.tools.Logger;
+import com.wire.xenon.backend.models.Conversation;
+import com.wire.xenon.backend.models.ErrorMessage;
+import com.wire.xenon.exceptions.MissingStateException;
+import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
 
 import javax.validation.Valid;

@@ -1,22 +1,22 @@
 package com.wire.bots.roman.DAO.mappers;
 
-import com.wire.bots.sdk.tools.Logger;
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import com.wire.xenon.tools.Logger;
+import org.jdbi.v3.core.mapper.ColumnMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class BotsMapper implements ResultSetMapper<UUID> {
+public class BotsMapper implements ColumnMapper<UUID> {
     @Override
     @Nullable
-    public UUID map(int i, ResultSet rs, StatementContext statementContext) {
+    public UUID map(ResultSet rs, int columnNumber, StatementContext ctx) {
         try {
             return getUuid(rs, "uuid");
         } catch (SQLException e) {
-            Logger.error("BotsMapper: i: %d, e: %s", i, e);
+            Logger.error("BotsMapper: i: %d, e: %s", columnNumber, e);
             return null;
         }
     }

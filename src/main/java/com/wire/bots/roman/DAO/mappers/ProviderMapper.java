@@ -1,16 +1,16 @@
 package com.wire.bots.roman.DAO.mappers;
 
 import com.wire.bots.roman.model.Provider;
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import org.jdbi.v3.core.mapper.ColumnMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class ProviderMapper implements ResultSetMapper<Provider> {
+public class ProviderMapper implements ColumnMapper<Provider> {
     @Override
-    public Provider map(int i, ResultSet rs, StatementContext statementContext) throws SQLException {
+    public Provider map(ResultSet rs, int columnNumber, StatementContext ctx) throws SQLException {
         Provider ret = new Provider();
         ret.id = getUuid(rs, "id");
         ret.email = rs.getString("email");

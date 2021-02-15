@@ -1,10 +1,10 @@
 package com.wire.bots.roman.DAO;
 
 import com.wire.bots.roman.DAO.mappers.BotsMapper;
-import org.skife.jdbi.v2.sqlobject.Bind;
-import org.skife.jdbi.v2.sqlobject.SqlQuery;
-import org.skife.jdbi.v2.sqlobject.SqlUpdate;
-import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
+import org.jdbi.v3.sqlobject.config.RegisterColumnMapper;
+import org.jdbi.v3.sqlobject.customizer.Bind;
+import org.jdbi.v3.sqlobject.statement.SqlQuery;
+import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,12 +15,12 @@ public interface BotsDAO {
                @Bind("provider") UUID provider);
 
     @SqlQuery("SELECT provider AS uuid FROM Bots WHERE id = :bot")
-    @RegisterMapper(BotsMapper.class)
+    @RegisterColumnMapper(BotsMapper.class)
     UUID getProviderId(@Bind("bot") UUID bot);
 
 
     @SqlQuery("SELECT id AS uuid FROM Bots WHERE provider = :providerId")
-    @RegisterMapper(BotsMapper.class)
+    @RegisterColumnMapper(BotsMapper.class)
     List<UUID> getBotIds(@Bind("providerId") UUID providerId);
 
     @SqlUpdate("DELETE FROM Bots WHERE id = :botId")

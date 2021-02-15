@@ -2,7 +2,7 @@ package com.wire.bots.roman.filters;
 
 import com.wire.bots.roman.Application;
 import com.wire.bots.roman.Const;
-import com.wire.bots.sdk.tools.Logger;
+import com.wire.xenon.tools.Logger;
 import io.jsonwebtoken.Jwts;
 
 import javax.ws.rs.WebApplicationException;

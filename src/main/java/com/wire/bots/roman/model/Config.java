@@ -19,7 +19,7 @@
 package com.wire.bots.roman.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.wire.bots.sdk.Configuration;
+import com.wire.lithium.Configuration;
 
 import javax.validation.constraints.NotNull;
 

@@ -1,30 +1,41 @@
 package com.wire.bots.roman.integrations;
 
+import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
-import io.dropwizard.jdbi.DBIFactory;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.testing.ConfigOverride;
+import io.dropwizard.testing.DropwizardTestSupport;
+import org.jdbi.v3.core.Jdbi;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import org.skife.jdbi.v2.DBI;
 
 import java.util.UUID;
 
 public class DatabaseTest {
-    private static ProvidersDAO providersDAO;
+    private static final DropwizardTestSupport<Config> SUPPORT = new DropwizardTestSupport<>(
+            Application.class, "roman.yaml",
+            ConfigOverride.config("key", "TcZA2Kq4GaOcIbQuOvasrw34321cZAfLW4Ga54fsds43hUuOdcdm42"));
+    private Jdbi jdbi;
 
-    static {
-        Config.Database db = new Config.Database();
-        db.setUrl("jdbc:postgresql://localhost/roman");
-        db.setDriverClass("org.postgresql.Driver");
-        Environment env = new Environment("DatabaseTest");
-        final DBI dbi = new DBIFactory().build(env, db, "roman");
-
-        providersDAO = dbi.onDemand(ProvidersDAO.class);
+    @Before
+    public void beforeClass() throws Exception {
+        SUPPORT.before();
+        Application app = SUPPORT.getApplication();
+        jdbi = app.getJdbi();
     }
+
+    @After
+    public void afterClass() {
+        SUPPORT.after();
+    }
+
 
     @Test
     public void testProviderDAO() {
+        final ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
+
         final UUID id = UUID.randomUUID();
         final String name = "name";
         final String email = "email@wire.com";

@@ -10,6 +10,7 @@ logging:
   appenders:
     - type: ${APPENDER_TYPE:-console}
   loggers:
+    "org.reflections.Reflections": ERROR
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
 swagger:

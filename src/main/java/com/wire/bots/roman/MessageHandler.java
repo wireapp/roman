@@ -8,16 +8,17 @@ import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.OutgoingMessage;
 import com.wire.bots.roman.model.Poll;
 import com.wire.bots.roman.model.Provider;
-import com.wire.bots.sdk.MessageHandlerBase;
-import com.wire.bots.sdk.WireClient;
-import com.wire.bots.sdk.assets.DeliveryReceipt;
-import com.wire.bots.sdk.models.*;
-import com.wire.bots.sdk.server.model.NewBot;
-import com.wire.bots.sdk.server.model.SystemMessage;
-import com.wire.bots.sdk.server.model.User;
-import com.wire.bots.sdk.tools.Logger;
-import org.skife.jdbi.v2.DBI;
+import com.wire.xenon.MessageHandlerBase;
+import com.wire.xenon.WireClient;
+import com.wire.xenon.assets.DeliveryReceipt;
+import com.wire.xenon.backend.models.NewBot;
+import com.wire.xenon.backend.models.SystemMessage;
+import com.wire.xenon.backend.models.User;
+import com.wire.xenon.models.*;
+import com.wire.xenon.tools.Logger;
+import org.jdbi.v3.core.Jdbi;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -38,7 +39,7 @@ public class MessageHandler extends MessageHandlerBase {
     private final BotsDAO botsDAO;
     private Sender sender;
 
-    MessageHandler(DBI jdbi, Client jerseyClient) {
+    MessageHandler(Jdbi jdbi, Client jerseyClient) {
         this.jerseyClient = jerseyClient;
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
         botsDAO = jdbi.onDemand(BotsDAO.class);
@@ -296,15 +297,23 @@ public class MessageHandler extends MessageHandlerBase {
                         .header("Authorization", "Bearer " + provider.serviceAuth)
                         .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
-                Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, status: %d",
+                Logger.debug("MessageHandler.send: Sent: `%s` bot: %s, provider: %s, status: %d",
                         message.type,
                         message.botId,
                         providerId,
                         post.getStatus());
 
-                final IncomingMessage incomingMessage = post.readEntity(IncomingMessage.class);
-                if (incomingMessage != null) {
-                    sender.send(incomingMessage, message.botId);
+                if (post.hasEntity()) {
+                    final IncomingMessage incomingMessage = getIncomingMessage(post);
+                    if (incomingMessage != null) {
+                        Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, posting IncomingMessage: type: %s",
+                                message.type,
+                                message.botId,
+                                providerId,
+                                incomingMessage.type
+                        );
+                        sender.send(incomingMessage, message.botId);
+                    }
                 }
 
                 return post.getStatus() == 200;
@@ -314,6 +323,14 @@ public class MessageHandler extends MessageHandlerBase {
         } catch (Exception e) {
             Logger.error("MessageHandler.send: bot: %s, provider: %s,  error %s", message.botId, providerId, e);
             return false;
+        }
+    }
+
+    private IncomingMessage getIncomingMessage(Response post) {
+        try {
+            return post.readEntity(IncomingMessage.class);
+        } catch (ProcessingException e) {
+            return null;
         }
     }
 

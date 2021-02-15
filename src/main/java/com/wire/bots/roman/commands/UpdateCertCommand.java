@@ -8,12 +8,12 @@ import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
-import org.skife.jdbi.v2.DBI;
+import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.NewCookie;
@@ -48,7 +48,9 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
 
         ProviderClient providerClient = new ProviderClient(client, config.apiHost);
 
-        DBI jdbi = new DBIFactory().build(environment, config.database, "postgresql");
+        final Jdbi jdbi = Jdbi.create(config.database.build(environment.metrics(), getName()))
+                .installPlugin(new SqlObjectPlugin());
+
         ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
 
         String hostname = namespace.getString("domain");
