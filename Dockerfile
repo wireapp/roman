@@ -15,7 +15,6 @@ RUN mvn -Dmaven.test.skip=true package
 FROM wirebot/runtime
 
 COPY --from=build /app/target/roman.jar /opt/roman/
-# COPY target/roman.jar   /opt/roman/roman.jar
 
 COPY roman.yaml         /etc/roman/
 
@@ -23,8 +22,7 @@ COPY roman.yaml         /etc/roman/
 ARG release_version=development
 ENV RELEASE_FILE_PATH=/opt/roman/release.txt
 RUN echo $release_version > /opt/roman/release.txt
-# TODO - uncomment this when migration to JSON logging is finalized
-#ENV APPENDER_TYPE=json-console
+ENV APPENDER_TYPE=json-console
 
 WORKDIR /opt/roman
 

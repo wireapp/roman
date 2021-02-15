@@ -2,11 +2,11 @@ package com.wire.bots.roman.resources;
 
 import com.codahale.metrics.annotation.Metered;
 import com.wire.bots.roman.filters.ProxyAuthorization;
-import com.wire.bots.sdk.ClientRepo;
-import com.wire.bots.sdk.WireClient;
-import com.wire.bots.sdk.server.model.ErrorMessage;
-import com.wire.bots.sdk.server.model.User;
-import com.wire.bots.sdk.tools.Logger;
+import com.wire.lithium.ClientRepo;
+import com.wire.xenon.WireClient;
+import com.wire.xenon.backend.models.ErrorMessage;
+import com.wire.xenon.backend.models.User;
+import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
 
 import javax.ws.rs.GET;

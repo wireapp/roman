@@ -2,10 +2,10 @@ package com.wire.bots.roman.DAO;
 
 import com.wire.bots.roman.DAO.mappers.ProviderMapper;
 import com.wire.bots.roman.model.Provider;
-import org.skife.jdbi.v2.sqlobject.Bind;
-import org.skife.jdbi.v2.sqlobject.SqlQuery;
-import org.skife.jdbi.v2.sqlobject.SqlUpdate;
-import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
+import org.jdbi.v3.sqlobject.config.RegisterColumnMapper;
+import org.jdbi.v3.sqlobject.customizer.Bind;
+import org.jdbi.v3.sqlobject.statement.SqlQuery;
+import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.util.List;
 import java.util.UUID;
@@ -45,18 +45,18 @@ public interface ProvidersDAO {
                           @Bind("name") String name);
 
     @SqlQuery("SELECT * FROM Providers WHERE email = :email")
-    @RegisterMapper(ProviderMapper.class)
+    @RegisterColumnMapper(ProviderMapper.class)
     Provider get(@Bind("email") String email);
 
     @SqlQuery("SELECT * FROM Providers")
-    @RegisterMapper(ProviderMapper.class)
+    @RegisterColumnMapper(ProviderMapper.class)
     List<Provider> selectAll();
 
     @SqlQuery("SELECT * FROM Providers WHERE id = :id")
-    @RegisterMapper(ProviderMapper.class)
+    @RegisterColumnMapper(ProviderMapper.class)
     Provider get(@Bind("id") UUID id);
 
     @SqlQuery("SELECT * FROM Providers WHERE service_auth = :auth")
-    @RegisterMapper(ProviderMapper.class)
+    @RegisterColumnMapper(ProviderMapper.class)
     Provider getByAuth(@Bind("auth") String auth);
 }

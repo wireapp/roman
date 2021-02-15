@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wire.bots.roman.model.Service;
 import com.wire.bots.roman.model.SignIn;
-import com.wire.bots.sdk.models.AssetKey;
-import com.wire.bots.sdk.tools.Logger;
-import com.wire.bots.sdk.tools.Util;
+import com.wire.xenon.models.AssetKey;
+import com.wire.xenon.tools.Logger;
+import com.wire.xenon.tools.Util;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.client.Client;

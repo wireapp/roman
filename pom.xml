@@ -6,7 +6,7 @@
 
     <artifactId>roman</artifactId>
     <groupId>com.wire.bots</groupId>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
 
     <repositories>
         <repository>
@@ -19,21 +19,22 @@
     </repositories>
 
     <properties>
-        <lithium.version>2.37.0</lithium.version>
-        <dropwizard.version>2.0.11</dropwizard.version>
+        <lithium.version>3.0.4</lithium.version>
         <maven.test.skip>true</maven.test.skip>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>com.wire.bots</groupId>
+            <groupId>com.wire</groupId>
             <artifactId>lithium</artifactId>
             <version>${lithium.version}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-testing</artifactId>
-            <version>${dropwizard.version}</version>
+            <version>2.0.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -41,11 +42,6 @@
             <artifactId>mockito-core</artifactId>
             <version>2.23.4</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-jdbi</artifactId>
-            <version>2.0.0-rc9</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

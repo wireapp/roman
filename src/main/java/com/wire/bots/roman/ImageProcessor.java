@@ -1,6 +1,6 @@
 package com.wire.bots.roman;
 
-import com.wire.bots.sdk.assets.Picture;
+import com.wire.xenon.assets.Picture;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -29,8 +29,7 @@ public class ImageProcessor {
 
     private static Size getScaledSize(double origWidth, double origHeight, double dimension) {
         Size ret = new Size();
-        double op1 = dimension / origWidth < dimension / origHeight ? dimension / origWidth
-                : dimension / origHeight;
+        double op1 = Math.min(dimension / origWidth, dimension / origHeight);
         double op2 = dimension / Math.sqrt(origWidth * origHeight);
         double scale = Math.max(op1, op2);
         double width = Math.ceil(scale * origWidth);

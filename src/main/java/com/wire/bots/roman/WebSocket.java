@@ -1,7 +1,7 @@
 package com.wire.bots.roman;
 
 import com.wire.bots.roman.model.OutgoingMessage;
-import com.wire.bots.sdk.tools.Logger;
+import com.wire.xenon.tools.Logger;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;

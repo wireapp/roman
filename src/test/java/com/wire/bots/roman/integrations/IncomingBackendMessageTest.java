@@ -6,16 +6,16 @@ import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.Tools;
 import com.wire.bots.roman.model.*;
-import com.wire.bots.sdk.crypto.CryptoFile;
-import com.wire.bots.sdk.models.otr.PreKeys;
-import com.wire.bots.sdk.models.otr.Recipients;
-import com.wire.bots.sdk.server.model.*;
+import com.wire.xenon.backend.models.*;
+import com.wire.xenon.crypto.CryptoFile;
+import com.wire.xenon.models.otr.PreKeys;
+import com.wire.xenon.models.otr.Recipients;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
+import org.jdbi.v3.core.Jdbi;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -38,7 +38,7 @@ public class IncomingBackendMessageTest {
             ConfigOverride.config("key", "TcZA2Kq4GaOcIbQuOvasrw34321cZAfLW4Ga54fsds43hUuOdcdm42"));
     private final String serviceAuth = new BigInteger(64, random).toString(16);
     private Client client;
-    private DBI jdbi;
+    private Jdbi jdbi;
 
     @Before
     public void beforeClass() throws Exception {
