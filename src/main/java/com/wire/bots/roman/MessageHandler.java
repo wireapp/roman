@@ -302,9 +302,11 @@ public class MessageHandler extends MessageHandlerBase {
                         providerId,
                         post.getStatus());
 
-                final IncomingMessage incomingMessage = post.readEntity(IncomingMessage.class);
-                if (incomingMessage != null) {
-                    sender.send(incomingMessage, message.botId);
+                if (post.hasEntity()) {
+                    final IncomingMessage incomingMessage = post.readEntity(IncomingMessage.class);
+                    if (incomingMessage != null) {
+                        sender.send(incomingMessage, message.botId);
+                    }
                 }
 
                 return post.getStatus() == 200;
