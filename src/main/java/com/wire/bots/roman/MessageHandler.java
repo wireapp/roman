@@ -18,6 +18,7 @@ import com.wire.xenon.models.*;
 import com.wire.xenon.tools.Logger;
 import org.jdbi.v3.core.Jdbi;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -296,15 +297,21 @@ public class MessageHandler extends MessageHandlerBase {
                         .header("Authorization", "Bearer " + provider.serviceAuth)
                         .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
-                Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, status: %d",
+                Logger.debug("MessageHandler.send: Sent: `%s` bot: %s, provider: %s, status: %d",
                         message.type,
                         message.botId,
                         providerId,
                         post.getStatus());
 
                 if (post.hasEntity()) {
-                    final IncomingMessage incomingMessage = post.readEntity(IncomingMessage.class);
+                    final IncomingMessage incomingMessage = getIncomingMessage(post);
                     if (incomingMessage != null) {
+                        Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, posting IncomingMessage: type: %s",
+                                message.type,
+                                message.botId,
+                                providerId,
+                                incomingMessage.type
+                        );
                         sender.send(incomingMessage, message.botId);
                     }
                 }
@@ -316,6 +323,14 @@ public class MessageHandler extends MessageHandlerBase {
         } catch (Exception e) {
             Logger.error("MessageHandler.send: bot: %s, provider: %s,  error %s", message.botId, providerId, e);
             return false;
+        }
+    }
+
+    private IncomingMessage getIncomingMessage(Response post) {
+        try {
+            return post.readEntity(IncomingMessage.class);
+        } catch (ProcessingException e) {
+            return null;
         }
     }
 
