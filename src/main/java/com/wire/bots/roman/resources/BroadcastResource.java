@@ -3,24 +3,19 @@ package com.wire.bots.roman.resources;
 import com.codahale.metrics.annotation.Metered;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.DAO.BotsDAO;
-import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ServiceTokenAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
-import com.wire.bots.roman.model.Provider;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.tools.Logger;
-import io.jsonwebtoken.JwtException;
 import io.swagger.annotations.*;
 import org.jdbi.v3.core.Jdbi;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -36,12 +31,15 @@ import static com.wire.bots.roman.Const.PROVIDER_ID;
 @Path("/broadcast")
 @Produces(MediaType.APPLICATION_JSON)
 public class BroadcastResource {
-    private final Jdbi jdbi;
     private final Sender sender;
+    private final BotsDAO botsDAO;
+    private final BroadcastDAO broadcastDAO;
 
     public BroadcastResource(Jdbi jdbi, Sender sender) {
-        this.jdbi = jdbi;
         this.sender = sender;
+
+        botsDAO = jdbi.onDemand(BotsDAO.class);
+        broadcastDAO = jdbi.onDemand(BroadcastDAO.class);
     }
 
     @POST
@@ -60,38 +58,23 @@ public class BroadcastResource {
 
             UUID providerId = (UUID) context.getProperty(PROVIDER_ID);
 
-            ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
-            Provider provider = providersDAO.get(providerId);
-            if (provider == null) {
-                return Response.
-                        ok(new ErrorMessage("Unknown access token")).
-                        status(404).
-                        build();
-            }
-
-            Logger.info("BroadcastResource: `%s` provider: %s", message.type, providerId);
-
-            BotsDAO botsDAO = jdbi.onDemand(BotsDAO.class);
+            Logger.info("BroadcastResource.post: `%s` provider: %s", message.type, providerId);
 
             List<UUID> botIds = botsDAO.getBotIds(providerId);
 
+            final UUID broadcastId = UUID.randomUUID();
+
             int ret = 0;
             for (UUID botId : botIds) {
-                if (send(botId, message))
+                if (send(broadcastId, providerId, botId, message))
                     ret++;
             }
 
             return Response.
                     ok(new ErrorMessage(String.format("%d messages sent", ret))).
                     build();
-        } catch (JwtException e) {
-            Logger.warning("BroadcastResource %s", e);
-            return Response.
-                    ok(new ErrorMessage("Invalid Authorization token")).
-                    status(403).
-                    build();
         } catch (Exception e) {
-            Logger.error("BroadcastResource: %s", e);
+            Logger.error("BroadcastResource.post: %s", e);
             e.printStackTrace();
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
@@ -100,16 +83,54 @@ public class BroadcastResource {
         }
     }
 
-    private boolean send(UUID botId, IncomingMessage message) {
+    @GET
+    @ApiOperation(value = "Get latest broadcast report", authorizations = {@Authorization(value = "Bearer")})
+    @ApiResponses(value = {
+            @ApiResponse(code = 403, message = "Not authenticated")})
+    @Metered
+    @ServiceTokenAuthorization
+    public Response get(@Context ContainerRequestContext context,
+                        @ApiParam @HeaderParam(APP_KEY) String token) {
+        try {
+            final UUID providerId = (UUID) context.getProperty(PROVIDER_ID);
+
+            final UUID broadcastId = broadcastDAO.getBroadcastId(providerId);
+            if (broadcastId == null) {
+                return Response.
+                        status(404).
+                        build();
+            }
+
+            Logger.info("BroadcastResource.get: broadcast: %s provider: %s", broadcastId, providerId);
+
+            final List<BroadcastDAO.Pair> report = broadcastDAO.report(broadcastId);
+
+            return Response.
+                    ok(report).
+                    build();
+        } catch (Exception e) {
+            Logger.error("BroadcastResource.get: %s", e);
+            e.printStackTrace();
+            return Response
+                    .ok(new ErrorMessage(e.getMessage()))
+                    .status(500)
+                    .build();
+        }
+    }
+
+    private boolean send(UUID broadcastId, UUID providerId, UUID botId, IncomingMessage message) {
         try {
             final UUID messageId = sender.send(message, botId);
+            if (messageId != null) {
+                broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
+            }
             return messageId != null;
         } catch (MissingStateException e) {
-            Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
-            jdbi.onDemand(BotsDAO.class).remove(botId);
+            Logger.warning("BroadcastResource.send: bot: %s, e: %s", botId, e);
+            botsDAO.remove(botId);
         } catch (Exception e) {
             e.printStackTrace();
-            Logger.warning("BroadcastResource: bot: %s, e: %s", botId, e);
+            Logger.warning("BroadcastResource.send: bot: %s, e: %s", botId, e);
         }
 
         return false;

@@ -9,14 +9,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class BotsMapper implements ColumnMapper<UUID> {
+public class UUIDMapper implements ColumnMapper<UUID> {
     @Override
     @Nullable
     public UUID map(ResultSet rs, int columnNumber, StatementContext ctx) {
         try {
             return getUuid(rs, "uuid");
         } catch (SQLException e) {
-            Logger.error("BotsMapper: i: %d, e: %s", columnNumber, e);
+            Logger.error("UUIDMapper: i: %d, e: %s", columnNumber, e);
             return null;
         }
     }

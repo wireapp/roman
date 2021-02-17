@@ -1,6 +1,7 @@
 package com.wire.bots.roman.integrations;
 
 import com.wire.bots.roman.Application;
+import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
@@ -11,6 +12,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.UUID;
 
 public class DatabaseTest {
@@ -36,20 +38,20 @@ public class DatabaseTest {
     public void testProviderDAO() {
         final ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
 
-        final UUID id = UUID.randomUUID();
+        final UUID providerId = UUID.randomUUID();
         final String name = "name";
         final String email = "email@wire.com";
         final String hash = "hash";
         final String password = "password";
-        final int insert = providersDAO.insert(name, id, email, hash, password);
+        final int insert = providersDAO.insert(name, providerId, email, hash, password);
         assert insert == 1;
 
-        Provider provider = providersDAO.get(id);
+        Provider provider = providersDAO.get(providerId);
         assert provider != null;
         assert provider.name.equals(name);
         assert provider.hash.equals(hash);
         assert provider.password.equals(password);
-        assert provider.id.equals(id);
+        assert provider.id.equals(providerId);
         assert provider.email.equals(email);
 
         provider = providersDAO.get(email);
@@ -57,14 +59,14 @@ public class DatabaseTest {
         assert provider.name.equals(name);
         assert provider.hash.equals(hash);
         assert provider.password.equals(password);
-        assert provider.id.equals(id);
+        assert provider.id.equals(providerId);
         assert provider.email.equals(email);
 
         final String url = "url";
         final String auth = "auth";
         final UUID serviceId = UUID.randomUUID();
         final String service_name = "service name";
-        int update = providersDAO.update(id, url, auth, serviceId, service_name);
+        int update = providersDAO.update(providerId, url, auth, serviceId, service_name);
         assert update == 1;
 
         provider = providersDAO.getByAuth(auth);
@@ -75,19 +77,51 @@ public class DatabaseTest {
         assert provider.serviceName.equals(service_name);
 
         final String newURL = "newURL";
-        update = providersDAO.updateUrl(id, newURL);
+        update = providersDAO.updateUrl(providerId, newURL);
         assert update == 1;
 
-        provider = providersDAO.get(id);
+        provider = providersDAO.get(providerId);
         assert provider != null;
         assert provider.serviceUrl.equals(newURL);
 
         final String newName = "new service name";
-        update = providersDAO.updateServiceName(id, newName);
+        update = providersDAO.updateServiceName(providerId, newName);
         assert update == 1;
 
-        provider = providersDAO.get(id);
+        provider = providersDAO.get(providerId);
         assert provider != null;
         assert provider.serviceName.equals(newName);
+    }
+
+    @Test
+    public void testBroadcastDAO() {
+        final BroadcastDAO broadcastDAO = jdbi.onDemand(BroadcastDAO.class);
+
+        final UUID providerId = UUID.randomUUID();
+        final UUID broadcastId = UUID.randomUUID();
+        final UUID botId = UUID.randomUUID();
+        final UUID messageId = UUID.randomUUID();
+
+        final int insert1 = broadcastDAO.insert(broadcastId, botId, providerId, messageId, 0);
+        assert insert1 == 1;
+
+        final UUID get = broadcastDAO.getBroadcastId(providerId);
+        assert get != null;
+        assert get.equals(broadcastId);
+
+        final int insertStatus = broadcastDAO.insertStatus(messageId, 1);
+        assert insertStatus == 1;
+
+        final List<BroadcastDAO.Pair> report = broadcastDAO.report(broadcastId);
+
+        final UUID broadcastId2 = UUID.randomUUID();
+        final UUID botId2 = UUID.randomUUID();
+        final UUID messageId2 = UUID.randomUUID();
+        final int insert2 = broadcastDAO.insert(broadcastId2, botId2, providerId, messageId2, 0);
+        assert insert2 == 1;
+
+        final UUID get2 = broadcastDAO.getBroadcastId(providerId);
+        assert get2 != null;
+        assert get2.equals(broadcastId2);
     }
 }
