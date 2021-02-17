@@ -105,12 +105,16 @@ public class DatabaseTest {
         final int insert1 = broadcastDAO.insert(broadcastId, botId, providerId, messageId, 0);
         assert insert1 == 1;
 
+        int insertStatus = broadcastDAO.insertStatus(messageId, 1);
+        assert insertStatus == 1;
+        insertStatus = broadcastDAO.insertStatus(messageId, 2);
+        assert insertStatus == 1;
+        insertStatus = broadcastDAO.insertStatus(messageId, 3);
+        assert insertStatus == 1;
+
         final UUID get = broadcastDAO.getBroadcastId(providerId);
         assert get != null;
         assert get.equals(broadcastId);
-
-        final int insertStatus = broadcastDAO.insertStatus(messageId, 1);
-        assert insertStatus == 1;
 
         final List<BroadcastDAO.Pair> report = broadcastDAO.report(broadcastId);
 
