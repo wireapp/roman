@@ -3,6 +3,7 @@ package com.wire.bots.roman;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
+import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.OutgoingMessage;
@@ -29,6 +30,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import static com.wire.bots.roman.DAO.BroadcastDAO.Type.DELIVERED;
+import static com.wire.bots.roman.DAO.BroadcastDAO.Type.READ;
 import static com.wire.bots.roman.Tools.generateToken;
 
 public class MessageHandler extends MessageHandlerBase {
@@ -37,12 +40,14 @@ public class MessageHandler extends MessageHandlerBase {
     private final Client jerseyClient;
     private final ProvidersDAO providersDAO;
     private final BotsDAO botsDAO;
+    private final BroadcastDAO broadcastDAO;
     private Sender sender;
 
     MessageHandler(Jdbi jdbi, Client jerseyClient) {
         this.jerseyClient = jerseyClient;
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
         botsDAO = jdbi.onDemand(BotsDAO.class);
+        broadcastDAO = jdbi.onDemand(BroadcastDAO.class);
     }
 
     @Override
@@ -180,6 +185,18 @@ public class MessageHandler extends MessageHandlerBase {
         // New Poll has been created
         if (event.hasComposite()) {
             onComposite(botId, userId, event);
+        }
+    }
+
+    @Override
+    public void onConfirmation(WireClient client, ConfirmationMessage msg) {
+        try {
+            final UUID messageId = msg.getConfirmationMessageId();
+            final ConfirmationMessage.Type type = msg.getType();
+
+            broadcastDAO.insertStatus(messageId, type == ConfirmationMessage.Type.DELIVERED ? DELIVERED.ordinal() : READ.ordinal());
+        } catch (Exception e) {
+            Logger.error("onConfirmation: %s %s", client.getId(), e);
         }
     }
 

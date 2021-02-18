@@ -29,6 +29,8 @@ import com.wire.lithium.Server;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.factories.CryptoFactory;
 import com.wire.xenon.factories.StorageFactory;
+import io.dropwizard.bundles.redirect.PathRedirect;
+import io.dropwizard.bundles.redirect.RedirectBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.websockets.WebsocketBundle;
@@ -61,6 +63,7 @@ public class Application extends Server<Config> {
 
         bootstrap.addBundle(new WebsocketBundle(WebSocket.class));
         bootstrap.addCommand(new UpdateCertCommand());
+        bootstrap.addBundle(new RedirectBundle(new PathRedirect("/", "/swagger#/default")));
     }
 
     @Override

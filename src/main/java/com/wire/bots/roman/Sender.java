@@ -24,20 +24,21 @@ public class Sender {
         this.repo = repo;
     }
 
+    @Nullable
     public UUID send(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient client = repo.getClient(botId)) {
+            if (client == null)
+                return null;
+
             return send(message, client);
         }
     }
 
-    @Nullable
-    private UUID send(IncomingMessage message, @Nullable WireClient client) throws Exception {
-        if (client == null)
-            return null;
-
+    private UUID send(IncomingMessage message, WireClient client) throws Exception {
         switch (message.type) {
             case "text": {
                 MessageText text = new MessageText(message.text.data);
+                text.setExpectsReadConfirmation(true);
                 if (message.text.mentions != null) {
                     for (Mention mention : message.text.mentions)
                         text.addMention(mention.userId, mention.offset, mention.length);
