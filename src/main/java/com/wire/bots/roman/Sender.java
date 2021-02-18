@@ -38,6 +38,7 @@ public class Sender {
         switch (message.type) {
             case "text": {
                 MessageText text = new MessageText(message.text.data);
+                text.setExpectsReadConfirmation(true);
                 if (message.text.mentions != null) {
                     for (Mention mention : message.text.mentions)
                         text.addMention(mention.userId, mention.offset, mention.length);
