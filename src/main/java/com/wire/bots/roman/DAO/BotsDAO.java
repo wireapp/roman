@@ -1,6 +1,6 @@
 package com.wire.bots.roman.DAO;
 
-import com.wire.bots.roman.DAO.mappers.BotsMapper;
+import com.wire.bots.roman.DAO.mappers.UUIDMapper;
 import org.jdbi.v3.sqlobject.config.RegisterColumnMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
@@ -15,12 +15,12 @@ public interface BotsDAO {
                @Bind("provider") UUID provider);
 
     @SqlQuery("SELECT provider AS uuid FROM Bots WHERE id = :bot")
-    @RegisterColumnMapper(BotsMapper.class)
+    @RegisterColumnMapper(UUIDMapper.class)
     UUID getProviderId(@Bind("bot") UUID bot);
 
 
     @SqlQuery("SELECT id AS uuid FROM Bots WHERE provider = :providerId")
-    @RegisterColumnMapper(BotsMapper.class)
+    @RegisterColumnMapper(UUIDMapper.class)
     List<UUID> getBotIds(@Bind("providerId") UUID providerId);
 
     @SqlUpdate("DELETE FROM Bots WHERE id = :botId")
