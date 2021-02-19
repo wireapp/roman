@@ -69,7 +69,7 @@ wss://proxy.services.wire.com/await/`<app_key>`
 
 ### Events that are sent as HTTP `POST` to your endpoint (Webhook or Websocket)
 
-- `bot_request`: When bot is added to a conversation ( 1-1 conversation or a group)
+- `conversation.bot_request`: When bot is added to a conversation ( 1-1 conversation or a group)
 ```
 {
     "type": "conversation.bot_request",
@@ -85,7 +85,7 @@ wss://proxy.services.wire.com/await/`<app_key>`
 Your service must be available at the moment `bot_request` event is sent. It must respond with http code `200`.
  In case of Websocket implementation it is enough the socket is connected to the Proxy at that moment.
 
-- `init`: If your Service responded with `200` to a `bot_request` another event is sent: `init`.
+- `conversation.init`: If your Service responded with `200` to a `bot_request` another event is sent: `init`.
 `text` field contains the name of the conversation your bot is being added to.
 ```
 {
@@ -98,7 +98,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 }
 ```
 
-- `new_text`: When text is posted in a conversation where this bot is present
+- `conversation.new_text`: When text is posted in a conversation where this bot is present
 ```
 {
     "type": "conversation.new_text",
@@ -111,7 +111,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "text": "Hi everybody!"
 }
 ```
-- `new_image`: When an image is posted in a conversation where this bot is present
+- `conversation.new_image`: When an image is posted in a conversation where this bot is present
 
 ```
 {
