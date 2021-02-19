@@ -66,8 +66,14 @@ public class Sender {
                 if (message.poll.type.equals("confirmation")) {
                     return sendPollConfirmation(message, client);
                 }
+                break;
             }
-            break;
+            case "call": {
+                final String content = "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
+                final Calling calling = new Calling(content);
+                client.send(calling);
+                return calling.getMessageId();
+            }
         }
 
         return null;

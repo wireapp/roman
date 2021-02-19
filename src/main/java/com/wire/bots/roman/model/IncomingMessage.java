@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class IncomingMessage {
     @NotNull
-    @OneOf(value = {"text", "attachment", "poll"})
+    @OneOf(value = {"text", "attachment", "poll", "call"})
     @JsonProperty
     public String type;
 
