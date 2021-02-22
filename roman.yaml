@@ -46,3 +46,9 @@ key: ${APP_KEY:-}
 domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com}
 apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
 
+# if the proxy does not have access to it's domain, one needs to specify the
+# TLS pub key manually - either by adding it directly in base64
+romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-}
+# or by specifying the path to the file with the key
+pathToRomanPubKey: ${PATH_TO_ROMAN_PUB_KEY:-}
+# if both options are specified, the proxy uses the key defined in romanPubKeyBase64
