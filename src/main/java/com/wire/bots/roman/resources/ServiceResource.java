@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wire.bots.roman.*;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.filters.ServiceAuthorization;
+import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
 import com.wire.xenon.assets.Picture;
@@ -31,6 +32,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.UUID;
@@ -243,12 +247,25 @@ public class ServiceResource {
         }
     }
 
-    private Service newService() throws IOException {
-        final String domain = Application.getInstance().getConfig().domain;
+    private String getPubKey(final Config config) throws IOException {
+        String pubKey;
+        if (config.romanPubKeyBase64 != null) {
+            byte[] keyBytes = Base64.getDecoder().decode(config.romanPubKeyBase64);
+            pubKey = new String(keyBytes, StandardCharsets.UTF_8);
+        } else if (config.pathToRomanPubKey != null) {
+            byte[] keyBytes = Files.readAllBytes(Paths.get(config.pathToRomanPubKey));
+            pubKey = new String(keyBytes, StandardCharsets.UTF_8);
+        } else {
+            pubKey = Tools.getPubkey(config.domain);
+        }
+        return pubKey;
+    }
 
+    private Service newService() throws IOException {
+        final Config config = Application.getInstance().getConfig();
         Service ret = new Service();
-        ret.baseUrl = domain;
-        ret.pubkey = Tools.getPubkey(domain);
+        ret.baseUrl = config.domain;
+        ret.pubkey = getPubKey(config);
 
         ret.assets = new ArrayList<>();
         Service._Asset asset1 = new Service._Asset();
