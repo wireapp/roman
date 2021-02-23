@@ -277,9 +277,8 @@ public class ServiceResource {
         public String avatar;
 
         @JsonProperty
-        @NotNull
         @Length(min = 3, max = 128)
-        public String summary;
+        public String summary = "Summary";
 
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
