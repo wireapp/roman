@@ -41,7 +41,7 @@ public class Config extends Configuration {
     @JsonProperty
     public String romanPubKeyBase64;
 
-    @ValidationMethod(message = "`romanPubKeyBase64` is not a valid base65")
+    @ValidationMethod(message = "`romanPubKeyBase64` is not in a valid base64 format")
     @JsonIgnore
     public boolean pubKeyFormatIsNotValid() {
         boolean isValid = romanPubKeyBase64 != null && !romanPubKeyBase64.isEmpty();
