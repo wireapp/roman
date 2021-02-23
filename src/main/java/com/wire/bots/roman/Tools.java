@@ -1,6 +1,5 @@
 package com.wire.bots.roman;
 
-import com.wire.bots.roman.model.Config;
 import io.jsonwebtoken.Jwts;
 
 import java.nio.charset.StandardCharsets;
@@ -36,8 +35,8 @@ public class Tools {
                 .compact();
     }
 
-    public static String getPubKey(final Config config) {
-        byte[] keyBytes = Base64.getDecoder().decode(config.romanPubKeyBase64);
+    public static String decodeBase64(final String base64String) {
+        byte[] keyBytes = Base64.getDecoder().decode(base64String);
         return new String(keyBytes, StandardCharsets.UTF_8);
     }
 }

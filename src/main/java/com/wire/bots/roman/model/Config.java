@@ -47,7 +47,7 @@ public class Config extends Configuration {
         boolean isValid = romanPubKeyBase64 != null && !romanPubKeyBase64.isEmpty();
         if (isValid) {
             try {
-                Tools.getPubKey(this);
+                Tools.decodeBase64(romanPubKeyBase64);
             } catch (Exception ignored) {
                 isValid = false;
             }
