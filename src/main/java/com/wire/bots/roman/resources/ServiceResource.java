@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wire.bots.roman.*;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.filters.ServiceAuthorization;
+import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
 import com.wire.xenon.assets.Picture;
@@ -27,7 +28,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -243,12 +243,11 @@ public class ServiceResource {
         }
     }
 
-    private Service newService() throws IOException {
-        final String domain = Application.getInstance().getConfig().domain;
-
+    private Service newService() {
+        final Config config = Application.getInstance().getConfig();
         Service ret = new Service();
-        ret.baseUrl = domain;
-        ret.pubkey = Tools.getPubkey(domain);
+        ret.baseUrl = config.domain;
+        ret.pubkey = Tools.getPubKey(config);
 
         ret.assets = new ArrayList<>();
         Service._Asset asset1 = new Service._Asset();
