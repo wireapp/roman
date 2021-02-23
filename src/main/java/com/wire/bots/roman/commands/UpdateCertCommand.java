@@ -55,7 +55,7 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
 
         String hostname = namespace.getString("domain");
 
-        String pubkey = Tools.getPubKey(Application.getInstance().getConfig());
+        String pubkey = Tools.decodeBase64(Application.getInstance().getConfig().romanPubKeyBase64);
 
         System.out.printf("\nCert:\n%s\n\n", pubkey);
 
