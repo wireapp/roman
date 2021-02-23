@@ -21,7 +21,7 @@ package com.wire.bots.roman.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wire.lithium.Configuration;
 
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 public class Config extends Configuration {
@@ -33,11 +33,8 @@ public class Config extends Configuration {
     @JsonProperty
     public String domain;
 
-    @Nullable
+    @NotNull
+    @NotEmpty
     @JsonProperty
     public String romanPubKeyBase64;
-
-    @Nullable
-    @JsonProperty
-    public String pathToRomanPubKey;
 }

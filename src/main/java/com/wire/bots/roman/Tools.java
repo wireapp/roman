@@ -1,5 +1,6 @@
 package com.wire.bots.roman;
 
+import com.wire.bots.roman.model.Config;
 import io.jsonwebtoken.Jwts;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -7,6 +8,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Base64;
@@ -41,7 +43,13 @@ public class Tools {
                 .compact();
     }
 
-    public static String getPubkey(String hostname) throws IOException {
+    public static String getPubKey(final Config config) {
+        byte[] keyBytes = Base64.getDecoder().decode(config.romanPubKeyBase64);
+        return new String(keyBytes, StandardCharsets.UTF_8);
+    }
+
+    @SuppressWarnings("unused") // this is quite useful, leaving here in case we need it
+    public static String getPubKey(String hostname) throws IOException {
         String str = null;
         String raw_hostname = URI.create(hostname).getHost();
         PublicKey publicKey = getPublicKey(raw_hostname);

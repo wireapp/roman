@@ -28,13 +28,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.UUID;
@@ -247,25 +243,11 @@ public class ServiceResource {
         }
     }
 
-    private String getPubKey(final Config config) throws IOException {
-        String pubKey;
-        if (config.romanPubKeyBase64 != null) {
-            byte[] keyBytes = Base64.getDecoder().decode(config.romanPubKeyBase64);
-            pubKey = new String(keyBytes, StandardCharsets.UTF_8);
-        } else if (config.pathToRomanPubKey != null) {
-            byte[] keyBytes = Files.readAllBytes(Paths.get(config.pathToRomanPubKey));
-            pubKey = new String(keyBytes, StandardCharsets.UTF_8);
-        } else {
-            pubKey = Tools.getPubkey(config.domain);
-        }
-        return pubKey;
-    }
-
-    private Service newService() throws IOException {
+    private Service newService() {
         final Config config = Application.getInstance().getConfig();
         Service ret = new Service();
         ret.baseUrl = config.domain;
-        ret.pubkey = getPubKey(config);
+        ret.pubkey = Tools.getPubKey(config);
 
         ret.assets = new ArrayList<>();
         Service._Asset asset1 = new Service._Asset();
