@@ -18,8 +18,11 @@
 
 package com.wire.bots.roman.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wire.bots.roman.Tools;
 import com.wire.lithium.Configuration;
+import io.dropwizard.validation.ValidationMethod;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -37,4 +40,19 @@ public class Config extends Configuration {
     @NotEmpty
     @JsonProperty
     public String romanPubKeyBase64;
+
+    @ValidationMethod(message = "`romanPubKeyBase64` is not a valid base65")
+    @JsonIgnore
+    public boolean pubKeyFormatIsNotValid() {
+        boolean isValid = romanPubKeyBase64 != null && !romanPubKeyBase64.isEmpty();
+        if (isValid) {
+            try {
+                Tools.getPubKey(this);
+            } catch (Exception ignored) {
+                isValid = false;
+            }
+        }
+        return isValid;
+    }
+
 }
