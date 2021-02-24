@@ -28,9 +28,10 @@ Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API
 
 ```
 {
-  "name": "My Cool Bot",
-  "url": "https://my.server.com/webhook",  // Pass _null_ if you prefere websockets
-  "avatar": "..." // Base64 encoded image 
+  "name": "My Cool Bot",    
+  "summary": "Short summary of this cool bot" // Optional
+  "url": "https://my.server.com/webhook",     // Optional: Leave as null if you prefere websockets
+  "avatar": "..."                             // Optional: Base64 encoded image 
 }
 ```
 

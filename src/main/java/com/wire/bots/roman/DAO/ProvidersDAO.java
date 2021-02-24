@@ -36,6 +36,14 @@ public interface ProvidersDAO {
                @Bind("serviceId") UUID serviceId,
                @Bind("serviceName") String serviceName);
 
+    @SqlUpdate("UPDATE Providers SET " +
+            "url = null," +
+            "service_auth = null, " +
+            "service = null, " +
+            "service_name = null " +
+            "WHERE id = :id")
+    int deleteService(@Bind("id") UUID providerId);
+
     @SqlUpdate("UPDATE Providers SET url = :url WHERE id = :id")
     int updateUrl(@Bind("id") UUID id,
                   @Bind("url") String url);

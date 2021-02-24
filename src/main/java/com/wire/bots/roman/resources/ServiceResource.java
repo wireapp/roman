@@ -33,6 +33,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.UUID;
 
 import static com.wire.bots.roman.Const.Z_PROVIDER;
@@ -161,7 +162,8 @@ public class ServiceResource {
             }
 
             if (payload.url != null) {
-                providersDAO.updateUrl(provider.id, payload.url);
+                String url = payload.url.equals("null") ? null : payload.url;
+                providersDAO.updateUrl(provider.id, url);
             }
 
             Response login = providerClient.login(provider.email, provider.password);
@@ -245,6 +247,40 @@ public class ServiceResource {
         }
     }
 
+    @DELETE
+    @ApiOperation(value = "Delete the Service", response = _Result.class)
+    @ServiceAuthorization
+    public Response delete(@ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
+                           @Context ContainerRequestContext context) {
+        try {
+            UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
+
+            Logger.debug("ServiceResource.delete: provider: %s", providerId);
+
+            Provider provider = providersDAO.get(providerId);
+
+            final int update = providersDAO.deleteService(providerId);
+
+            Response login = providerClient.login(provider.email, provider.password);
+
+            NewCookie cookie = login.getCookies().get(Z_PROVIDER);
+
+            final Response response = providerClient.deleteService(cookie, provider.serviceId);
+
+            return Response.
+                    ok().
+                    build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("ServiceResource.delete: %s", e);
+            return Response
+                    .ok(new ErrorMessage("Something went wrong"))
+                    .status(500)
+                    .build();
+        }
+    }
+
     private Service newService() {
         final Config config = Application.getInstance().getConfig();
         Service ret = new Service();
@@ -318,7 +354,7 @@ public class ServiceResource {
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
         public boolean isUrlValid() {
-            if (url == null)
+            if (url == null || Objects.equals(url, "null"))
                 return true;
             try {
                 new URL(url).toURI();
