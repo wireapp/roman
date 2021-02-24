@@ -84,10 +84,12 @@ public class ServiceResource {
 
             if (payload.avatar != null) {
                 byte[] image = Base64.getDecoder().decode(payload.avatar);
-                Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
-                String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mediumImage.getMimeType());
-                service.assets.get(0).key = key;
-                service.assets.get(1).key = key;
+                if (image != null) {
+                    Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
+                    String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mediumImage.getMimeType());
+                    service.assets.get(0).key = key;
+                    service.assets.get(1).key = key;
+                }
             }
 
             Response create = providerClient.createService(cookie, service);
@@ -296,7 +298,8 @@ public class ServiceResource {
         @ValidationMethod(message = "`avatar` is not a Base64 encoded string")
         @JsonIgnore
         public boolean isAvatarValid() {
-            return avatar == null || avatar.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
+            return avatar == null
+                    || (!avatar.isEmpty() && avatar.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$"));
         }
     }
 
