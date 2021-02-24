@@ -162,11 +162,8 @@ public class ServiceResource {
             }
 
             if (payload.url != null) {
-                providersDAO.updateUrl(provider.id, payload.url);
-            }
-
-            if (Objects.equals(payload.url, "null")) {
-                providersDAO.updateUrl(provider.id, null);
+                String url = payload.url.equals("null") ? null : payload.url;
+                providersDAO.updateUrl(provider.id, url);
             }
 
             Response login = providerClient.login(provider.email, provider.password);
@@ -357,7 +354,7 @@ public class ServiceResource {
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
         public boolean isUrlValid() {
-            if (url == null)
+            if (url == null || Objects.equals(url, "null"))
                 return true;
             try {
                 new URL(url).toURI();
