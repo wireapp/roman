@@ -18,7 +18,14 @@ import java.util.UUID;
 public class DatabaseTest {
     private static final DropwizardTestSupport<Config> SUPPORT = new DropwizardTestSupport<>(
             Application.class, "roman.yaml",
-            ConfigOverride.config("key", "TcZA2Kq4GaOcIbQuOvasrw34321cZAfLW4Ga54fsds43hUuOdcdm42"));
+            ConfigOverride.config("key", "TcZA2Kq4GaOcIbQuOvasrw34321cZAfLW4Ga54fsds43hUuOdcdm42"),
+            ConfigOverride.config("romanPubKeyBase64", "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3xtHqyZPlb0lxlnP0rNA\n" +
+                    "JVmAjB1Tenl11brkkKihcJNRAYrnrT/6sPX4u2lVn/aPncUTjN8omL47MBct7qYV\n" +
+                    "1VY4a5beOyNiVL0ZjZMuh07aL9Z2A4cu67tKZrCoGttn3jpSVlqoOtwEgW+Tpgpm\n" +
+                    "KojcRC4DDXEZTEvRoi0RLzAyWCH/8hwWzXR7J082zmn0Ur211QVbOJN/62PAIWyj\n" +
+                    "l5bLglp00AY5OnBHgRNwwRkBJIJLwgNm8u9+0ZplqmMGd3C/QFNngCOeRvFe+5g4\n" +
+                    "qfO4/FOlbkM2kYFAi5KUowfG7cdMQELI+fe4v7yNsgrbMKhnIiLtDIU4wiQIRjbr\n" +
+                    "ZwIDAQAB"));
     private Jdbi jdbi;
 
     @Before
@@ -91,6 +98,10 @@ public class DatabaseTest {
         provider = providersDAO.get(providerId);
         assert provider != null;
         assert provider.serviceName.equals(newName);
+
+        final int deleteService = providersDAO.deleteService(providerId);
+        provider = providersDAO.get(providerId);
+
     }
 
     @Test

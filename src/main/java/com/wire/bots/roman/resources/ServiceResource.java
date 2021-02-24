@@ -257,7 +257,7 @@ public class ServiceResource {
 
             Provider provider = providersDAO.get(providerId);
 
-            final int update = providersDAO.update(providerId, null, null, null, null);
+            final int update = providersDAO.deleteService(providerId);
 
             Response login = providerClient.login(provider.email, provider.password);
 
