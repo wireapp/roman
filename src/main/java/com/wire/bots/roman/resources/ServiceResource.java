@@ -33,6 +33,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.UUID;
 
 import static com.wire.bots.roman.Const.Z_PROVIDER;
@@ -162,6 +163,10 @@ public class ServiceResource {
 
             if (payload.url != null) {
                 providersDAO.updateUrl(provider.id, payload.url);
+            }
+
+            if (Objects.equals(payload.url, "null")) {
+                providersDAO.updateUrl(provider.id, null);
             }
 
             Response login = providerClient.login(provider.email, provider.password);
