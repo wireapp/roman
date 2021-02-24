@@ -249,7 +249,7 @@ public class ServiceResource {
         final Config config = Application.getInstance().getConfig();
         Service ret = new Service();
         ret.baseUrl = config.domain;
-        ret.pubkey = Tools.getPubKey(config);
+        ret.pubkey = Tools.decodeBase64(config.romanPubKeyBase64);
 
         ret.assets = new ArrayList<>();
         Service._Asset asset1 = new Service._Asset();
