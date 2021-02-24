@@ -61,6 +61,14 @@ public class ProviderClient {
                 .post(Entity.entity(service, MediaType.APPLICATION_JSON));
     }
 
+    public Response deleteService(NewCookie zprovider, UUID serviceId) {
+        return servicesTarget
+                .path(serviceId.toString())
+                .request(MediaType.APPLICATION_JSON)
+                .cookie(zprovider)
+                .delete();
+    }
+
     public Response enableService(NewCookie zprovider, UUID serviceId, String password) {
         _UpdateService updateService = new _UpdateService();
         updateService.enabled = true;
