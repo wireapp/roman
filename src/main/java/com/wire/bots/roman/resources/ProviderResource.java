@@ -47,7 +47,7 @@ public class ProviderResource {
     public Response register(@ApiParam @Valid _NewUser payload) {
         try {
             String name = payload.name;
-            String email = payload.email;
+            String email = payload.email.toLowerCase();
 
             Response register = providerClient.register(name, email);
 
@@ -83,7 +83,8 @@ public class ProviderResource {
     @ApiOperation(value = "Login as Wire Bot Developer")
     public Response login(@ApiParam @Valid SignIn payload) {
         try {
-            Provider provider = providersDAO.get(payload.email);
+            final String email = payload.email.toLowerCase();
+            Provider provider = providersDAO.get(email);
             if (provider == null || !SCryptUtil.check(payload.password, provider.hash)) {
                 return Response
                         .ok(new ErrorMessage("Wrong email or password"))
