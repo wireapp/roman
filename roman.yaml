@@ -46,3 +46,5 @@ key: ${APP_KEY:-}
 domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com}
 apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
 
+# TLS public key in base64 format
+romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-}

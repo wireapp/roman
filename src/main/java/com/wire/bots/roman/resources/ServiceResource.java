@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wire.bots.roman.*;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.filters.ServiceAuthorization;
+import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
 import com.wire.xenon.assets.Picture;
@@ -27,12 +28,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.UUID;
 
 import static com.wire.bots.roman.Const.Z_PROVIDER;
@@ -84,10 +85,12 @@ public class ServiceResource {
 
             if (payload.avatar != null) {
                 byte[] image = Base64.getDecoder().decode(payload.avatar);
-                Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
-                String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mediumImage.getMimeType());
-                service.assets.get(0).key = key;
-                service.assets.get(1).key = key;
+                if (image != null) {
+                    Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
+                    String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mediumImage.getMimeType());
+                    service.assets.get(0).key = key;
+                    service.assets.get(1).key = key;
+                }
             }
 
             Response create = providerClient.createService(cookie, service);
@@ -159,7 +162,8 @@ public class ServiceResource {
             }
 
             if (payload.url != null) {
-                providersDAO.updateUrl(provider.id, payload.url);
+                String url = payload.url.equals("null") ? null : payload.url;
+                providersDAO.updateUrl(provider.id, url);
             }
 
             Response login = providerClient.login(provider.email, provider.password);
@@ -243,12 +247,45 @@ public class ServiceResource {
         }
     }
 
-    private Service newService() throws IOException {
-        final String domain = Application.getInstance().getConfig().domain;
+    @DELETE
+    @ApiOperation(value = "Delete the Service", response = _Result.class)
+    @ServiceAuthorization
+    public Response delete(@ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
+                           @Context ContainerRequestContext context) {
+        try {
+            UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
 
+            Logger.debug("ServiceResource.delete: provider: %s", providerId);
+
+            Provider provider = providersDAO.get(providerId);
+
+            final int update = providersDAO.deleteService(providerId);
+
+            Response login = providerClient.login(provider.email, provider.password);
+
+            NewCookie cookie = login.getCookies().get(Z_PROVIDER);
+
+            final Response response = providerClient.deleteService(cookie, provider.serviceId);
+
+            return Response.
+                    ok().
+                    build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("ServiceResource.delete: %s", e);
+            return Response
+                    .ok(new ErrorMessage("Something went wrong"))
+                    .status(500)
+                    .build();
+        }
+    }
+
+    private Service newService() {
+        final Config config = Application.getInstance().getConfig();
         Service ret = new Service();
-        ret.baseUrl = domain;
-        ret.pubkey = Tools.getPubkey(domain);
+        ret.baseUrl = config.domain;
+        ret.pubkey = Tools.decodeBase64(config.romanPubKeyBase64);
 
         ret.assets = new ArrayList<>();
         Service._Asset asset1 = new Service._Asset();
@@ -278,9 +315,8 @@ public class ServiceResource {
         public String avatar;
 
         @JsonProperty
-        @NotNull
         @Length(min = 3, max = 128)
-        public String summary;
+        public String summary = "Summary";
 
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
@@ -298,7 +334,8 @@ public class ServiceResource {
         @ValidationMethod(message = "`avatar` is not a Base64 encoded string")
         @JsonIgnore
         public boolean isAvatarValid() {
-            return avatar == null || avatar.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
+            return avatar == null
+                    || (!avatar.isEmpty() && avatar.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$"));
         }
     }
 
@@ -317,7 +354,7 @@ public class ServiceResource {
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
         public boolean isUrlValid() {
-            if (url == null)
+            if (url == null || Objects.equals(url, "null"))
                 return true;
             try {
                 new URL(url).toURI();

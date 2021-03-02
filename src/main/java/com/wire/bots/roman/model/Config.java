@@ -18,9 +18,12 @@
 
 package com.wire.bots.roman.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wire.lithium.Configuration;
+import io.dropwizard.validation.ValidationMethod;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 public class Config extends Configuration {
@@ -31,4 +34,17 @@ public class Config extends Configuration {
     @NotNull
     @JsonProperty
     public String domain;
+
+    @NotNull
+    @NotEmpty
+    @JsonProperty
+    public String romanPubKeyBase64;
+
+    @ValidationMethod(message = "`romanPubKeyBase64` is not in a valid base64 format")
+    @JsonIgnore
+    public boolean pubKeyFormatIsNotValid() {
+        return romanPubKeyBase64 != null
+                && !romanPubKeyBase64.isEmpty()
+                && romanPubKeyBase64.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
+    }
 }

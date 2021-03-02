@@ -1,6 +1,7 @@
 package com.wire.bots.roman.commands;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.ProviderClient;
 import com.wire.bots.roman.Tools;
@@ -18,7 +19,6 @@ import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.List;
 
 public class UpdateCertCommand extends ConfiguredCommand<Config> {
@@ -38,7 +38,7 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
     }
 
     @Override
-    public void run(Bootstrap<Config> bootstrap, Namespace namespace, Config config) throws IOException {
+    public void run(Bootstrap<Config> bootstrap, Namespace namespace, Config config) {
         Environment environment = new Environment("UpdateCertCommand");
 
         Client client = new JerseyClientBuilder(environment)
@@ -55,7 +55,7 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
 
         String hostname = namespace.getString("domain");
 
-        String pubkey = Tools.getPubkey(hostname);
+        String pubkey = Tools.decodeBase64(Application.getInstance().getConfig().romanPubKeyBase64);
 
         System.out.printf("\nCert:\n%s\n\n", pubkey);
 
