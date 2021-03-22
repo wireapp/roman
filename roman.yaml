@@ -16,8 +16,8 @@ logging:
 swagger:
   resourcePackage: com.wire.bots.roman.resources
   schemes:
-    - http
     - https
+    - http
 
 jerseyClient:
   timeout: 40s
