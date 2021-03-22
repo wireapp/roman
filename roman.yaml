@@ -16,7 +16,7 @@ logging:
 swagger:
   resourcePackage: com.wire.bots.roman.resources
   schemes:
-#    - http
+    - http
     - https
 
 jerseyClient:
