@@ -1,5 +1,6 @@
 package com.wire.bots.roman;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.cryptobox.CryptoException;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
@@ -17,6 +18,7 @@ import java.util.Base64;
 import java.util.UUID;
 
 public class Sender {
+    private final ObjectMapper mapper = new ObjectMapper();
 
     private final ClientRepo repo;
 
@@ -69,7 +71,9 @@ public class Sender {
                 break;
             }
             case "call": {
-                final String content = "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
+                String content = "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
+                if (message.call != null)
+                    content = mapper.writeValueAsString(message.call);
                 final Calling calling = new Calling(content);
                 client.send(calling);
                 return calling.getMessageId();
