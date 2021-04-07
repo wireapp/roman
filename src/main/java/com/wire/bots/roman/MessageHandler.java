@@ -1,14 +1,12 @@
 package com.wire.bots.roman;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
-import com.wire.bots.roman.model.IncomingMessage;
-import com.wire.bots.roman.model.OutgoingMessage;
-import com.wire.bots.roman.model.Poll;
-import com.wire.bots.roman.model.Provider;
+import com.wire.bots.roman.model.*;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.assets.DeliveryReceipt;
@@ -249,17 +247,26 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onCalling(WireClient client, CallingMessage msg) {
-        final String type = "conversation.call";
+        try {
+            final String type = "conversation.call";
 
-        UUID botId = client.getId();
+            UUID botId = client.getId();
 
-        validate(botId);
+            validate(botId);
 
-        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-        message.conversationId = client.getConversationId();
-        message.call = msg.getContent();
+            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+            message.conversationId = client.getConversationId();
+            message.call = toCall(msg.getContent());
 
-        send(message);
+            send(message);
+        } catch (Exception e) {
+            Logger.warning("onCalling: bot: %s error: %s", client.getId(), e);
+        }
+    }
+
+    private Call toCall(String content) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(content, Call.class);
     }
 
     @Override
