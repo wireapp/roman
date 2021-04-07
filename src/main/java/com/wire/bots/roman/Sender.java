@@ -71,7 +71,10 @@ public class Sender {
                 break;
             }
             case "call": {
-                final Calling calling = new Calling(mapper.writeValueAsString(message.call));
+                String content = "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
+                if (message.call != null)
+                    content = mapper.writeValueAsString(message.call);
+                final Calling calling = new Calling(content);
                 client.send(calling);
                 return calling.getMessageId();
             }
