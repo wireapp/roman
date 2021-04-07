@@ -28,7 +28,7 @@ public class OutgoingMessage {
     public UUID refMessageId;
     public String mimeType;
     public ArrayList<Mention> mentions = new ArrayList<>();
-    public String call;
+    public Call call;
 
     public void addMention(UUID userId, int offset, int len) {
         Mention mention = new Mention();

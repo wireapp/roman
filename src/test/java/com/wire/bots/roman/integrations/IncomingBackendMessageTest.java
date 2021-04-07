@@ -84,6 +84,12 @@ public class IncomingBackendMessageTest {
         Response res = newOtrMessageFromBackend(botId, userId, cypher);
         assertThat(res.getStatus()).isEqualTo(200);
 
+        // Test new Call message is sent to Roman by the BE. BE calls POST /bots/{botId}/messages with Payload obj
+        encrypt = crypto.encrypt(preKeys, generateCallMessage("{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"123\",\"resp\":false}"));
+        cypher = encrypt.get(userId, USER_CLIENT_DUMMY);
+        res = newOtrMessageFromBackend(botId, userId, cypher);
+        assertThat(res.getStatus()).isEqualTo(200);
+
         // Post new poll into conv
         final UUID pollId = UUID.randomUUID();
         ArrayList<String> buttons = new ArrayList<>();
@@ -208,6 +214,17 @@ public class IncomingBackendMessageTest {
         return Messages.GenericMessage.newBuilder()
                 .setMessageId(UUID.randomUUID().toString())
                 .setText(text)
+                .build()
+                .toByteArray();
+    }
+
+    private byte[] generateCallMessage(String content) {
+        Messages.Calling.Builder calling = Messages.Calling.newBuilder()
+                .setContent(content);
+
+        return Messages.GenericMessage.newBuilder()
+                .setMessageId(UUID.randomUUID().toString())
+                .setCalling(calling)
                 .build()
                 .toByteArray();
     }
