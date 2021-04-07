@@ -1,6 +1,5 @@
 package com.wire.bots.roman;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
@@ -35,6 +34,7 @@ import static com.wire.bots.roman.Tools.generateToken;
 public class MessageHandler extends MessageHandlerBase {
 
     private static final int TOKEN_DURATION = 20;
+    private final ObjectMapper mapper = new ObjectMapper();
     private final Client jerseyClient;
     private final ProvidersDAO providersDAO;
     private final BotsDAO botsDAO;
@@ -256,17 +256,12 @@ public class MessageHandler extends MessageHandlerBase {
 
             OutgoingMessage message = getOutgoingMessage(botId, type, msg);
             message.conversationId = client.getConversationId();
-            message.call = toCall(msg.getContent());
+            message.call = mapper.readValue(msg.getContent(), Call.class);
 
             send(message);
         } catch (Exception e) {
             Logger.warning("onCalling: bot: %s error: %s", client.getId(), e);
         }
-    }
-
-    private Call toCall(String content) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(content, Call.class);
     }
 
     @Override

@@ -22,4 +22,7 @@ public class IncomingMessage {
 
     @JsonProperty
     public Attachment attachment;
+
+    @JsonProperty
+    public Call call;
 }
