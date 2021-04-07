@@ -248,6 +248,21 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     @Override
+    public void onCalling(WireClient client, CallingMessage msg) {
+        final String type = "conversation.call";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+        message.conversationId = client.getConversationId();
+        message.call = msg.getContent();
+
+        send(message);
+    }
+
+    @Override
     public void onMemberJoin(WireClient client, SystemMessage msg) {
         UUID botId = client.getId();
         validate(botId);
