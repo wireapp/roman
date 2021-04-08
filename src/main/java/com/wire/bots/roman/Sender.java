@@ -50,13 +50,26 @@ public class Sender {
             }
             case "attachment": {
                 if (message.attachment.mimeType.startsWith("image")) {
-                    final byte[] decode = Base64.getDecoder().decode(message.attachment.data);
-                    final Picture picture = new Picture(decode, message.attachment.mimeType);
+                    final Picture picture = new Picture(base64Decode(message), message.attachment.mimeType);
                     final AssetKey assetKey = client.uploadAsset(picture);
                     picture.setAssetToken(assetKey.token);
                     picture.setAssetKey(assetKey.key);
                     client.send(picture);
                     return picture.getMessageId();
+                }
+                if (message.attachment.mimeType.startsWith("audio")) {
+                    final byte[] bytes = base64Decode(message);
+
+                    final AudioPreview preview = new AudioPreview(bytes,
+                            message.attachment.filename,
+                            message.attachment.mimeType,
+                            message.attachment.duration);
+                    final AudioAsset audioAsset = new AudioAsset(bytes, preview);
+                    final AssetKey assetKey = client.uploadAsset(audioAsset);
+                    audioAsset.setAssetToken(assetKey.token);
+                    audioAsset.setAssetKey(assetKey.key);
+                    client.send(audioAsset);
+                    return audioAsset.getMessageId();
                 }
 
                 return sendAttachment(message, client);
@@ -81,6 +94,10 @@ public class Sender {
         }
 
         return null;
+    }
+
+    private byte[] base64Decode(IncomingMessage message) {
+        return Base64.getDecoder().decode(message.attachment.data);
     }
 
     private UUID sendNewPoll(IncomingMessage message, WireClient client) throws Exception {
@@ -109,7 +126,7 @@ public class Sender {
         UUID messageId = UUID.randomUUID();
 
         final Attachment attachment = message.attachment;
-        final byte[] decode = Base64.getDecoder().decode(attachment.data);
+        final byte[] decode = base64Decode(message);
 
         FileAssetPreview preview = new FileAssetPreview(attachment.filename,
                 attachment.mimeType,

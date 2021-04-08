@@ -173,6 +173,33 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     @Override
+    public void onAudio(WireClient client, AudioMessage msg) {
+        final String type = "conversation.audio.new";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+
+            byte[] img = client.downloadAsset(msg.getAssetKey(),
+                    msg.getAssetToken(),
+                    msg.getSha256(),
+                    msg.getOtrKey());
+            message.attachment = Base64.getEncoder().encodeToString(img);
+            message.text = msg.getName();
+            message.mimeType = msg.getMimeType();
+            message.duration = msg.getDuration();
+            message.conversationId = client.getConversationId();
+
+            send(message);
+        } catch (Exception e) {
+            Logger.error("onAudio: %s %s", botId, e);
+        }
+    }
+
+    @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
         final UUID botId = client.getId();
 
@@ -356,6 +383,7 @@ public class MessageHandler extends MessageHandlerBase {
             }
         } catch (Exception e) {
             Logger.error("MessageHandler.send: bot: %s, provider: %s,  error %s", message.botId, providerId, e);
+            e.printStackTrace();
             return false;
         }
     }

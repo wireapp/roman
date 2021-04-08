@@ -15,18 +15,22 @@ public class OutgoingMessage {
     public String type;
     @NotNull
     public UUID userId;
+    public String handle;
+    public String locale;
+
+    public String token;
 
     public UUID messageId;
+    public UUID refMessageId;
     public UUID conversationId;
-    public String token;
+
     public String text;
     public String image;
     public String attachment;
-    public String handle;
-    public String locale;
-    public Poll poll;
-    public UUID refMessageId;
     public String mimeType;
+    public Long duration;
+
+    public Poll poll;
     public ArrayList<Mention> mentions = new ArrayList<>();
     public Call call;
 
