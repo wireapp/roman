@@ -6,6 +6,7 @@ import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.PostMessageResult;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.exceptions.MissingStateException;
@@ -48,7 +49,8 @@ public class ConversationResource {
     @Metered
     public Response post(@Context ContainerRequestContext context,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
-        UUID botId = (UUID) context.getProperty(BOT_ID);
+        final UUID botId = (UUID) context.getProperty(BOT_ID);
+        MDCUtils.put("botId", botId);
 
         trace(message);
 
@@ -60,14 +62,13 @@ public class ConversationResource {
                     .ok(result)
                     .build();
         } catch (MissingStateException e) {
-            Logger.info("ConversationResource bot: %s err: %s", botId, e);
+            Logger.warning("ConversationResource bot: %s err: %s", botId, e.getMessage());
             return Response.
                     ok(new ErrorMessage("Unknown bot. This bot might be deleted by the user")).
                     status(409).
                     build();
         } catch (Exception e) {
-            Logger.error("ConversationResource.post: %s", e);
-            e.printStackTrace();
+            Logger.exception("ConversationResource.post: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
@@ -86,14 +87,15 @@ public class ConversationResource {
     @Metered
     public Response get(@Context ContainerRequestContext context) {
         final UUID botId = (UUID) context.getProperty(BOT_ID);
+        MDCUtils.put("botId", botId);
+
         try {
             Conversation conversation = sender.getConversation(botId);
             return Response
                     .ok(conversation)
                     .build();
         } catch (Exception e) {
-            Logger.error("ConversationResource.get: %s", e);
-            e.printStackTrace();
+            Logger.exception("ConversationResource.get: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)

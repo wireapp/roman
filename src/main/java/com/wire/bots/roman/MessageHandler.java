@@ -6,6 +6,7 @@ import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.*;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.assets.DeliveryReceipt;
@@ -50,6 +51,9 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public boolean onNewBot(NewBot newBot, String auth) {
+        MDCUtils.put("botId", newBot.id);
+        MDCUtils.put("conversationId", newBot.conversation.id);
+
         Provider provider = getProvider(auth);
         botsDAO.insert(newBot.id, provider.id);
 
@@ -69,8 +73,10 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onNewConversation(WireClient client, SystemMessage msg) {
-        UUID botId = client.getId();
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
 
+        final UUID botId = client.getId();
         validate(botId);
 
         OutgoingMessage message = new OutgoingMessage();
@@ -89,11 +95,12 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onText(WireClient client, TextMessage msg) {
-        final String type = "conversation.new_text";
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
 
-        UUID botId = client.getId();
-
+        final UUID botId = client.getId();
         validate(botId);
+        final String type = "conversation.new_text";
 
         OutgoingMessage message = getOutgoingMessage(botId, type, msg);
         message.conversationId = client.getConversationId();
@@ -107,6 +114,9 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onReaction(WireClient client, ReactionMessage msg) {
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
+
         final String type = "conversation.reaction";
 
         UUID botId = client.getId();
@@ -124,6 +134,9 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onImage(WireClient client, ImageMessage msg) {
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
+
         final String type = "conversation.new_image";
 
         UUID botId = client.getId();
@@ -143,11 +156,14 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.error("onImage: %s %s", botId, e);
+            Logger.exception("onImage: %s %s", e, botId, e.getMessage());
         }
     }
 
     public void onAttachment(WireClient client, AttachmentMessage msg) {
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
+
         final String type = "conversation.file.new";
 
         UUID botId = client.getId();
@@ -168,12 +184,15 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.error("onAttachment: %s %s", botId, e);
+            Logger.exception("onAttachment: %s %s", e, botId, e.getMessage());
         }
     }
 
     @Override
     public void onAudio(WireClient client, AudioMessage msg) {
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
+
         final String type = "conversation.audio.new";
 
         UUID botId = client.getId();
@@ -195,12 +214,16 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.error("onAudio: %s %s", botId, e);
+            Logger.exception("onAudio: %s %s", e, botId, e.getMessage());
         }
     }
 
     @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
+        MDCUtils.put("userId", userId);
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
+
         final UUID botId = client.getId();
 
         // User clicked on a Poll Button
@@ -215,13 +238,16 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onConfirmation(WireClient client, ConfirmationMessage msg) {
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
+
         try {
             final UUID messageId = msg.getConfirmationMessageId();
             final ConfirmationMessage.Type type = msg.getType();
 
             broadcastDAO.insertStatus(messageId, type == ConfirmationMessage.Type.DELIVERED ? DELIVERED.ordinal() : READ.ordinal());
         } catch (Exception e) {
-            Logger.error("onConfirmation: %s %s", client.getId(), e);
+            Logger.exception("onConfirmation: %s %s", e, client.getId(), e.getMessage());
         }
     }
 
@@ -274,10 +300,13 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onCalling(WireClient client, CallingMessage msg) {
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
+
         try {
             final String type = "conversation.call";
 
-            UUID botId = client.getId();
+            final UUID botId = client.getId();
 
             validate(botId);
 
@@ -287,13 +316,16 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.warning("onCalling: bot: %s error: %s", client.getId(), e);
+            Logger.exception("onCalling: bot: %s error: %s", e, client.getId(), e.getMessage());
         }
     }
 
     @Override
     public void onMemberJoin(WireClient client, SystemMessage msg) {
-        UUID botId = client.getId();
+        MDCUtils.put("botId", client.getId());
+        MDCUtils.put("conversationId", client.getConversationId());
+
+        final UUID botId = client.getId();
         validate(botId);
 
         OutgoingMessage message = new OutgoingMessage();
@@ -309,13 +341,16 @@ public class MessageHandler extends MessageHandlerBase {
                 message.handle = user.handle;
                 send(message);
             } catch (Exception e) {
-                Logger.error("onMemberJoin: %s %s", botId, e);
+                Logger.exception("onMemberJoin: %s %s", e, botId, e.getMessage());
             }
         }
     }
 
     @Override
     public void onBotRemoved(UUID botId, SystemMessage msg) {
+        MDCUtils.put("botId", botId);
+        MDCUtils.put("conversationId", msg.conversation.id);
+
         validate(botId);
 
         OutgoingMessage message = new OutgoingMessage();
@@ -339,7 +374,7 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     private boolean send(OutgoingMessage message) {
-        UUID providerId = botsDAO.getProviderId(message.botId);
+        final UUID providerId = botsDAO.getProviderId(message.botId);
 
         try {
             Provider provider = providersDAO.get(providerId);
@@ -382,8 +417,7 @@ public class MessageHandler extends MessageHandlerBase {
                 return WebSocket.send(provider.id, message);
             }
         } catch (Exception e) {
-            Logger.error("MessageHandler.send: bot: %s, provider: %s,  error %s", message.botId, providerId, e);
-            e.printStackTrace();
+            Logger.exception("MessageHandler.send: bot: %s, provider: %s,  error %s", e, message.botId, providerId, e.getMessage());
             return false;
         }
     }
@@ -400,8 +434,9 @@ public class MessageHandler extends MessageHandlerBase {
         try {
             client.send(new DeliveryReceipt(messageId), userId);
         } catch (Exception e) {
-            Logger.error("sendDeliveryReceipt: failed to deliver the receipt for message: %s, bot: %s",
+            Logger.exception("sendDeliveryReceipt: failed to deliver the receipt for message: %s, bot: %s",
                     e,
+                    e.getMessage(),
                     client.getId());
         }
     }

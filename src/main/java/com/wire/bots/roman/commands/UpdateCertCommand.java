@@ -7,6 +7,7 @@ import com.wire.bots.roman.ProviderClient;
 import com.wire.bots.roman.Tools;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
+import com.wire.xenon.tools.Logger;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.setup.Bootstrap;
@@ -57,21 +58,21 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
 
         String pubkey = Tools.decodeBase64(Application.getInstance().getConfig().romanPubKeyBase64);
 
-        System.out.printf("\nCert:\n%s\n\n", pubkey);
+        Logger.info("\nCert:\n%s\n\n", pubkey);
 
         List<Provider> providers = providersDAO.selectAll();
-        System.out.printf("Updating %s cert for %d providers...\n\n", hostname, providers.size());
+        Logger.info("Updating %s cert for %d providers...\n\n", hostname, providers.size());
 
         for (Provider provider : providers) {
             if (provider.serviceId == null) {
-                System.out.printf("Skipping provider: %s, name: %s\n", provider.id, provider.name);
+                Logger.info("Skipping provider: %s, name: %s\n", provider.id, provider.name);
                 continue;
             }
 
             Response login = providerClient.login(provider.email, provider.password);
 
             if (login.getStatus() >= 400) {
-                System.out.printf("Failed to login for provider: %s, status: %d, err: %s\n",
+                Logger.info("Failed to login for provider: %s, status: %d, err: %s\n",
                         provider.id,
                         login.getStatus(),
                         login.readEntity(String.class));
@@ -86,7 +87,7 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Logger.exception("Sleep interrupted.", e);
             }
         }
     }
@@ -94,13 +95,12 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
     private void updateCert(ProviderClient providerClient, String pubkey, Provider provider, NewCookie cookie) {
         try {
             Response response = providerClient.updateServicePubKey(cookie, provider.serviceId, provider.password, pubkey);
-            System.out.printf("Updated cert for provider: %s, name: %s. Status: %d\n",
+            Logger.info("Updated cert for provider: %s, name: %s. Status: %d\n",
                     provider.id,
                     provider.name,
                     response.getStatus());
         } catch (Exception e) {
-            System.err.printf("ERROR updateCert provider: %s, error: %s\n", provider.id, e.getMessage());
-            e.printStackTrace();
+            Logger.exception("ERROR updateCert provider: %s, error: %s\n", e, provider.id, e.getMessage());
         }
     }
 
@@ -108,20 +108,19 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
         try {
             Response response = providerClient.updateServiceURL(cookie, provider.serviceId, provider.password, url);
 
-            System.out.printf("Updated URL for provider: %s, name: %s. Status: %d\n",
+            Logger.info("Updated URL for provider: %s, name: %s. Status: %d\n",
                     provider.id,
                     provider.name,
                     response.getStatus());
             // reenable when the URL was changed
             providerClient.enableService(cookie, provider.serviceId, provider.password);
 
-            System.out.printf("Service enabled: %s, name: %s. Status: %d\n",
+            Logger.info("Service enabled: %s, name: %s. Status: %d\n",
                     provider.id,
                     provider.name,
                     response.getStatus());
         } catch (Exception e) {
-            System.err.printf("ERROR updateURL provider: %s, error: %s\n", provider.id, e.getMessage());
-            e.printStackTrace();
+            Logger.exception("ERROR updateURL provider: %s, error: %s\n", e, provider.id, e.getMessage());
         }
     }
 }

@@ -37,7 +37,7 @@ public class ServiceTokenAuthenticationFilter implements ContainerRequestFilter 
             UUID providerId = UUID.fromString(subject);
             requestContext.setProperty(Const.PROVIDER_ID, providerId);
         } catch (Exception e) {
-            Logger.info("ServiceTokenAuthenticationFilter: %s %s", token, e);
+            Logger.info("ServiceTokenAuthenticationFilter: %s %s %s", token, e, e.getMessage());
             Exception cause = new IllegalArgumentException(e.getMessage());
             throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);
         }

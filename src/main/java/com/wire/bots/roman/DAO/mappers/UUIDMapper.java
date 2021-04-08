@@ -16,7 +16,7 @@ public class UUIDMapper implements ColumnMapper<UUID> {
         try {
             return getUuid(rs, "uuid");
         } catch (SQLException e) {
-            Logger.error("UUIDMapper: i: %d, e: %s", columnNumber, e);
+            Logger.exception("UUIDMapper: i: %d, e: %s", e, columnNumber, e.getMessage());
             return null;
         }
     }

@@ -28,7 +28,7 @@ public class MessagesResource {
         try {
             Logger.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            Logger.exception("MessagesResource exception during parsing.", e);
         }
         return Response
                 .ok()
