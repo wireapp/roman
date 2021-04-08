@@ -341,8 +341,7 @@ public class MessageHandler extends MessageHandlerBase {
         try {
             Provider provider = providersDAO.get(providerId);
             if (provider == null) {
-                Logger.error("MessageHandler.send: provider == null. providerId: %s, bot: %s",
-                        providerId, message.botId);
+                Logger.error("MessageHandler.send: provider == null. providerId: %s", providerId);
                 return false;
             }
 
@@ -355,20 +354,17 @@ public class MessageHandler extends MessageHandlerBase {
                         .header("Authorization", "Bearer " + provider.serviceAuth)
                         .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
-                Logger.debug("MessageHandler.send: Sent: `%s` bot: %s, provider: %s, status: %d",
+                Logger.debug("MessageHandler.send: Sent: `%s` provider: %s, status: %d",
                         message.type,
-                        message.botId,
                         providerId,
                         post.getStatus());
 
                 if (post.hasEntity()) {
                     final IncomingMessage incomingMessage = getIncomingMessage(post);
-                    if (incomingMessage != null) {
-                        Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, posting IncomingMessage: type: %s",
-                                message.type,
-                                message.botId,
-                                providerId,
-                                incomingMessage.type
+                    if (incomingMessage != null && incomingMessage.type != null) {
+                        Logger.debug("MessageHandler.send: Posting `%s` into conversation. Provider: %s",
+                                incomingMessage.type,
+                                providerId
                         );
                         sender.send(incomingMessage, message.botId);
                     }
