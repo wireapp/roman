@@ -6,6 +6,7 @@ import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.*;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.assets.DeliveryReceipt;
@@ -336,12 +337,12 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     private boolean send(OutgoingMessage message) {
-        final UUID providerId = botsDAO.getProviderId(message.botId);
+        final UUID providerId = validate(message.botId);
 
         try {
             Provider provider = providersDAO.get(providerId);
             if (provider == null) {
-                Logger.error("MessageHandler.send: provider == null. providerId: %s", providerId);
+                Logger.error("MessageHandler.send: Unknown provider");
                 return false;
             }
 
@@ -354,18 +355,12 @@ public class MessageHandler extends MessageHandlerBase {
                         .header("Authorization", "Bearer " + provider.serviceAuth)
                         .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
-                Logger.debug("MessageHandler.send: Sent: `%s` provider: %s, status: %d",
-                        message.type,
-                        providerId,
-                        post.getStatus());
+                Logger.debug("MessageHandler.send: Sent: `%s` status: %d", message.type, post.getStatus());
 
                 if (post.hasEntity()) {
                     final IncomingMessage incomingMessage = getIncomingMessage(post);
                     if (incomingMessage != null && incomingMessage.type != null) {
-                        Logger.debug("MessageHandler.send: Posting `%s` into conversation. Provider: %s",
-                                incomingMessage.type,
-                                providerId
-                        );
+                        Logger.debug("MessageHandler.send: Posting `%s` into conversation.", incomingMessage.type);
                         sender.send(incomingMessage, message.botId);
                     }
                 }
@@ -375,7 +370,7 @@ public class MessageHandler extends MessageHandlerBase {
                 return WebSocket.send(provider.id, message);
             }
         } catch (Exception e) {
-            Logger.exception("MessageHandler.send: provider: %s,  error %s", e, providerId, e.getMessage());
+            Logger.exception("MessageHandler.send: error %s", e, e.getMessage());
             return false;
         }
     }
@@ -413,6 +408,7 @@ public class MessageHandler extends MessageHandlerBase {
         final Provider provider = providersDAO.getByAuth(auth);
         if (provider == null)
             throw new RuntimeException("Unknown auth");
+        MDCUtils.put("providerId", provider.id);
         return provider;
     }
 
@@ -420,6 +416,7 @@ public class MessageHandler extends MessageHandlerBase {
         UUID providerId = botsDAO.getProviderId(botId);
         if (providerId == null)
             throw new RuntimeException("Unknown botId: " + botId.toString());
+        MDCUtils.put("providerId", providerId);
         return providerId;
     }
 
