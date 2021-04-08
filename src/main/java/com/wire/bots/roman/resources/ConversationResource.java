@@ -60,7 +60,7 @@ public class ConversationResource {
                     .ok(result)
                     .build();
         } catch (MissingStateException e) {
-            Logger.warning("ConversationResource bot: %s err: %s", botId, e.getMessage());
+            Logger.warning("ConversationResource err: %s", e.getMessage());
             return Response.
                     ok(new ErrorMessage("Unknown bot. This bot might be deleted by the user")).
                     status(409).

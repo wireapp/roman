@@ -133,10 +133,10 @@ public class BroadcastResource {
         try {
             return sender.send(message, botId);
         } catch (MissingStateException e) {
-            Logger.warning("BroadcastResource.send: bot: %s, e: %s", botId, e.getMessage());
+            Logger.warning("BroadcastResource.send %s", e.getMessage());
             botsDAO.remove(botId);
         } catch (Exception e) {
-            Logger.exception("BroadcastResource.send: bot: %s, e: %s", e, botId, e.getMessage());
+            Logger.exception("BroadcastResource.send %s", e, e.getMessage());
         }
         return null;
     }
