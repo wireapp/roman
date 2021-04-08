@@ -6,7 +6,6 @@ import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.*;
-import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.assets.DeliveryReceipt;
@@ -51,9 +50,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public boolean onNewBot(NewBot newBot, String auth) {
-        MDCUtils.put("botId", newBot.id);
-        MDCUtils.put("conversationId", newBot.conversation.id);
-
         Provider provider = getProvider(auth);
         botsDAO.insert(newBot.id, provider.id);
 
@@ -73,9 +69,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onNewConversation(WireClient client, SystemMessage msg) {
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         final UUID botId = client.getId();
         validate(botId);
 
@@ -95,9 +88,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onText(WireClient client, TextMessage msg) {
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         final UUID botId = client.getId();
         validate(botId);
         final String type = "conversation.new_text";
@@ -114,9 +104,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onReaction(WireClient client, ReactionMessage msg) {
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         final String type = "conversation.reaction";
 
         UUID botId = client.getId();
@@ -134,9 +121,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onImage(WireClient client, ImageMessage msg) {
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         final String type = "conversation.new_image";
 
         UUID botId = client.getId();
@@ -161,9 +145,6 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     public void onAttachment(WireClient client, AttachmentMessage msg) {
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         final String type = "conversation.file.new";
 
         UUID botId = client.getId();
@@ -190,9 +171,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onAudio(WireClient client, AudioMessage msg) {
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         final String type = "conversation.audio.new";
 
         UUID botId = client.getId();
@@ -220,10 +198,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
-        MDCUtils.put("userId", userId);
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         final UUID botId = client.getId();
 
         // User clicked on a Poll Button
@@ -238,9 +212,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onConfirmation(WireClient client, ConfirmationMessage msg) {
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         try {
             final UUID messageId = msg.getConfirmationMessageId();
             final ConfirmationMessage.Type type = msg.getType();
@@ -300,9 +271,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onCalling(WireClient client, CallingMessage msg) {
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         try {
             final String type = "conversation.call";
 
@@ -322,9 +290,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onMemberJoin(WireClient client, SystemMessage msg) {
-        MDCUtils.put("botId", client.getId());
-        MDCUtils.put("conversationId", client.getConversationId());
-
         final UUID botId = client.getId();
         validate(botId);
 
@@ -348,9 +313,6 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onBotRemoved(UUID botId, SystemMessage msg) {
-        MDCUtils.put("botId", botId);
-        MDCUtils.put("conversationId", msg.conversation.id);
-
         validate(botId);
 
         OutgoingMessage message = new OutgoingMessage();
