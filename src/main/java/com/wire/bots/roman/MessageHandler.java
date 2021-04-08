@@ -83,7 +83,7 @@ public class MessageHandler extends MessageHandlerBase {
 
         boolean send = send(message);
         if (!send)
-            Logger.warning("onNewConversation: failed to deliver message to: bot: %s", botId);
+            Logger.warning("onNewConversation: failed to deliver message");
     }
 
     @Override
@@ -140,7 +140,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.exception("onImage: %s %s", e, botId, e.getMessage());
+            Logger.exception("onImage: %s", e, e.getMessage());
         }
     }
 
@@ -165,7 +165,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.exception("onAttachment: %s %s", e, botId, e.getMessage());
+            Logger.exception("onAttachment: %s", e, e.getMessage());
         }
     }
 
@@ -192,7 +192,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.exception("onAudio: %s %s", e, botId, e.getMessage());
+            Logger.exception("onAudio: %s", e, e.getMessage());
         }
     }
 
@@ -218,7 +218,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             broadcastDAO.insertStatus(messageId, type == ConfirmationMessage.Type.DELIVERED ? DELIVERED.ordinal() : READ.ordinal());
         } catch (Exception e) {
-            Logger.exception("onConfirmation: %s %s", e, client.getId(), e.getMessage());
+            Logger.exception("onConfirmation: %s", e, e.getMessage());
         }
     }
 
@@ -246,7 +246,7 @@ public class MessageHandler extends MessageHandlerBase {
         }
 
         if (!send(message)) {
-            Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
+            Logger.warning("onComposite: failed to deliver message");
         }
     }
 
@@ -265,7 +265,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.poll.offset = Integer.parseInt(action.getButtonId());
 
         if (!send(message)) {
-            Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
+            Logger.warning("onButtonAction: failed to deliver message");
         }
     }
 
@@ -284,7 +284,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.exception("onCalling: bot: %s error: %s", e, client.getId(), e.getMessage());
+            Logger.exception("onCalling: error: %s", e, e.getMessage());
         }
     }
 
@@ -306,7 +306,7 @@ public class MessageHandler extends MessageHandlerBase {
                 message.handle = user.handle;
                 send(message);
             } catch (Exception e) {
-                Logger.exception("onMemberJoin: %s %s", e, botId, e.getMessage());
+                Logger.exception("onMemberJoin: %s", e, e.getMessage());
             }
         }
     }
@@ -320,7 +320,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.type = "conversation.bot_removed";
 
         if (!send(message))
-            Logger.warning("onBotRemoved: failed to deliver message to: bot: %s", botId);
+            Logger.warning("onBotRemoved: failed to deliver message");
 
         botsDAO.remove(botId);
     }
@@ -375,7 +375,7 @@ public class MessageHandler extends MessageHandlerBase {
                 return WebSocket.send(provider.id, message);
             }
         } catch (Exception e) {
-            Logger.exception("MessageHandler.send: bot: %s, provider: %s,  error %s", e, message.botId, providerId, e.getMessage());
+            Logger.exception("MessageHandler.send: provider: %s,  error %s", e, providerId, e.getMessage());
             return false;
         }
     }
@@ -392,10 +392,9 @@ public class MessageHandler extends MessageHandlerBase {
         try {
             client.send(new DeliveryReceipt(messageId), userId);
         } catch (Exception e) {
-            Logger.exception("sendDeliveryReceipt: failed to deliver the receipt for message: %s, bot: %s",
+            Logger.exception("sendDeliveryReceipt: failed to deliver the receipt for message: %s",
                     e,
-                    e.getMessage(),
-                    client.getId());
+                    e.getMessage());
         }
     }
 

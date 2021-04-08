@@ -58,7 +58,6 @@ public class BroadcastResource {
             trace(message);
 
             final UUID providerId = (UUID) context.getProperty(PROVIDER_ID);
-            MDCUtils.put("providerId", providerId);
 
             Logger.info("BroadcastResource.post: `%s` provider: %s", message.type, providerId);
 
@@ -110,7 +109,6 @@ public class BroadcastResource {
                         build();
             }
 
-            MDCUtils.put("providerId", providerId);
             MDCUtils.put("broadcastId", broadcastId);
             Logger.info("BroadcastResource.get: broadcast: %s provider: %s", broadcastId, providerId);
 

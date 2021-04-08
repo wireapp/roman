@@ -1,6 +1,7 @@
 package com.wire.bots.roman.filters;
 
 import com.wire.bots.roman.Application;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import io.jsonwebtoken.Jwts;
 
 import javax.ws.rs.WebApplicationException;
@@ -52,6 +53,7 @@ public class ProxyAuthenticationFilter implements ContainerRequestFilter {
 
             UUID botId = UUID.fromString(subject);
             requestContext.setProperty(BOT_ID, botId);
+            MDCUtils.put("botId", botId);
         } catch (Exception e) {
             Exception cause = new IllegalArgumentException(e.getMessage());
             throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);

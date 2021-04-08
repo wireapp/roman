@@ -6,7 +6,6 @@ import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.PostMessageResult;
-import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.exceptions.MissingStateException;
@@ -50,7 +49,6 @@ public class ConversationResource {
     public Response post(@Context ContainerRequestContext context,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         final UUID botId = (UUID) context.getProperty(BOT_ID);
-        MDCUtils.put("botId", botId);
 
         trace(message);
 
@@ -87,7 +85,6 @@ public class ConversationResource {
     @Metered
     public Response get(@Context ContainerRequestContext context) {
         final UUID botId = (UUID) context.getProperty(BOT_ID);
-        MDCUtils.put("botId", botId);
 
         try {
             Conversation conversation = sender.getConversation(botId);

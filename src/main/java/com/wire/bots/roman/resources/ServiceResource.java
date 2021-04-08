@@ -10,7 +10,6 @@ import com.wire.bots.roman.filters.ServiceAuthorization;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
-import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.assets.Picture;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.tools.Logger;
@@ -62,7 +61,6 @@ public class ServiceResource {
                            @ApiParam @Valid _NewService payload) {
         try {
             UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
-            MDCUtils.put("providerId", providerId);
 
             Provider provider = providersDAO.get(providerId);
 
@@ -153,7 +151,6 @@ public class ServiceResource {
                            @ApiParam @Valid _UpdateService payload) {
         try {
             final UUID providerId = (UUID) context.getProperty("providerid");
-            MDCUtils.put("providerId", providerId);
 
             Provider provider = providersDAO.get(providerId);
             if (provider.serviceId == null) {
@@ -221,7 +218,6 @@ public class ServiceResource {
                         @Context ContainerRequestContext context) {
         try {
             final UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
-            MDCUtils.put("providerId", providerId);
 
             Logger.debug("ServiceResource.get: provider: %s", providerId);
 
@@ -255,7 +251,6 @@ public class ServiceResource {
                            @Context ContainerRequestContext context) {
         try {
             final UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
-            MDCUtils.put("providerId", providerId);
 
             Logger.debug("ServiceResource.delete: provider: %s", providerId);
 

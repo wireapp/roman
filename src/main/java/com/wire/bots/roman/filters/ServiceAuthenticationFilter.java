@@ -1,6 +1,7 @@
 package com.wire.bots.roman.filters;
 
 import com.wire.bots.roman.Application;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import io.jsonwebtoken.Jwts;
 
 import javax.ws.rs.WebApplicationException;
@@ -39,6 +40,7 @@ public class ServiceAuthenticationFilter implements ContainerRequestFilter {
 
             UUID providerId = UUID.fromString(subject);
             requestContext.setProperty(PROVIDER_ID, providerId);
+            MDCUtils.put("providerId", providerId);
         } catch (Exception e) {
             Exception cause = new IllegalArgumentException(e.getMessage());
             throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);
