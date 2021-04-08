@@ -44,7 +44,6 @@ public class UsersResource {
                          @ApiParam @PathParam("userId") UUID userId) {
         try {
             final UUID botId = (UUID) context.getProperty("botid");
-            MDCUtils.put("botId", botId);
             MDCUtils.put("userId", userId);
 
             try (WireClient client = repo.getClient(botId)) {

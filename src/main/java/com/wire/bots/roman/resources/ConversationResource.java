@@ -6,7 +6,6 @@ import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.PostMessageResult;
-import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.exceptions.MissingStateException;
@@ -50,7 +49,6 @@ public class ConversationResource {
     public Response post(@Context ContainerRequestContext context,
                          @ApiParam @NotNull @Valid IncomingMessage message) {
         final UUID botId = (UUID) context.getProperty(BOT_ID);
-        MDCUtils.put("botId", botId);
 
         trace(message);
 
@@ -62,7 +60,7 @@ public class ConversationResource {
                     .ok(result)
                     .build();
         } catch (MissingStateException e) {
-            Logger.warning("ConversationResource bot: %s err: %s", botId, e.getMessage());
+            Logger.warning("ConversationResource err: %s", e.getMessage());
             return Response.
                     ok(new ErrorMessage("Unknown bot. This bot might be deleted by the user")).
                     status(409).
@@ -87,7 +85,6 @@ public class ConversationResource {
     @Metered
     public Response get(@Context ContainerRequestContext context) {
         final UUID botId = (UUID) context.getProperty(BOT_ID);
-        MDCUtils.put("botId", botId);
 
         try {
             Conversation conversation = sender.getConversation(botId);
