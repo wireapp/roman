@@ -9,6 +9,7 @@ import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ServiceTokenAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Report;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.tools.Logger;
@@ -56,7 +57,8 @@ public class BroadcastResource {
         try {
             trace(message);
 
-            UUID providerId = (UUID) context.getProperty(PROVIDER_ID);
+            final UUID providerId = (UUID) context.getProperty(PROVIDER_ID);
+            MDCUtils.put("providerId", providerId);
 
             Logger.info("BroadcastResource.post: `%s` provider: %s", message.type, providerId);
 
@@ -79,8 +81,7 @@ public class BroadcastResource {
                     ok(ret).
                     build();
         } catch (Exception e) {
-            Logger.error("BroadcastResource.post: %s", e);
-            e.printStackTrace();
+            Logger.exception("BroadcastResource.post: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
@@ -109,6 +110,8 @@ public class BroadcastResource {
                         build();
             }
 
+            MDCUtils.put("providerId", providerId);
+            MDCUtils.put("broadcastId", broadcastId);
             Logger.info("BroadcastResource.get: broadcast: %s provider: %s", broadcastId, providerId);
 
             Report ret = new Report();
@@ -119,8 +122,7 @@ public class BroadcastResource {
                     ok(ret).
                     build();
         } catch (Exception e) {
-            Logger.error("BroadcastResource.get: %s", e);
-            e.printStackTrace();
+            Logger.exception("BroadcastResource.get: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
@@ -133,11 +135,10 @@ public class BroadcastResource {
         try {
             return sender.send(message, botId);
         } catch (MissingStateException e) {
-            Logger.warning("BroadcastResource.send: bot: %s, e: %s", botId, e);
+            Logger.warning("BroadcastResource.send: bot: %s, e: %s", botId, e.getMessage());
             botsDAO.remove(botId);
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.error("BroadcastResource.send: bot: %s, e: %s", botId, e);
+            Logger.exception("BroadcastResource.send: bot: %s, e: %s", e, botId, e.getMessage());
         }
         return null;
     }

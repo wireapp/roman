@@ -10,6 +10,7 @@ import com.wire.bots.roman.filters.ServiceAuthorization;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.assets.Picture;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.tools.Logger;
@@ -61,6 +62,7 @@ public class ServiceResource {
                            @ApiParam @Valid _NewService payload) {
         try {
             UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
+            MDCUtils.put("providerId", providerId);
 
             Provider provider = providersDAO.get(providerId);
 
@@ -135,8 +137,7 @@ public class ServiceResource {
                     status(update.getStatus()).
                     build();
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.error("ServiceResource.create: %s", e);
+            Logger.exception("ServiceResource.create: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
@@ -151,7 +152,8 @@ public class ServiceResource {
                            @ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
                            @ApiParam @Valid _UpdateService payload) {
         try {
-            UUID providerId = (UUID) context.getProperty("providerid");
+            final UUID providerId = (UUID) context.getProperty("providerid");
+            MDCUtils.put("providerId", providerId);
 
             Provider provider = providersDAO.get(providerId);
             if (provider.serviceId == null) {
@@ -204,8 +206,7 @@ public class ServiceResource {
                     ok(result).
                     build();
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.error("ServiceResource.update: %s", e);
+            Logger.exception("ServiceResource.update: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
@@ -219,7 +220,8 @@ public class ServiceResource {
     public Response get(@ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
                         @Context ContainerRequestContext context) {
         try {
-            UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
+            final UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
+            MDCUtils.put("providerId", providerId);
 
             Logger.debug("ServiceResource.get: provider: %s", providerId);
 
@@ -238,8 +240,7 @@ public class ServiceResource {
                     ok(result).
                     build();
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.error("ServiceResource.get: %s", e);
+            Logger.exception("ServiceResource.get: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
@@ -253,7 +254,8 @@ public class ServiceResource {
     public Response delete(@ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
                            @Context ContainerRequestContext context) {
         try {
-            UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
+            final UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
+            MDCUtils.put("providerId", providerId);
 
             Logger.debug("ServiceResource.delete: provider: %s", providerId);
 
@@ -270,10 +272,8 @@ public class ServiceResource {
             return Response.
                     ok().
                     build();
-
         } catch (Exception e) {
-            e.printStackTrace();
-            Logger.error("ServiceResource.delete: %s", e);
+            Logger.exception("ServiceResource.delete: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)

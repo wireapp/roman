@@ -70,7 +70,7 @@ public class ProviderResource {
                     status(register.getStatus()).
                     build();
         } catch (Exception e) {
-            Logger.error("RegisterResource.register: %s", e);
+            Logger.exception("RegisterResource.register: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
@@ -113,9 +113,8 @@ public class ProviderResource {
                     ok().
                     cookie(new NewCookie("zroman", jwt)).
                     build();
-
         } catch (Exception e) {
-            Logger.error("RegisterResource.login: %s", e);
+            Logger.exception("RegisterResource.login: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
