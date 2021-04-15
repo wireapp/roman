@@ -23,6 +23,9 @@ public class Attachment {
     @JsonProperty
     public Long duration;
 
+    @JsonProperty
+    public byte[] levels;
+
     @JsonIgnore
     @ValidationMethod(message = "`data` is not a Base64 encoded string")
     public boolean isValidAttachment() {

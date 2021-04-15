@@ -95,14 +95,18 @@ public class Sender {
 
     private UUID sendAudio(IncomingMessage message, WireClient client) throws Exception {
         final byte[] bytes = base64Decode(message);
-        final byte[] levels = new byte[100];
-        new Random().nextBytes(levels); // Haha :D
+
+        // todo remove this eventually
+        if (message.attachment.levels == null) {
+            message.attachment.levels = new byte[100];
+            new Random().nextBytes(message.attachment.levels);
+        }
 
         final AudioPreview preview = new AudioPreview(bytes,
                 message.attachment.filename,
                 message.attachment.mimeType,
                 message.attachment.duration,
-                levels);
+                message.attachment.levels);
 
         client.send(preview);
 

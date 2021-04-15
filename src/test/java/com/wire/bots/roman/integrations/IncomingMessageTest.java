@@ -101,6 +101,8 @@ public class IncomingMessageTest {
         audio.attachment.mimeType = "audio/x-m4a";
         audio.attachment.filename = "test.m4a";
         audio.attachment.duration = 27000L;
+        audio.attachment.levels = new byte[100];
+        new Random().nextBytes(audio.attachment.levels);
 
         res = post(serviceAuth, audio);
         assertThat(res.getStatus()).isEqualTo(200);

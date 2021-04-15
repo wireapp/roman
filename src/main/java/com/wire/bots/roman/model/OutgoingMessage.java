@@ -29,6 +29,7 @@ public class OutgoingMessage {
     public String attachment;
     public String mimeType;
     public Long duration;
+    public byte[] levels;
 
     public Poll poll;
     public ArrayList<Mention> mentions = new ArrayList<>();

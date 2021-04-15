@@ -189,6 +189,7 @@ public class MessageHandler extends MessageHandlerBase {
             message.text = msg.getName();
             message.mimeType = msg.getMimeType();
             message.duration = msg.getDuration();
+            message.levels = msg.getLevels();
             message.conversationId = client.getConversationId();
 
             send(message);
