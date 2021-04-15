@@ -98,7 +98,7 @@ public class IncomingMessageTest {
         audio.type = "attachment";
         audio.attachment = new Attachment();
         audio.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("audio.m4a"));
-        audio.attachment.mimeType = "audio/m4a";
+        audio.attachment.mimeType = "audio/x-m4a";
         audio.attachment.filename = "test.m4a";
         audio.attachment.duration = 27000L;
 
