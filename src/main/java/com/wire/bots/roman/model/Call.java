@@ -10,7 +10,7 @@ import java.util.HashMap;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Call {
     @JsonProperty
-    public String version;
+    public String version = "3.0";
 
     @JsonProperty
     public String type;

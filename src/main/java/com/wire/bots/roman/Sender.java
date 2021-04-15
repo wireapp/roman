@@ -36,40 +36,21 @@ public class Sender {
         }
     }
 
+    private static byte[] base64Decode(IncomingMessage message) {
+        return Base64.getDecoder().decode(message.attachment.data);
+    }
+
     private UUID send(IncomingMessage message, WireClient client) throws Exception {
         switch (message.type) {
             case "text": {
-                MessageText text = new MessageText(message.text.data);
-                text.setExpectsReadConfirmation(true);
-                if (message.text.mentions != null) {
-                    for (Mention mention : message.text.mentions)
-                        text.addMention(mention.userId, mention.offset, mention.length);
-                }
-                client.send(text);
-                return text.getMessageId();
+                return sendText(message, client);
             }
             case "attachment": {
                 if (message.attachment.mimeType.startsWith("image")) {
-                    final Picture picture = new Picture(base64Decode(message), message.attachment.mimeType);
-                    final AssetKey assetKey = client.uploadAsset(picture);
-                    picture.setAssetToken(assetKey.token);
-                    picture.setAssetKey(assetKey.key);
-                    client.send(picture);
-                    return picture.getMessageId();
+                    return sendPicture(message, client);
                 }
                 if (message.attachment.mimeType.startsWith("audio")) {
-                    final byte[] bytes = base64Decode(message);
-
-                    final AudioPreview preview = new AudioPreview(bytes,
-                            message.attachment.filename,
-                            message.attachment.mimeType,
-                            message.attachment.duration);
-                    final AudioAsset audioAsset = new AudioAsset(bytes, preview);
-                    final AssetKey assetKey = client.uploadAsset(audioAsset);
-                    audioAsset.setAssetToken(assetKey.token);
-                    audioAsset.setAssetKey(assetKey.key);
-                    client.send(audioAsset);
-                    return audioAsset.getMessageId();
+                    return sendAudio(message, client);
                 }
 
                 return sendAttachment(message, client);
@@ -84,20 +65,46 @@ public class Sender {
                 break;
             }
             case "call": {
-                String content = "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
-                if (message.call != null)
-                    content = mapper.writeValueAsString(message.call);
-                final Calling calling = new Calling(content);
-                client.send(calling);
-                return calling.getMessageId();
+                return sendCall(message, client);
             }
         }
 
         return null;
     }
 
-    private byte[] base64Decode(IncomingMessage message) {
-        return Base64.getDecoder().decode(message.attachment.data);
+    private UUID sendCall(IncomingMessage message, WireClient client) throws Exception {
+        String content = message.call != null
+                ? mapper.writeValueAsString(message.call)
+                : "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
+        final Calling calling = new Calling(content);
+        client.send(calling);
+        return calling.getMessageId();
+    }
+
+    private UUID sendText(IncomingMessage message, WireClient client) throws Exception {
+        MessageText text = new MessageText(message.text.data);
+        text.setExpectsReadConfirmation(true);
+        if (message.text.mentions != null) {
+            for (Mention mention : message.text.mentions)
+                text.addMention(mention.userId, mention.offset, mention.length);
+        }
+        client.send(text);
+        return text.getMessageId();
+    }
+
+    private UUID sendAudio(IncomingMessage message, WireClient client) throws Exception {
+        final byte[] bytes = base64Decode(message);
+
+        final AudioPreview preview = new AudioPreview(bytes,
+                message.attachment.filename,
+                message.attachment.mimeType,
+                message.attachment.duration);
+        final AudioAsset audioAsset = new AudioAsset(bytes, preview);
+        final AssetKey assetKey = client.uploadAsset(audioAsset);
+        audioAsset.setAssetToken(assetKey.token);
+        audioAsset.setAssetKey(assetKey.key);
+        client.send(audioAsset);
+        return audioAsset.getMessageId();
     }
 
     private UUID sendNewPoll(IncomingMessage message, WireClient client) throws Exception {
@@ -158,5 +165,14 @@ public class Sender {
         try (WireClient client = repo.getClient(botId)) {
             return client.getConversation();
         }
+    }
+
+    private UUID sendPicture(IncomingMessage message, WireClient client) throws Exception {
+        final Picture picture = new Picture(base64Decode(message), message.attachment.mimeType);
+        final AssetKey assetKey = client.uploadAsset(picture);
+        picture.setAssetToken(assetKey.token);
+        picture.setAssetKey(assetKey.key);
+        client.send(picture);
+        return picture.getMessageId();
     }
 }
