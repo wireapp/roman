@@ -136,8 +136,8 @@ public class Sender {
 
         client.send(preview);
         final AssetKey assetKey = client.uploadAsset(asset);
-        asset.setAssetKey(assetKey.key);
-        asset.setAssetToken(assetKey.token);
+        asset.setAssetKey(assetKey.key != null ? assetKey.key : "");
+        asset.setAssetToken(assetKey.token != null ? assetKey.token : "");
         client.send(asset);
         return messageId;
     }
