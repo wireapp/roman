@@ -99,10 +99,15 @@ public class Sender {
                 message.attachment.filename,
                 message.attachment.mimeType,
                 message.attachment.duration);
+
+        client.send(preview);
+
         final AudioAsset audioAsset = new AudioAsset(bytes, preview);
+
         final AssetKey assetKey = client.uploadAsset(audioAsset);
-        audioAsset.setAssetToken(assetKey.token);
-        audioAsset.setAssetKey(assetKey.key);
+        audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
+        audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
+
         client.send(audioAsset);
         return audioAsset.getMessageId();
     }

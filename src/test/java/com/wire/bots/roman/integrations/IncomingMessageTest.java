@@ -11,6 +11,7 @@ import com.wire.lithium.models.NewBotResponseModel;
 import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.backend.models.NewBot;
 import com.wire.xenon.backend.models.User;
+import com.wire.xenon.tools.Util;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
 import org.jdbi.v3.core.Jdbi;
@@ -22,6 +23,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
@@ -52,7 +54,7 @@ public class IncomingMessageTest {
     }
 
     @Test
-    public void incomingMessageFromUserTest() {
+    public void incomingMessageFromUserTest() throws IOException {
         final UUID botId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
         final UUID convId = UUID.randomUUID();
@@ -80,18 +82,28 @@ public class IncomingMessageTest {
 
         assertThat(res.getStatus()).isEqualTo(200);
 
-        IncomingMessage incomingMessage = new IncomingMessage();
-        incomingMessage.type = "attachment";
-        incomingMessage.attachment = new Attachment();
+        IncomingMessage file = new IncomingMessage();
+        file.type = "attachment";
+        file.attachment = new Attachment();
         byte[] pic = new byte[5 * 1024 * 1024];
         new Random().nextBytes(pic);
-        incomingMessage.attachment.data = Base64.getEncoder().encodeToString(pic);
-        incomingMessage.attachment.mimeType = "attachment/x";
-        incomingMessage.attachment.filename = "test.x";
+        file.attachment.data = Base64.getEncoder().encodeToString(pic);
+        file.attachment.mimeType = "attachment/x";
+        file.attachment.filename = "test.x";
 
-        res = post(serviceAuth, incomingMessage);
+        res = post(serviceAuth, file);
         assertThat(res.getStatus()).isEqualTo(200);
 
+        IncomingMessage audio = new IncomingMessage();
+        audio.type = "attachment";
+        audio.attachment = new Attachment();
+        audio.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("audio.m4a"));
+        audio.attachment.mimeType = "audio/m4a";
+        audio.attachment.filename = "test.m4a";
+        audio.attachment.duration = 27000L;
+
+        res = post(serviceAuth, audio);
+        assertThat(res.getStatus()).isEqualTo(200);
     }
 
     private Response post(String serviceAuth, IncomingMessage txt) {
