@@ -1,5 +1,6 @@
 package com.wire.bots.roman;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.cryptobox.CryptoException;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
@@ -14,9 +15,11 @@ import com.wire.xenon.tools.Logger;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Random;
 import java.util.UUID;
 
 public class Sender {
+    private final ObjectMapper mapper = new ObjectMapper();
 
     private final ClientRepo repo;
 
@@ -34,27 +37,21 @@ public class Sender {
         }
     }
 
+    private static byte[] base64Decode(IncomingMessage message) {
+        return Base64.getDecoder().decode(message.attachment.data);
+    }
+
     private UUID send(IncomingMessage message, WireClient client) throws Exception {
         switch (message.type) {
             case "text": {
-                MessageText text = new MessageText(message.text.data);
-                text.setExpectsReadConfirmation(true);
-                if (message.text.mentions != null) {
-                    for (Mention mention : message.text.mentions)
-                        text.addMention(mention.userId, mention.offset, mention.length);
-                }
-                client.send(text);
-                return text.getMessageId();
+                return sendText(message, client);
             }
             case "attachment": {
                 if (message.attachment.mimeType.startsWith("image")) {
-                    final byte[] decode = Base64.getDecoder().decode(message.attachment.data);
-                    final Picture picture = new Picture(decode, message.attachment.mimeType);
-                    final AssetKey assetKey = client.uploadAsset(picture);
-                    picture.setAssetToken(assetKey.token);
-                    picture.setAssetKey(assetKey.key);
-                    client.send(picture);
-                    return picture.getMessageId();
+                    return sendPicture(message, client);
+                }
+                if (message.attachment.mimeType.startsWith("audio")) {
+                    return sendAudio(message, client);
                 }
 
                 return sendAttachment(message, client);
@@ -69,14 +66,58 @@ public class Sender {
                 break;
             }
             case "call": {
-                final String content = "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
-                final Calling calling = new Calling(content);
-                client.send(calling);
-                return calling.getMessageId();
+                return sendCall(message, client);
             }
         }
 
         return null;
+    }
+
+    private UUID sendCall(IncomingMessage message, WireClient client) throws Exception {
+        String content = message.call != null
+                ? mapper.writeValueAsString(message.call)
+                : "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
+        final Calling calling = new Calling(content);
+        client.send(calling);
+        return calling.getMessageId();
+    }
+
+    private UUID sendText(IncomingMessage message, WireClient client) throws Exception {
+        MessageText text = new MessageText(message.text.data);
+        text.setExpectsReadConfirmation(true);
+        if (message.text.mentions != null) {
+            for (Mention mention : message.text.mentions)
+                text.addMention(mention.userId, mention.offset, mention.length);
+        }
+        client.send(text);
+        return text.getMessageId();
+    }
+
+    private UUID sendAudio(IncomingMessage message, WireClient client) throws Exception {
+        final byte[] bytes = base64Decode(message);
+
+        // todo remove this eventually
+        if (message.attachment.levels == null) {
+            message.attachment.levels = new byte[100];
+            new Random().nextBytes(message.attachment.levels);
+        }
+
+        final AudioPreview preview = new AudioPreview(bytes,
+                message.attachment.filename,
+                message.attachment.mimeType,
+                message.attachment.duration,
+                message.attachment.levels);
+
+        client.send(preview);
+
+        final AudioAsset audioAsset = new AudioAsset(bytes, preview);
+
+        final AssetKey assetKey = client.uploadAsset(audioAsset);
+        audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
+        audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
+
+        client.send(audioAsset);
+        return audioAsset.getMessageId();
     }
 
     private UUID sendNewPoll(IncomingMessage message, WireClient client) throws Exception {
@@ -105,7 +146,7 @@ public class Sender {
         UUID messageId = UUID.randomUUID();
 
         final Attachment attachment = message.attachment;
-        final byte[] decode = Base64.getDecoder().decode(attachment.data);
+        final byte[] decode = base64Decode(message);
 
         FileAssetPreview preview = new FileAssetPreview(attachment.filename,
                 attachment.mimeType,
@@ -115,8 +156,8 @@ public class Sender {
 
         client.send(preview);
         final AssetKey assetKey = client.uploadAsset(asset);
-        asset.setAssetKey(assetKey.key);
-        asset.setAssetToken(assetKey.token);
+        asset.setAssetKey(assetKey.key != null ? assetKey.key : "");
+        asset.setAssetToken(assetKey.token != null ? assetKey.token : "");
         client.send(asset);
         return messageId;
     }
@@ -137,5 +178,14 @@ public class Sender {
         try (WireClient client = repo.getClient(botId)) {
             return client.getConversation();
         }
+    }
+
+    private UUID sendPicture(IncomingMessage message, WireClient client) throws Exception {
+        final Picture picture = new Picture(base64Decode(message), message.attachment.mimeType);
+        final AssetKey assetKey = client.uploadAsset(picture);
+        picture.setAssetToken(assetKey.token);
+        picture.setAssetKey(assetKey.key);
+        client.send(picture);
+        return picture.getMessageId();
     }
 }

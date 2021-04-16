@@ -34,7 +34,7 @@ public class CachedClientRepo extends ClientRepo {
                         API api = new API(httpClient, state.token);
                         return new _BotClient(state, crypto, api);
                     } catch (Exception e) {
-                        Logger.warning("CachedClientRepo: bot: %s %s", botId, e);
+                        Logger.exception("CachedClientRepo: bot: %s %s", e, botId, e.getMessage());
                         return null;
                     }
                 }

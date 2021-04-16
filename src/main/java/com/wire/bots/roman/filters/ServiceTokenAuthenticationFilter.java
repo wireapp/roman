@@ -2,6 +2,7 @@ package com.wire.bots.roman.filters;
 
 import com.wire.bots.roman.Application;
 import com.wire.bots.roman.Const;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.tools.Logger;
 import io.jsonwebtoken.Jwts;
 
@@ -36,8 +37,9 @@ public class ServiceTokenAuthenticationFilter implements ContainerRequestFilter 
 
             UUID providerId = UUID.fromString(subject);
             requestContext.setProperty(Const.PROVIDER_ID, providerId);
+            MDCUtils.put("providerId", providerId);
         } catch (Exception e) {
-            Logger.info("ServiceTokenAuthenticationFilter: %s %s", token, e);
+            Logger.info("ServiceTokenAuthenticationFilter: %s %s %s", token, e, e.getMessage());
             Exception cause = new IllegalArgumentException(e.getMessage());
             throw new WebApplicationException(cause, Response.Status.UNAUTHORIZED);
         }

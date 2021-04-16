@@ -5,10 +5,8 @@ import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
-import com.wire.bots.roman.model.IncomingMessage;
-import com.wire.bots.roman.model.OutgoingMessage;
-import com.wire.bots.roman.model.Poll;
-import com.wire.bots.roman.model.Provider;
+import com.wire.bots.roman.model.*;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.assets.DeliveryReceipt;
@@ -37,6 +35,7 @@ import static com.wire.bots.roman.Tools.generateToken;
 public class MessageHandler extends MessageHandlerBase {
 
     private static final int TOKEN_DURATION = 20;
+    private final ObjectMapper mapper = new ObjectMapper();
     private final Client jerseyClient;
     private final ProvidersDAO providersDAO;
     private final BotsDAO botsDAO;
@@ -71,8 +70,7 @@ public class MessageHandler extends MessageHandlerBase {
 
     @Override
     public void onNewConversation(WireClient client, SystemMessage msg) {
-        UUID botId = client.getId();
-
+        final UUID botId = client.getId();
         validate(botId);
 
         OutgoingMessage message = new OutgoingMessage();
@@ -86,16 +84,14 @@ public class MessageHandler extends MessageHandlerBase {
 
         boolean send = send(message);
         if (!send)
-            Logger.warning("onNewConversation: failed to deliver message to: bot: %s", botId);
+            Logger.warning("onNewConversation: failed to deliver message");
     }
 
     @Override
     public void onText(WireClient client, TextMessage msg) {
-        final String type = "conversation.new_text";
-
-        UUID botId = client.getId();
-
+        final UUID botId = client.getId();
         validate(botId);
+        final String type = "conversation.new_text";
 
         OutgoingMessage message = getOutgoingMessage(botId, type, msg);
         message.conversationId = client.getConversationId();
@@ -145,7 +141,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.error("onImage: %s %s", botId, e);
+            Logger.exception("onImage: %s", e, e.getMessage());
         }
     }
 
@@ -170,7 +166,35 @@ public class MessageHandler extends MessageHandlerBase {
 
             send(message);
         } catch (Exception e) {
-            Logger.error("onAttachment: %s %s", botId, e);
+            Logger.exception("onAttachment: %s", e, e.getMessage());
+        }
+    }
+
+    @Override
+    public void onAudio(WireClient client, AudioMessage msg) {
+        final String type = "conversation.audio.new";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+
+            byte[] img = client.downloadAsset(msg.getAssetKey(),
+                    msg.getAssetToken(),
+                    msg.getSha256(),
+                    msg.getOtrKey());
+            message.attachment = Base64.getEncoder().encodeToString(img);
+            message.text = msg.getName();
+            message.mimeType = msg.getMimeType();
+            message.duration = msg.getDuration();
+            message.levels = msg.getLevels();
+            message.conversationId = client.getConversationId();
+
+            send(message);
+        } catch (Exception e) {
+            Logger.exception("onAudio: %s", e, e.getMessage());
         }
     }
 
@@ -196,7 +220,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             broadcastDAO.insertStatus(messageId, type == ConfirmationMessage.Type.DELIVERED ? DELIVERED.ordinal() : READ.ordinal());
         } catch (Exception e) {
-            Logger.error("onConfirmation: %s %s", client.getId(), e);
+            Logger.exception("onConfirmation: %s", e, e.getMessage());
         }
     }
 
@@ -224,7 +248,7 @@ public class MessageHandler extends MessageHandlerBase {
         }
 
         if (!send(message)) {
-            Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
+            Logger.warning("onComposite: failed to deliver message");
         }
     }
 
@@ -243,13 +267,32 @@ public class MessageHandler extends MessageHandlerBase {
         message.poll.offset = Integer.parseInt(action.getButtonId());
 
         if (!send(message)) {
-            Logger.warning("onEvent: failed to deliver message to bot: %s", botId);
+            Logger.warning("onButtonAction: failed to deliver message");
+        }
+    }
+
+    @Override
+    public void onCalling(WireClient client, CallingMessage msg) {
+        try {
+            final String type = "conversation.call";
+
+            final UUID botId = client.getId();
+
+            validate(botId);
+
+            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+            message.conversationId = client.getConversationId();
+            message.call = mapper.readValue(msg.getContent(), Call.class);
+
+            send(message);
+        } catch (Exception e) {
+            Logger.exception("onCalling: error: %s", e, e.getMessage());
         }
     }
 
     @Override
     public void onMemberJoin(WireClient client, SystemMessage msg) {
-        UUID botId = client.getId();
+        final UUID botId = client.getId();
         validate(botId);
 
         OutgoingMessage message = new OutgoingMessage();
@@ -265,7 +308,7 @@ public class MessageHandler extends MessageHandlerBase {
                 message.handle = user.handle;
                 send(message);
             } catch (Exception e) {
-                Logger.error("onMemberJoin: %s %s", botId, e);
+                Logger.exception("onMemberJoin: %s", e, e.getMessage());
             }
         }
     }
@@ -279,7 +322,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.type = "conversation.bot_removed";
 
         if (!send(message))
-            Logger.warning("onBotRemoved: failed to deliver message to: bot: %s", botId);
+            Logger.warning("onBotRemoved: failed to deliver message");
 
         botsDAO.remove(botId);
     }
@@ -295,13 +338,12 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     private boolean send(OutgoingMessage message) {
-        UUID providerId = botsDAO.getProviderId(message.botId);
+        final UUID providerId = validate(message.botId);
 
         try {
             Provider provider = providersDAO.get(providerId);
             if (provider == null) {
-                Logger.error("MessageHandler.send: provider == null. providerId: %s, bot: %s",
-                        providerId, message.botId);
+                Logger.error("MessageHandler.send: Unknown provider");
                 return false;
             }
 
@@ -314,21 +356,12 @@ public class MessageHandler extends MessageHandlerBase {
                         .header("Authorization", "Bearer " + provider.serviceAuth)
                         .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
-                Logger.debug("MessageHandler.send: Sent: `%s` bot: %s, provider: %s, status: %d",
-                        message.type,
-                        message.botId,
-                        providerId,
-                        post.getStatus());
+                Logger.debug("MessageHandler.send: Sent: `%s` status: %d", message.type, post.getStatus());
 
                 if (post.hasEntity()) {
                     final IncomingMessage incomingMessage = getIncomingMessage(post);
-                    if (incomingMessage != null) {
-                        Logger.debug("MessageHandler.send: `%s` bot: %s, provider: %s, posting IncomingMessage: type: %s",
-                                message.type,
-                                message.botId,
-                                providerId,
-                                incomingMessage.type
-                        );
+                    if (incomingMessage != null && incomingMessage.type != null) {
+                        Logger.debug("MessageHandler.send: Posting `%s` into conversation.", incomingMessage.type);
                         sender.send(incomingMessage, message.botId);
                     }
                 }
@@ -338,7 +371,7 @@ public class MessageHandler extends MessageHandlerBase {
                 return WebSocket.send(provider.id, message);
             }
         } catch (Exception e) {
-            Logger.error("MessageHandler.send: bot: %s, provider: %s,  error %s", message.botId, providerId, e);
+            Logger.exception("MessageHandler.send: error %s", e, e.getMessage());
             return false;
         }
     }
@@ -355,9 +388,9 @@ public class MessageHandler extends MessageHandlerBase {
         try {
             client.send(new DeliveryReceipt(messageId), userId);
         } catch (Exception e) {
-            Logger.error("sendDeliveryReceipt: failed to deliver the receipt for message: %s, bot: %s",
+            Logger.exception("sendDeliveryReceipt: failed to deliver the receipt for message: %s",
                     e,
-                    client.getId());
+                    e.getMessage());
         }
     }
 
@@ -376,6 +409,7 @@ public class MessageHandler extends MessageHandlerBase {
         final Provider provider = providersDAO.getByAuth(auth);
         if (provider == null)
             throw new RuntimeException("Unknown auth");
+        MDCUtils.put("providerId", provider.id);
         return provider;
     }
 
@@ -383,6 +417,7 @@ public class MessageHandler extends MessageHandlerBase {
         UUID providerId = botsDAO.getProviderId(botId);
         if (providerId == null)
             throw new RuntimeException("Unknown botId: " + botId.toString());
+        MDCUtils.put("providerId", providerId);
         return providerId;
     }
 

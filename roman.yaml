@@ -1,4 +1,13 @@
 server:
+  applicationConnectors:
+    - type: http
+      port: ${HTTP_PORT:-8080}
+      maxRequestHeaderSize: 16KiB
+
+  gzip:
+    bufferSize: 8KiB
+    enabled: true
+
   requestLog:
     appenders:
       - type: ${APPENDER_TYPE:-console}
@@ -16,8 +25,8 @@ logging:
 swagger:
   resourcePackage: com.wire.bots.roman.resources
   schemes:
-#    - http
     - https
+    - http
 
 jerseyClient:
   timeout: 40s

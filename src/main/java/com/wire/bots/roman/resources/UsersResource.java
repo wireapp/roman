@@ -3,6 +3,7 @@ package com.wire.bots.roman.resources;
 import com.codahale.metrics.annotation.Metered;
 import com.wire.bots.roman.filters.ProxyAuthorization;
 import com.wire.lithium.ClientRepo;
+import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.backend.models.User;
@@ -42,7 +43,8 @@ public class UsersResource {
     public Response get(@Context ContainerRequestContext context,
                          @ApiParam @PathParam("userId") UUID userId) {
         try {
-            UUID botId = (UUID) context.getProperty("botid");
+            final UUID botId = (UUID) context.getProperty("botid");
+            MDCUtils.put("userId", userId);
 
             try (WireClient client = repo.getClient(botId)) {
                 return Response
@@ -50,8 +52,7 @@ public class UsersResource {
                         .build();
             }
         } catch (Exception e) {
-            Logger.error("UsersResource: %s", e);
-            e.printStackTrace();
+            Logger.exception("UsersResource: %s", e, e.getMessage());
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
