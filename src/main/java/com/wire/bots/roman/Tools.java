@@ -17,19 +17,19 @@ public class Tools {
                 .getSubject();
     }
 
-    public static String generateToken(UUID botId) {
+    public static String generateToken(UUID uuid) {
         return Jwts.builder()
                 .setIssuer("https://wire.com")
-                .setSubject(botId.toString())
+                .setSubject(uuid.toString())
                 .signWith(Application.getKey())
                 .compact();
     }
 
-    static String generateToken(UUID botId, long exp) {
+    static String generateToken(UUID uuid, long exp) {
         Date now = new Date();
         return Jwts.builder()
                 .setIssuer("https://wire.com")
-                .setSubject(botId.toString())
+                .setSubject(uuid.toString())
                 .signWith(Application.getKey())
                 .setExpiration(new Date(now.getTime() + exp))
                 .compact();

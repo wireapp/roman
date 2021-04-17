@@ -16,7 +16,6 @@ import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
 import org.jdbi.v3.core.Jdbi;
 
-import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
@@ -26,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 
 import static com.wire.bots.roman.Const.APP_KEY;
@@ -38,9 +38,11 @@ public class BroadcastResource {
     private final Sender sender;
     private final BotsDAO botsDAO;
     private final BroadcastDAO broadcastDAO;
+    private final ExecutorService broadcast;
 
-    public BroadcastResource(Jdbi jdbi, Sender sender) {
+    public BroadcastResource(Jdbi jdbi, Sender sender, ExecutorService broadcast) {
         this.sender = sender;
+        this.broadcast = broadcast;
 
         botsDAO = jdbi.onDemand(BotsDAO.class);
         broadcastDAO = jdbi.onDemand(BroadcastDAO.class);
@@ -48,7 +50,7 @@ public class BroadcastResource {
 
     @POST
     @ApiOperation(value = "Broadcast message on Wire", authorizations = {@Authorization(value = "Bearer")})
-    @ApiResponses(value = {@ApiResponse(code = 403, message = "Not authenticated", response = Report.class)})
+    @ApiResponses(value = {@ApiResponse(code = 401, message = "Not authenticated", response = Report.class)})
     @Metered
     @ServiceTokenAuthorization
     public Response post(@Context ContainerRequestContext context,
@@ -66,10 +68,7 @@ public class BroadcastResource {
             final UUID broadcastId = UUID.randomUUID();
 
             for (UUID botId : botIds) {
-                final UUID messageId = send(botId, message);
-                if (messageId != null) {
-                    broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
-                }
+                send(botId, message, broadcastId, providerId);
             }
 
             Report ret = new Report();
@@ -128,17 +127,21 @@ public class BroadcastResource {
         }
     }
 
-    @Nullable
-    private UUID send(UUID botId, IncomingMessage message) {
-        try {
-            return sender.send(message, botId);
-        } catch (MissingStateException e) {
-            Logger.warning("BroadcastResource.send %s", e.getMessage());
-            botsDAO.remove(botId);
-        } catch (Exception e) {
-            Logger.exception("BroadcastResource.send %s", e, e.getMessage());
-        }
-        return null;
+    private void send(UUID botId, IncomingMessage message, UUID broadcastId, UUID providerId) {
+        broadcast.submit(() -> {
+                    try {
+                        final UUID messageId = sender.send(message, botId);
+                        if (messageId != null) {
+                            broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
+                        }
+                    } catch (MissingStateException e) {
+                        Logger.warning("BroadcastResource.send %s", e.getMessage());
+                        botsDAO.remove(botId);
+                    } catch (Exception e) {
+                        Logger.exception("BroadcastResource.send %s", e, e.getMessage());
+                    }
+                }
+        );
     }
 
     private void trace(IncomingMessage message) throws JsonProcessingException {

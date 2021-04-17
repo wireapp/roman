@@ -1,8 +1,7 @@
 package com.wire.bots.roman.filters;
 
-import com.wire.bots.roman.Application;
+import com.wire.bots.roman.Tools;
 import com.wire.lithium.server.monitoring.MDCUtils;
-import io.jsonwebtoken.Jwts;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -32,11 +31,7 @@ public class ServiceAuthenticationFilter implements ContainerRequestFilter {
         String token = authCookie.getValue();
 
         try {
-            String subject = Jwts.parser()
-                    .setSigningKey(Application.getKey())
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
+            String subject = Tools.validateToken(token);
 
             UUID providerId = UUID.fromString(subject);
             requestContext.setProperty(PROVIDER_ID, providerId);

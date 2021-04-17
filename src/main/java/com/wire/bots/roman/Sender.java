@@ -15,7 +15,6 @@ import com.wire.xenon.tools.Logger;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Base64;
-import java.util.Random;
 import java.util.UUID;
 
 public class Sender {
@@ -95,12 +94,6 @@ public class Sender {
 
     private UUID sendAudio(IncomingMessage message, WireClient client) throws Exception {
         final byte[] bytes = base64Decode(message);
-
-        // todo remove this eventually
-        if (message.attachment.levels == null) {
-            message.attachment.levels = new byte[100];
-            new Random().nextBytes(message.attachment.levels);
-        }
 
         final AudioPreview preview = new AudioPreview(bytes,
                 message.attachment.filename,

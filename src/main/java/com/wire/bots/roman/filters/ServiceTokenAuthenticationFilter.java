@@ -1,10 +1,9 @@
 package com.wire.bots.roman.filters;
 
-import com.wire.bots.roman.Application;
 import com.wire.bots.roman.Const;
+import com.wire.bots.roman.Tools;
 import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.tools.Logger;
-import io.jsonwebtoken.Jwts;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -29,11 +28,7 @@ public class ServiceTokenAuthenticationFilter implements ContainerRequestFilter 
         }
 
         try {
-            String subject = Jwts.parser()
-                    .setSigningKey(Application.getKey())
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
+            String subject = Tools.validateToken(token);
 
             UUID providerId = UUID.fromString(subject);
             requestContext.setProperty(Const.PROVIDER_ID, providerId);

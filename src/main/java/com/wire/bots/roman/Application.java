@@ -38,6 +38,7 @@ import io.jsonwebtoken.security.Keys;
 import org.jdbi.v3.core.Jdbi;
 
 import java.security.Key;
+import java.util.concurrent.ExecutorService;
 
 public class Application extends Server<Config> {
     private static Application instance;
@@ -88,6 +89,11 @@ public class Application extends Server<Config> {
 
     @Override
     protected void onRun(Config config, Environment env) {
+        ExecutorService executorService = env.lifecycle()
+                .executorService("broadcast")
+                .maxThreads(8)
+                .build();
+
         ProviderClient providerClient = new ProviderClient(getClient(), config.apiHost);
         Sender sender = new Sender(getRepo());
 
@@ -97,7 +103,7 @@ public class Application extends Server<Config> {
         addResource(new ServiceResource(jdbi, providerClient));
         addResource(new ConversationResource(sender));
         addResource(new UsersResource(getRepo()));
-        addResource(new BroadcastResource(jdbi, sender));
+        addResource(new BroadcastResource(jdbi, sender, executorService));
         addResource(new MessagesResource());
 
         messageHandler.setSender(sender);

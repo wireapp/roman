@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lambdaworks.crypto.SCryptUtil;
-import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.ProviderClient;
 import com.wire.bots.roman.model.Provider;
@@ -12,7 +11,6 @@ import com.wire.bots.roman.model.SignIn;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.tools.Logger;
 import io.dropwizard.validation.ValidationMethod;
-import io.jsonwebtoken.Jwts;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -27,6 +25,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+
+import static com.wire.bots.roman.Tools.generateToken;
 
 @Api
 @Path("/")
@@ -103,11 +103,7 @@ public class ProviderResource {
                         build();
             }
 
-            String jwt = Jwts.builder()
-                    .setIssuer("https://wire.com")
-                    .setSubject(provider.id.toString())
-                    .signWith(Application.getKey())
-                    .compact();
+            String jwt = generateToken(provider.id);
 
             return Response.
                     ok().
