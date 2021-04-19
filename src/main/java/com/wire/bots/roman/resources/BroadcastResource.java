@@ -75,8 +75,14 @@ public class BroadcastResource {
             switch (message.type) {
                 case "text": {
                     for (UUID botId : botIds) {
-                        final UUID messageId = sender.sendText(message, botId);
-                        broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
+                        broadcast.submit(() -> {
+                            try {
+                                final UUID messageId = sender.sendText(message, botId);
+                                persist(providerId, broadcastId, botId, messageId);
+                            } catch (Exception e) {
+                                Logger.exception("Broadcast", e);
+                            }
+                        });
                     }
                     break;
                 }
@@ -95,17 +101,22 @@ public class BroadcastResource {
 
                         for (UUID botId : botIds) {
                             broadcast.submit(() -> {
-                                        broadcast(providerId, broadcastId, preview, audioAsset, botId);
-                                    }
-                            );
+                                broadcast(providerId, broadcastId, preview, audioAsset, botId);
+                            });
                         }
                     }
                     break;
                 }
                 case "call": {
                     for (UUID botId : botIds) {
-                        final UUID messageId = sender.sendCall(message, botId);
-                        broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
+                        broadcast.submit(() -> {
+                            try {
+                                final UUID messageId = sender.sendCall(message, botId);
+                                persist(providerId, broadcastId, botId, messageId);
+                            } catch (Exception e) {
+                                Logger.exception("Broadcast", e);
+                            }
+                        });
                     }
                     break;
                 }
@@ -124,29 +135,6 @@ public class BroadcastResource {
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
-        }
-    }
-
-    private void broadcast(UUID providerId, UUID broadcastId, AudioPreview preview, AudioAsset audioAsset, UUID botId) {
-        try {
-            if (audioAsset.getAssetKey() == null) {
-                AssetKey assetKey = sender.uploadAsset(audioAsset, botId);
-                if (assetKey != null) {
-                    audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
-                    audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
-                }
-            }
-
-            sender.send(preview, botId);
-            final UUID messageId = sender.send(audioAsset, botId);
-
-            broadcastDAO.insert(broadcastId,
-                    botId,
-                    providerId,
-                    messageId,
-                    BroadcastDAO.Type.SENT.ordinal());
-        } catch (Exception e) {
-            Logger.exception("Broadcast send", e);
         }
     }
 
@@ -187,6 +175,28 @@ public class BroadcastResource {
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
+        }
+    }
+
+    private void persist(UUID providerId, UUID broadcastId, UUID botId, UUID messageId) {
+        broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
+    }
+
+    private void broadcast(UUID providerId, UUID broadcastId, AudioPreview preview, AudioAsset audioAsset, UUID botId) {
+        try {
+            if (audioAsset.getAssetKey() == null) {
+                AssetKey assetKey = sender.uploadAsset(audioAsset, botId);
+                if (assetKey != null) {
+                    audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
+                    audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
+                }
+            }
+
+            sender.send(preview, botId);
+            final UUID messageId = sender.send(audioAsset, botId);
+            persist(providerId, broadcastId, botId, messageId);
+        } catch (Exception e) {
+            Logger.exception("Broadcast send", e);
         }
     }
 
