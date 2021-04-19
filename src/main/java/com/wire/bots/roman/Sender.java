@@ -26,159 +26,210 @@ public class Sender {
         this.repo = repo;
     }
 
-    @Nullable
-    public UUID send(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient client = repo.getClient(botId)) {
-            if (client == null)
-                return null;
-
-            return send(message, client);
-        }
-    }
-
     private static byte[] base64Decode(IncomingMessage message) {
         return Base64.getDecoder().decode(message.attachment.data);
     }
 
-    private UUID send(IncomingMessage message, WireClient client) throws Exception {
+    @Nullable
+    public UUID send(IncomingMessage message, UUID botId) throws Exception {
         switch (message.type) {
             case "text": {
-                return sendText(message, client);
+                return sendText(message, botId);
             }
             case "attachment": {
                 if (message.attachment.mimeType.startsWith("image")) {
-                    return sendPicture(message, client);
+                    return sendPicture(message, botId);
                 }
                 if (message.attachment.mimeType.startsWith("audio")) {
-                    return sendAudio(message, client);
+                    return sendAudio(message, botId);
                 }
 
-                return sendAttachment(message, client);
+                return sendAttachment(message, botId);
             }
             case "poll": {
                 if (message.poll.type.equals("create")) {
-                    return sendNewPoll(message, client);
+                    return sendNewPoll(message, botId);
                 }
                 if (message.poll.type.equals("confirmation")) {
-                    return sendPollConfirmation(message, client);
+                    return sendPollConfirmation(message, botId);
                 }
                 break;
             }
             case "call": {
-                return sendCall(message, client);
+                return sendCall(message, botId);
             }
         }
 
         return null;
     }
 
-    private UUID sendCall(IncomingMessage message, WireClient client) throws Exception {
-        String content = message.call != null
-                ? mapper.writeValueAsString(message.call)
-                : "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
-        final Calling calling = new Calling(content);
-        client.send(calling);
-        return calling.getMessageId();
-    }
-
-    private UUID sendText(IncomingMessage message, WireClient client) throws Exception {
-        MessageText text = new MessageText(message.text.data);
-        text.setExpectsReadConfirmation(true);
-        if (message.text.mentions != null) {
-            for (Mention mention : message.text.mentions)
-                text.addMention(mention.userId, mention.offset, mention.length);
+    @Nullable
+    public UUID sendCall(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+            String content = message.call != null
+                    ? mapper.writeValueAsString(message.call)
+                    : "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
+            final Calling calling = new Calling(content);
+            wireClient.send(calling);
+            return calling.getMessageId();
         }
-        client.send(text);
-        return text.getMessageId();
     }
 
-    private UUID sendAudio(IncomingMessage message, WireClient client) throws Exception {
-        final byte[] bytes = base64Decode(message);
+    @Nullable
+    public UUID sendText(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
 
-        final AudioPreview preview = new AudioPreview(bytes,
-                message.attachment.filename,
-                message.attachment.mimeType,
-                message.attachment.duration,
-                message.attachment.levels);
-
-        client.send(preview);
-
-        final AudioAsset audioAsset = new AudioAsset(bytes, preview);
-
-        final AssetKey assetKey = client.uploadAsset(audioAsset);
-        audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
-        audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
-
-        client.send(audioAsset);
-        return audioAsset.getMessageId();
-    }
-
-    private UUID sendNewPoll(IncomingMessage message, WireClient client) throws Exception {
-        MessageText messageText = new MessageText(message.text.data);
-        if (message.text.mentions != null) {
-            for (Mention mention : message.text.mentions)
-                messageText.addMention(mention.userId, mention.offset, mention.length);
+            MessageText text = new MessageText(message.text.data);
+            text.setExpectsReadConfirmation(true);
+            if (message.text.mentions != null) {
+                for (Mention mention : message.text.mentions)
+                    text.addMention(mention.userId, mention.offset, mention.length);
+            }
+            wireClient.send(text);
+            return text.getMessageId();
         }
+    }
 
-        Poll poll = new Poll(message.poll.id);
-        poll.addText(messageText);
+    @Nullable
+    private UUID sendAudio(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+            final byte[] bytes = base64Decode(message);
 
-        int i = 0;
-        for (String caption : message.poll.buttons) {
-            poll.addButton("" + i++, caption);
+            final AudioPreview preview = new AudioPreview(
+                    message.attachment.filename,
+                    message.attachment.mimeType,
+                    message.attachment.duration,
+                    message.attachment.levels,
+                    bytes.length);
+
+            wireClient.send(preview);
+
+            final AudioAsset audioAsset = new AudioAsset(bytes, preview);
+
+            final AssetKey assetKey = wireClient.uploadAsset(audioAsset);
+            audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
+            audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
+
+            wireClient.send(audioAsset);
+            return audioAsset.getMessageId();
         }
-
-        Logger.info("poll.create: id: %s", message.poll.id);
-
-        client.send(poll);
-
-        return poll.getMessageId();
     }
 
-    private UUID sendAttachment(IncomingMessage message, WireClient client) throws Exception {
-        UUID messageId = UUID.randomUUID();
+    @Nullable
+    public UUID sendNewPoll(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+            MessageText messageText = new MessageText(message.text.data);
+            if (message.text.mentions != null) {
+                for (Mention mention : message.text.mentions)
+                    messageText.addMention(mention.userId, mention.offset, mention.length);
+            }
 
-        final Attachment attachment = message.attachment;
-        final byte[] decode = base64Decode(message);
+            Poll poll = new Poll(message.poll.id);
+            poll.addText(messageText);
 
-        FileAssetPreview preview = new FileAssetPreview(attachment.filename,
-                attachment.mimeType,
-                decode.length,
-                messageId);
-        FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
+            int i = 0;
+            for (String caption : message.poll.buttons) {
+                poll.addButton("" + i++, caption);
+            }
 
-        client.send(preview);
-        final AssetKey assetKey = client.uploadAsset(asset);
-        asset.setAssetKey(assetKey.key != null ? assetKey.key : "");
-        asset.setAssetToken(assetKey.token != null ? assetKey.token : "");
-        client.send(asset);
-        return messageId;
+            Logger.info("poll.create: id: %s", message.poll.id);
+
+            wireClient.send(poll);
+
+            return poll.getMessageId();
+        }
     }
 
-    private UUID sendPollConfirmation(IncomingMessage message, WireClient client) throws Exception {
-        ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
-                message.poll.id,
-                message.poll.offset.toString());
+    @Nullable
+    private UUID sendAttachment(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+            UUID messageId = UUID.randomUUID();
 
-        Logger.info("poll.confirmation: pollId: %s, offset: %s", message.poll.id, message.poll.offset);
+            final Attachment attachment = message.attachment;
+            final byte[] decode = base64Decode(message);
 
-        client.send(confirmation, message.poll.userId);
+            FileAssetPreview preview = new FileAssetPreview(attachment.filename,
+                    attachment.mimeType,
+                    decode.length,
+                    messageId);
+            FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
 
-        return confirmation.getMessageId();
+            wireClient.send(preview);
+            final AssetKey assetKey = wireClient.uploadAsset(asset);
+            asset.setAssetKey(assetKey.key != null ? assetKey.key : "");
+            asset.setAssetToken(assetKey.token != null ? assetKey.token : "");
+            wireClient.send(asset);
+            return messageId;
+        }
     }
 
+    @Nullable
+    public UUID sendPollConfirmation(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+            ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
+                    message.poll.id,
+                    message.poll.offset.toString());
+
+            Logger.info("poll.confirmation: pollId: %s, offset: %s", message.poll.id, message.poll.offset);
+
+            wireClient.send(confirmation, message.poll.userId);
+
+            return confirmation.getMessageId();
+        }
+    }
+
+    @Nullable
     public Conversation getConversation(UUID botId) throws IOException, CryptoException {
-        try (WireClient client = repo.getClient(botId)) {
-            return client.getConversation();
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+            return wireClient.getConversation();
         }
     }
 
-    private UUID sendPicture(IncomingMessage message, WireClient client) throws Exception {
-        final Picture picture = new Picture(base64Decode(message), message.attachment.mimeType);
-        final AssetKey assetKey = client.uploadAsset(picture);
-        picture.setAssetToken(assetKey.token);
-        picture.setAssetKey(assetKey.key);
-        client.send(picture);
-        return picture.getMessageId();
+    @Nullable
+    private UUID sendPicture(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+            final Picture picture = new Picture(base64Decode(message), message.attachment.mimeType);
+            final AssetKey assetKey = wireClient.uploadAsset(picture);
+            picture.setAssetToken(assetKey.token);
+            picture.setAssetKey(assetKey.key);
+            wireClient.send(picture);
+            return picture.getMessageId();
+        }
+    }
+
+    @Nullable
+    public AssetKey uploadAsset(IAsset asset, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+            return wireClient.uploadAsset(asset);
+        }
+    }
+
+    @Nullable
+    public UUID send(IGeneric message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+
+            wireClient.send(message);
+            return message.getMessageId();
+        }
     }
 }
