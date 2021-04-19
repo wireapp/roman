@@ -10,8 +10,10 @@ import com.wire.bots.roman.filters.ServiceTokenAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Report;
 import com.wire.lithium.server.monitoring.MDCUtils;
+import com.wire.xenon.assets.AudioAsset;
+import com.wire.xenon.assets.AudioPreview;
 import com.wire.xenon.backend.models.ErrorMessage;
-import com.wire.xenon.exceptions.MissingStateException;
+import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
 import org.jdbi.v3.core.Jdbi;
@@ -23,6 +25,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -39,6 +42,7 @@ public class BroadcastResource {
     private final BotsDAO botsDAO;
     private final BroadcastDAO broadcastDAO;
     private final ExecutorService broadcast;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public BroadcastResource(Jdbi jdbi, Sender sender, ExecutorService broadcast) {
         this.sender = sender;
@@ -61,14 +65,61 @@ public class BroadcastResource {
 
             final UUID providerId = (UUID) context.getProperty(PROVIDER_ID);
 
-            Logger.info("BroadcastResource.post: `%s` provider: %s", message.type, providerId);
-
             List<UUID> botIds = botsDAO.getBotIds(providerId);
 
             final UUID broadcastId = UUID.randomUUID();
 
-            for (UUID botId : botIds) {
-                send(botId, message, broadcastId, providerId);
+            MDCUtils.put("broadcastId", broadcastId);
+            Logger.info("BroadcastResource.post: `%s`", message.type);
+
+            switch (message.type) {
+                case "text": {
+                    for (UUID botId : botIds) {
+                        broadcast.submit(() -> {
+                            try {
+                                final UUID messageId = sender.sendText(message, botId);
+                                persist(providerId, broadcastId, botId, messageId);
+                            } catch (Exception e) {
+                                Logger.exception("Broadcast", e);
+                            }
+                        });
+                    }
+                    break;
+                }
+                case "attachment": {
+                    if (message.attachment.mimeType.startsWith("audio")) {
+                        final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
+
+                        final AudioPreview preview = new AudioPreview(
+                                message.attachment.filename,
+                                message.attachment.mimeType,
+                                message.attachment.duration,
+                                message.attachment.levels,
+                                bytes.length);
+
+                        final AudioAsset audioAsset = new AudioAsset(bytes, preview);
+
+                        for (UUID botId : botIds) {
+                            broadcast.submit(() -> {
+                                broadcast(providerId, broadcastId, preview, audioAsset, botId);
+                            });
+                        }
+                    }
+                    break;
+                }
+                case "call": {
+                    for (UUID botId : botIds) {
+                        broadcast.submit(() -> {
+                            try {
+                                final UUID messageId = sender.sendCall(message, botId);
+                                persist(providerId, broadcastId, botId, messageId);
+                            } catch (Exception e) {
+                                Logger.exception("Broadcast", e);
+                            }
+                        });
+                    }
+                    break;
+                }
             }
 
             Report ret = new Report();
@@ -79,7 +130,7 @@ public class BroadcastResource {
                     ok(ret).
                     build();
         } catch (Exception e) {
-            Logger.exception("BroadcastResource.post: %s", e, e.getMessage());
+            Logger.exception("BroadcastResource.post", e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
@@ -109,7 +160,7 @@ public class BroadcastResource {
             }
 
             MDCUtils.put("broadcastId", broadcastId);
-            Logger.info("BroadcastResource.get: broadcast: %s provider: %s", broadcastId, providerId);
+            Logger.info("BroadcastResource.get: broadcast: %s", broadcastId);
 
             Report ret = new Report();
             ret.broadcastId = broadcastId;
@@ -119,7 +170,7 @@ public class BroadcastResource {
                     ok(ret).
                     build();
         } catch (Exception e) {
-            Logger.exception("BroadcastResource.get: %s", e, e.getMessage());
+            Logger.exception("BroadcastResource.get", e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
@@ -127,26 +178,30 @@ public class BroadcastResource {
         }
     }
 
-    private void send(UUID botId, IncomingMessage message, UUID broadcastId, UUID providerId) {
-        broadcast.submit(() -> {
-                    try {
-                        final UUID messageId = sender.send(message, botId);
-                        if (messageId != null) {
-                            broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
-                        }
-                    } catch (MissingStateException e) {
-                        Logger.warning("BroadcastResource.send %s", e.getMessage());
-                        botsDAO.remove(botId);
-                    } catch (Exception e) {
-                        Logger.exception("BroadcastResource.send %s", e, e.getMessage());
-                    }
+    private void persist(UUID providerId, UUID broadcastId, UUID botId, UUID messageId) {
+        broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
+    }
+
+    private void broadcast(UUID providerId, UUID broadcastId, AudioPreview preview, AudioAsset audioAsset, UUID botId) {
+        try {
+            if (audioAsset.getAssetKey() == null) {
+                AssetKey assetKey = sender.uploadAsset(audioAsset, botId);
+                if (assetKey != null) {
+                    audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
+                    audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
                 }
-        );
+            }
+
+            sender.send(preview, botId);
+            final UUID messageId = sender.send(audioAsset, botId);
+            persist(providerId, broadcastId, botId, messageId);
+        } catch (Exception e) {
+            Logger.exception("Broadcast send", e);
+        }
     }
 
     private void trace(IncomingMessage message) throws JsonProcessingException {
         if (Logger.getLevel() == Level.FINE) {
-            ObjectMapper objectMapper = new ObjectMapper();
             Logger.debug(objectMapper.writeValueAsString(message));
         }
     }
