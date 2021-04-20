@@ -7,6 +7,7 @@ import com.wire.lithium.ClientRepo;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.backend.models.NewBot;
 import com.wire.xenon.crypto.Crypto;
+import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.factories.CryptoFactory;
 import com.wire.xenon.factories.StorageFactory;
 import com.wire.xenon.models.otr.Missing;
@@ -28,15 +29,17 @@ public class CachedClientRepo extends ClientRepo {
     @Override
     public WireClient getClient(UUID botId) {
         return clients.computeIfAbsent(botId, x -> {
-                    try {
-                        NewBot state = sf.create(botId).getState();
-                        Crypto crypto = cf.create(botId);
-                        API api = new API(httpClient, state.token);
-                        return new _BotClient(state, crypto, api);
-                    } catch (Exception e) {
-                        Logger.exception("CachedClientRepo: bot: %s %s", e, botId, e.getMessage());
-                        return null;
-                    }
+            try {
+                NewBot state = sf.create(botId).getState();
+                Crypto crypto = cf.create(botId);
+                API api = new API(httpClient, state.token);
+                return new _BotClient(state, crypto, api);
+            } catch (MissingStateException e) {
+                return null;
+            } catch (Exception e) {
+                Logger.exception("CachedClientRepo: bot: %s %s", e, botId, e.getMessage());
+                return null;
+            }
                 }
         );
     }
