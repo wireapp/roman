@@ -91,7 +91,6 @@ public class Application extends Server<Config> {
     protected void onRun(Config config, Environment env) {
         ExecutorService executorService = env.lifecycle()
                 .executorService("broadcast")
-                .maxThreads(8)
                 .build();
 
         ProviderClient providerClient = new ProviderClient(getClient(), config.apiHost);

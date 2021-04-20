@@ -78,7 +78,9 @@ public class BroadcastResource {
                         broadcast.submit(() -> {
                             try {
                                 final UUID messageId = sender.sendText(message, botId);
-                                persist(providerId, broadcastId, botId, messageId);
+                                if (messageId != null) {
+                                    persist(providerId, broadcastId, botId, messageId);
+                                }
                             } catch (Exception e) {
                                 Logger.exception("Broadcast", e);
                             }
@@ -112,7 +114,9 @@ public class BroadcastResource {
                         broadcast.submit(() -> {
                             try {
                                 final UUID messageId = sender.sendCall(message, botId);
-                                persist(providerId, broadcastId, botId, messageId);
+                                if (messageId != null) {
+                                    persist(providerId, broadcastId, botId, messageId);
+                                }
                             } catch (Exception e) {
                                 Logger.exception("Broadcast", e);
                             }
@@ -194,7 +198,9 @@ public class BroadcastResource {
 
             sender.send(preview, botId);
             final UUID messageId = sender.send(audioAsset, botId);
-            persist(providerId, broadcastId, botId, messageId);
+            if (messageId != null) {
+                persist(providerId, broadcastId, botId, messageId);
+            }
         } catch (Exception e) {
             Logger.exception("Broadcast send", e);
         }
