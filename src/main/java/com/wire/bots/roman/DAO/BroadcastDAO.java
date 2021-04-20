@@ -27,7 +27,8 @@ public interface BroadcastDAO {
     @SqlUpdate("INSERT INTO Broadcast (broadcast_id, bot_id, provider, message_status, message_id) " +
             "(SELECT B.broadcast_id, B.bot_id, B.provider, :status, B.message_id " +
             "FROM Broadcast AS B " +
-            "WHERE message_id = :messageId FETCH FIRST ROW ONLY)")
+            "WHERE message_id = :messageId FETCH FIRST ROW ONLY) " +
+            "ON CONFLICT(broadcast_id, message_id, message_status) DO NOTHING")
     int insertStatus(@Bind("messageId") UUID messageId, @Bind("status") int status);
 
     @SqlQuery("SELECT message_status, count(*) AS count " +
