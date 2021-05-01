@@ -139,6 +139,8 @@ public class MessageHandler extends MessageHandlerBase {
             message.mimeType = msg.getMimeType();
             message.conversationId = client.getConversationId();
 
+            message.meta = extractAssetMeta(msg);
+
             send(message);
         } catch (Exception e) {
             Logger.exception("onImage: %s", e, e.getMessage());
@@ -163,6 +165,8 @@ public class MessageHandler extends MessageHandlerBase {
             message.text = msg.getName();
             message.mimeType = msg.getMimeType();
             message.conversationId = client.getConversationId();
+
+            message.meta = extractAssetMeta(msg);
 
             send(message);
         } catch (Exception e) {
@@ -191,6 +195,8 @@ public class MessageHandler extends MessageHandlerBase {
             message.duration = msg.getDuration();
             message.levels = msg.getLevels();
             message.conversationId = client.getConversationId();
+
+            message.meta = extractAssetMeta(msg);
 
             send(message);
         } catch (Exception e) {
@@ -419,6 +425,15 @@ public class MessageHandler extends MessageHandlerBase {
             throw new RuntimeException("Unknown botId: " + botId.toString());
         MDCUtils.put("providerId", providerId);
         return providerId;
+    }
+
+    private AssetMeta extractAssetMeta(MessageAssetBase msg) {
+        AssetMeta meta = new AssetMeta();
+        meta.assetKey = msg.getAssetKey();
+        meta.assetToken = msg.getAssetToken();
+        meta.sha256 = Base64.getEncoder().encodeToString(msg.getSha256());
+        meta.otrKey = Base64.getEncoder().encodeToString(msg.getOtrKey());
+        return meta;
     }
 
     public void setSender(Sender sender) {
