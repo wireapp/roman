@@ -35,6 +35,8 @@ public class OutgoingMessage {
     public ArrayList<Mention> mentions = new ArrayList<>();
     public Call call;
 
+    public AssetMeta meta;
+
     public void addMention(UUID userId, int offset, int len) {
         Mention mention = new Mention();
         mention.userId = userId;
