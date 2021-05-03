@@ -10,8 +10,7 @@ import com.wire.bots.roman.filters.ServiceTokenAuthorization;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Report;
 import com.wire.lithium.server.monitoring.MDCUtils;
-import com.wire.xenon.assets.AudioAsset;
-import com.wire.xenon.assets.AudioPreview;
+import com.wire.xenon.assets.*;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
@@ -65,8 +64,6 @@ public class BroadcastResource {
 
             final UUID providerId = (UUID) context.getProperty(PROVIDER_ID);
 
-            List<UUID> botIds = botsDAO.getBotIds(providerId);
-
             final UUID broadcastId = UUID.randomUUID();
 
             MDCUtils.put("broadcastId", broadcastId);
@@ -74,54 +71,21 @@ public class BroadcastResource {
 
             switch (message.type) {
                 case "text": {
-                    for (UUID botId : botIds) {
-                        broadcast.submit(() -> {
-                            try {
-                                final UUID messageId = sender.sendText(message, botId);
-                                if (messageId != null) {
-                                    persist(providerId, broadcastId, botId, messageId);
-                                }
-                            } catch (Exception e) {
-                                Logger.exception("Broadcast", e);
-                            }
-                        });
-                    }
+                    broadcastText(message, providerId, broadcastId);
                     break;
                 }
                 case "attachment": {
                     if (message.attachment.mimeType.startsWith("audio")) {
-                        final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
-
-                        final AudioPreview preview = new AudioPreview(
-                                message.attachment.filename,
-                                message.attachment.mimeType,
-                                message.attachment.duration,
-                                message.attachment.levels,
-                                bytes.length);
-
-                        final AudioAsset audioAsset = new AudioAsset(bytes, preview);
-
-                        for (UUID botId : botIds) {
-                            broadcast.submit(() -> {
-                                broadcast(providerId, broadcastId, preview, audioAsset, botId);
-                            });
-                        }
+                        broadcastAudio(message, providerId, broadcastId);
+                    } else if (message.attachment.mimeType.startsWith("image")) {
+                        broadcastPicture(message, providerId, broadcastId);
+                    } else {
+                        broadcastFile(message, providerId, broadcastId);
                     }
                     break;
                 }
                 case "call": {
-                    for (UUID botId : botIds) {
-                        broadcast.submit(() -> {
-                            try {
-                                final UUID messageId = sender.sendCall(message, botId);
-                                if (messageId != null) {
-                                    persist(providerId, broadcastId, botId, messageId);
-                                }
-                            } catch (Exception e) {
-                                Logger.exception("Broadcast", e);
-                            }
-                        });
-                    }
+                    broadcastCall(message, providerId, broadcastId);
                     break;
                 }
             }
@@ -139,6 +103,97 @@ public class BroadcastResource {
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
                     .build();
+        }
+    }
+
+    private void broadcastCall(IncomingMessage message, UUID providerId, UUID broadcastId) {
+        for (UUID botId : botsDAO.getBotIds(providerId)) {
+            broadcast.submit(() -> {
+                try {
+                    final UUID messageId = sender.sendCall(message, botId);
+                    if (messageId != null) {
+                        persist(providerId, broadcastId, botId, messageId);
+                    }
+                } catch (Exception e) {
+                    Logger.exception("Broadcast", e);
+                }
+            });
+        }
+    }
+
+    private void broadcastPicture(IncomingMessage message, UUID providerId, UUID broadcastId) throws Exception {
+        final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
+
+        final Picture picture = new Picture(bytes, message.attachment.mimeType);
+
+        final List<UUID> botIds = botsDAO.getBotIds(providerId);
+
+        final AssetKey assetKey = uploadAsset(picture, botIds);
+        picture.setAssetKey(assetKey.key);
+        picture.setAssetToken(assetKey.token);
+
+        for (UUID botId : botIds) {
+            broadcast.submit(() -> send(providerId, broadcastId, picture, botId));
+        }
+    }
+
+    private void broadcastAudio(IncomingMessage message, UUID providerId, UUID broadcastId) throws Exception {
+        final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
+
+        final AudioPreview preview = new AudioPreview(
+                message.attachment.filename,
+                message.attachment.mimeType,
+                message.attachment.duration,
+                message.attachment.levels,
+                bytes.length);
+
+        final AudioAsset audioAsset = new AudioAsset(bytes, preview);
+
+        final List<UUID> botIds = botsDAO.getBotIds(providerId);
+
+        final AssetKey assetKey = uploadAsset(audioAsset, botIds);
+        audioAsset.setAssetKey(assetKey.key);
+        audioAsset.setAssetToken(assetKey.token);
+
+        for (UUID botId : botIds) {
+            broadcast.submit(() -> send(providerId, broadcastId, preview, audioAsset, botId));
+        }
+    }
+
+    private void broadcastFile(IncomingMessage message, UUID providerId, UUID broadcastId) throws Exception {
+        final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
+
+        final UUID messageId = UUID.randomUUID();
+        FileAssetPreview preview = new FileAssetPreview(message.attachment.filename,
+                message.attachment.mimeType,
+                bytes.length,
+                messageId);
+
+        FileAsset fileAsset = new FileAsset(bytes, message.attachment.mimeType, messageId);
+
+        final List<UUID> botIds = botsDAO.getBotIds(providerId);
+
+        final AssetKey assetKey = uploadAsset(fileAsset, botIds);
+        fileAsset.setAssetKey(assetKey.key);
+        fileAsset.setAssetToken(assetKey.token);
+
+        for (UUID botId : botIds) {
+            broadcast.submit(() -> send(providerId, broadcastId, preview, fileAsset, botId));
+        }
+    }
+
+    private void broadcastText(IncomingMessage message, UUID providerId, UUID broadcastId) {
+        for (UUID botId : botsDAO.getBotIds(providerId)) {
+            broadcast.submit(() -> {
+                try {
+                    final UUID messageId = sender.sendText(message, botId);
+                    if (messageId != null) {
+                        persist(providerId, broadcastId, botId, messageId);
+                    }
+                } catch (Exception e) {
+                    Logger.exception("Broadcast", e);
+                }
+            });
         }
     }
 
@@ -182,20 +237,17 @@ public class BroadcastResource {
         }
     }
 
-    private void persist(UUID providerId, UUID broadcastId, UUID botId, UUID messageId) {
-        broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
+    private AssetKey uploadAsset(AssetBase asset, List<UUID> bots) throws Exception {
+        for (UUID botId : bots) {
+            final AssetKey assetKey = sender.uploadAsset(asset, botId);
+            if (assetKey != null)
+                return assetKey;
+        }
+        throw new Exception("Failed to upload the asset");
     }
 
-    private void broadcast(UUID providerId, UUID broadcastId, AudioPreview preview, AudioAsset audioAsset, UUID botId) {
+    private void send(UUID providerId, UUID broadcastId, AudioPreview preview, AudioAsset audioAsset, UUID botId) {
         try {
-            if (audioAsset.getAssetKey() == null) {
-                AssetKey assetKey = sender.uploadAsset(audioAsset, botId);
-                if (assetKey != null) {
-                    audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
-                    audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
-                }
-            }
-
             sender.send(preview, botId);
             final UUID messageId = sender.send(audioAsset, botId);
             if (messageId != null) {
@@ -204,6 +256,33 @@ public class BroadcastResource {
         } catch (Exception e) {
             Logger.exception("Broadcast send", e);
         }
+    }
+
+    private void send(UUID providerId, UUID broadcastId, FileAssetPreview preview, FileAsset fileAsset, UUID botId) {
+        try {
+            sender.send(preview, botId);
+            final UUID messageId = sender.send(fileAsset, botId);
+            if (messageId != null) {
+                persist(providerId, broadcastId, botId, messageId);
+            }
+        } catch (Exception e) {
+            Logger.exception("Broadcast send", e);
+        }
+    }
+
+    private void send(UUID providerId, UUID broadcastId, Picture picture, UUID botId) {
+        try {
+            final UUID messageId = sender.send(picture, botId);
+            if (messageId != null) {
+                persist(providerId, broadcastId, botId, messageId);
+            }
+        } catch (Exception e) {
+            Logger.exception("Broadcast send", e);
+        }
+    }
+
+    private void persist(UUID providerId, UUID broadcastId, UUID botId, UUID messageId) {
+        broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
     }
 
     private void trace(IncomingMessage message) throws JsonProcessingException {

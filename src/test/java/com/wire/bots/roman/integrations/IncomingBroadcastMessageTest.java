@@ -29,6 +29,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/*
+In order to simulate Wire BE on port 8090 you need to:
+docker run -d -p 8090:80 --rm -t mendhak/http-https-echo
+ */
 public class IncomingBroadcastMessageTest {
     private static final String BOT_CLIENT_DUMMY = "bot_client_dummy";
     private static final DropwizardTestSupport<Config> SUPPORT = new DropwizardTestSupport<>(
@@ -71,15 +75,58 @@ public class IncomingBroadcastMessageTest {
         assertThat(newBotResponseModel.lastPreKey).isNotNull();
         assertThat(newBotResponseModel.preKeys).isNotNull();
 
+        text(serviceAuth);
+
+        audio(serviceAuth);
+
+        picture(serviceAuth);
+
+        attachment(serviceAuth);
+
+        Thread.sleep(5000);
+
+        Response res = get(serviceAuth);
+        assertThat(res.getStatus()).isEqualTo(200);
+
+        final Report report = res.readEntity(Report.class);
+    }
+
+    private void attachment(String serviceAuth) throws IOException {
+        IncomingMessage pdf = new IncomingMessage();
+        pdf.type = "attachment";
+        pdf.attachment = new Attachment();
+        pdf.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("plan.pdf"));
+        pdf.attachment.mimeType = "application/pdf";
+        pdf.attachment.filename = "plan.pdf";
+
+        Response res = post(serviceAuth, pdf);
+        assertThat(res.getStatus()).isEqualTo(200);
+    }
+
+    private void text(String serviceAuth) {
         IncomingMessage txt = new IncomingMessage();
         txt.type = "text";
         txt.text = new Text();
         txt.text.data = "Hello Alice";
 
         Response res = post(serviceAuth, txt);
-
         assertThat(res.getStatus()).isEqualTo(200);
+    }
 
+    private void picture(String serviceAuth) throws IOException {
+        Response res;
+        IncomingMessage picture = new IncomingMessage();
+        picture.type = "attachment";
+        picture.attachment = new Attachment();
+        picture.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("moon.jpeg"));
+        picture.attachment.mimeType = "image/jpeg";
+
+        res = post(serviceAuth, picture);
+        assertThat(res.getStatus()).isEqualTo(200);
+    }
+
+    private void audio(String serviceAuth) throws IOException {
+        Response res;
         IncomingMessage audio = new IncomingMessage();
         audio.type = "attachment";
         audio.attachment = new Attachment();
@@ -92,13 +139,6 @@ public class IncomingBroadcastMessageTest {
 
         res = post(serviceAuth, audio);
         assertThat(res.getStatus()).isEqualTo(200);
-
-        Thread.sleep(5000);
-
-        res = get(serviceAuth);
-        assertThat(res.getStatus()).isEqualTo(200);
-
-        final Report report = res.readEntity(Report.class);
     }
 
     private Response post(String serviceAuth, IncomingMessage txt) {
