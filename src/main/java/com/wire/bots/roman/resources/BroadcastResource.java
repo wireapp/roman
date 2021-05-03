@@ -24,8 +24,8 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
@@ -121,12 +121,18 @@ public class BroadcastResource {
         }
     }
 
-    private void broadcastPicture(IncomingMessage message, UUID providerId, UUID broadcastId) throws IOException {
+    private void broadcastPicture(IncomingMessage message, UUID providerId, UUID broadcastId) throws Exception {
         final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
 
         final Picture picture = new Picture(bytes, message.attachment.mimeType);
 
-        for (UUID botId : botsDAO.getBotIds(providerId)) {
+        final List<UUID> botIds = botsDAO.getBotIds(providerId);
+
+        final AssetKey assetKey = uploadAsset(picture, botIds);
+        picture.setAssetKey(assetKey.key);
+        picture.setAssetToken(assetKey.token);
+
+        for (UUID botId : botIds) {
             broadcast.submit(() -> send(providerId, broadcastId, picture, botId));
         }
     }
@@ -143,7 +149,13 @@ public class BroadcastResource {
 
         final AudioAsset audioAsset = new AudioAsset(bytes, preview);
 
-        for (UUID botId : botsDAO.getBotIds(providerId)) {
+        final List<UUID> botIds = botsDAO.getBotIds(providerId);
+
+        final AssetKey assetKey = uploadAsset(audioAsset, botIds);
+        audioAsset.setAssetKey(assetKey.key);
+        audioAsset.setAssetToken(assetKey.token);
+
+        for (UUID botId : botIds) {
             broadcast.submit(() -> send(providerId, broadcastId, preview, audioAsset, botId));
         }
     }
@@ -159,7 +171,13 @@ public class BroadcastResource {
 
         FileAsset fileAsset = new FileAsset(bytes, message.attachment.mimeType, messageId);
 
-        for (UUID botId : botsDAO.getBotIds(providerId)) {
+        final List<UUID> botIds = botsDAO.getBotIds(providerId);
+
+        final AssetKey assetKey = uploadAsset(fileAsset, botIds);
+        fileAsset.setAssetKey(assetKey.key);
+        fileAsset.setAssetToken(assetKey.token);
+
+        for (UUID botId : botIds) {
             broadcast.submit(() -> send(providerId, broadcastId, preview, fileAsset, botId));
         }
     }
@@ -219,16 +237,17 @@ public class BroadcastResource {
         }
     }
 
+    private AssetKey uploadAsset(AssetBase asset, List<UUID> bots) throws Exception {
+        for (UUID botId : bots) {
+            final AssetKey assetKey = sender.uploadAsset(asset, botId);
+            if (assetKey != null)
+                return assetKey;
+        }
+        throw new Exception("Failed to upload the asset");
+    }
+
     private void send(UUID providerId, UUID broadcastId, AudioPreview preview, AudioAsset audioAsset, UUID botId) {
         try {
-            if (audioAsset.getAssetKey() == null) {
-                AssetKey assetKey = sender.uploadAsset(audioAsset, botId);
-                if (assetKey != null) {
-                    audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
-                    audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
-                }
-            }
-
             sender.send(preview, botId);
             final UUID messageId = sender.send(audioAsset, botId);
             if (messageId != null) {
@@ -241,14 +260,6 @@ public class BroadcastResource {
 
     private void send(UUID providerId, UUID broadcastId, FileAssetPreview preview, FileAsset fileAsset, UUID botId) {
         try {
-            if (fileAsset.getAssetKey() == null) {
-                AssetKey assetKey = sender.uploadAsset(fileAsset, botId);
-                if (assetKey != null) {
-                    fileAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
-                    fileAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
-                }
-            }
-
             sender.send(preview, botId);
             final UUID messageId = sender.send(fileAsset, botId);
             if (messageId != null) {
@@ -261,14 +272,6 @@ public class BroadcastResource {
 
     private void send(UUID providerId, UUID broadcastId, Picture picture, UUID botId) {
         try {
-            if (picture.getAssetKey() == null) {
-                AssetKey assetKey = sender.uploadAsset(picture, botId);
-                if (assetKey != null) {
-                    picture.setAssetToken(assetKey.token != null ? assetKey.token : "");
-                    picture.setAssetKey(assetKey.key != null ? assetKey.key : "");
-                }
-            }
-
             final UUID messageId = sender.send(picture, botId);
             if (messageId != null) {
                 persist(providerId, broadcastId, botId, messageId);
