@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BroadcastMessage {
@@ -36,7 +35,4 @@ public class BroadcastMessage {
 
     @JsonProperty
     public String otrKey;
-
-    @JsonProperty
-    public ArrayList<Mention> mentions;
 }

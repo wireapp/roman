@@ -186,13 +186,13 @@ public class BroadcastV2Resource {
         broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
     }
 
-    private void sendAsset(UUID providerId, UUID broadcastId, @Nullable IGeneric preview, AssetBase audioAsset, UUID botId) {
+    private void sendAsset(UUID providerId, UUID broadcastId, @Nullable IGeneric preview, AssetBase asset, UUID botId) {
         try {
             if (preview != null) {
                 sender.send(preview, botId);
             }
 
-            final UUID messageId = sender.send(audioAsset, botId);
+            final UUID messageId = sender.send(asset, botId);
             if (messageId != null) {
                 persist(providerId, broadcastId, botId, messageId);
             }
