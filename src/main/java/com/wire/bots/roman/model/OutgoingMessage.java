@@ -30,6 +30,7 @@ public class OutgoingMessage {
     public String mimeType;
     public Long duration;
     public byte[] levels;
+    public Long size;
 
     public Poll poll;
     public ArrayList<Mention> mentions = new ArrayList<>();

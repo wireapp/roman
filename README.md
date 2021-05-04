@@ -70,7 +70,7 @@ wss://proxy.services.wire.com/await/`<app_key>`
 
 ### Events that are sent as HTTP `POST` to your endpoint (Webhook or Websocket)
 
-- `conversation.bot_request`: When bot is added to a conversation ( 1-1 conversation or a group)
+- `conversation.bot_request` When bot is added to a conversation ( 1-1 conversation or a group)
 ```
 {
     "type": "conversation.bot_request",
@@ -86,7 +86,7 @@ wss://proxy.services.wire.com/await/`<app_key>`
 Your service must be available at the moment `bot_request` event is sent. It must respond with http code `200`.
  In case of Websocket implementation it is enough the socket is connected to the Proxy at that moment.
 
-- `conversation.init`: If your Service responded with `200` to a `bot_request` another event is sent: `init`.
+- `conversation.init` If your Service responded with `200` to a `bot_request` another event is sent: `init`.
 `text` field contains the name of the conversation your bot is being added to.
 ```
 {
@@ -99,7 +99,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 }
 ```
 
-- `conversation.new_text`: When text is posted in a conversation where this bot is present
+- `conversation.new_text` When text is posted in a conversation where this bot is present
 ```
 {
     "type": "conversation.new_text",
@@ -112,7 +112,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "text": "Hi everybody!"
 }
 ```
-- `conversation.new_image`: When an image is posted in a conversation where this bot is present
+- `conversation.new_image` When an image is posted in a conversation where this bot is present
 
 ```
 {
@@ -120,12 +120,48 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
     "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
-    "token": "...", // Use this token to reply to this message - valid for 20 sec
-    "image": "..."  // Base64 encoded image
+    "token": "...", // Use this token to reply to this message - valid for 20 sec  
+    "size": 256,    // Size in bytes    
+    "mimeType": "image/jpeg", // Mime type of this image   
+    "image": "..."            // Base64 encoded image
 }
 ```
 
-- `conversation.poll.action`: When the user clicks the button in the Poll
+- `conversation.file.new` When an attachment is posted in a conversation where this bot is present
+
+```
+{
+    "type": "conversation.file.new",
+    "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
+    "token": "...",      // Use this token to reply to this message - valid for 20 sec  
+    "size": 256,         // Size in bytes    
+    "mimeType": "application/pdf", // Mime type of this file   
+    "text": "plan.pdf",            // Filename
+    "attachment": "..."            // Base64 encoded binary data
+}
+```
+
+- `conversation.audio.new` When an audio recording is posted in a conversation where this bot is present
+
+```
+{
+    "type": "conversation.audio.new",
+    "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
+    "token": "...",      // Use this token to reply to this message - valid for 20 sec  
+    "size": 256,         // Size in bytes    
+    "mimeType": "audio/mp3",          // Mime type of this file  
+    "duration": 79000,                // Duration of the recording in mills  
+    "levels": { 123, 62, 124, 255, ... },  // Loudness levels normalized to [0, 256]
+    "text": "Fortunate song",         // Filename
+    "attachment": "..."               // Base64 encoded binary data
+}
+```
+
+- `conversation.poll.action` When the user clicks the button in the Poll
 
 ```
 {
