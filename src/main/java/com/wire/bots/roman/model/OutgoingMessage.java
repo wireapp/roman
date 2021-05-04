@@ -33,7 +33,7 @@ public class OutgoingMessage {
     public Long size;
 
     public Poll poll;
-    public ArrayList<Mention> mentions = new ArrayList<>();
+    public ArrayList<Mention> mentions;
     public Call call;
 
     public AssetMeta meta;
@@ -43,6 +43,9 @@ public class OutgoingMessage {
         mention.userId = userId;
         mention.offset = offset;
         mention.length = len;
+
+        if (mentions == null)
+            mentions = new ArrayList<>();
 
         mentions.add(mention);
     }

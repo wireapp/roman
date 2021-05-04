@@ -112,10 +112,10 @@ public class MessageHandler extends MessageHandlerBase {
         validate(botId);
 
         OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+        message.conversationId = client.getConversationId();
 
         message.refMessageId = msg.getReactionMessageId();
         message.text = msg.getEmoji();
-        message.conversationId = client.getConversationId();
 
         send(message);
     }
@@ -130,15 +130,16 @@ public class MessageHandler extends MessageHandlerBase {
 
         try {
             OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+            message.conversationId = client.getConversationId();
 
             byte[] img = client.downloadAsset(msg.getAssetKey(),
                     msg.getAssetToken(),
                     msg.getSha256(),
                     msg.getOtrKey());
+
             message.image = Base64.getEncoder().encodeToString(img);
             message.mimeType = msg.getMimeType();
             message.size = msg.getSize();
-            message.conversationId = client.getConversationId();
 
             message.meta = extractAssetMeta(msg);
 
@@ -157,17 +158,17 @@ public class MessageHandler extends MessageHandlerBase {
 
         try {
             OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+            message.conversationId = client.getConversationId();
 
-            byte[] img = client.downloadAsset(msg.getAssetKey(),
-                    msg.getAssetToken(),
-                    msg.getSha256(),
-                    msg.getOtrKey());
-
-            message.attachment = Base64.getEncoder().encodeToString(img);
+//            byte[] img = client.downloadAsset(msg.getAssetKey(),
+//                    msg.getAssetToken(),
+//                    msg.getSha256(),
+//                    msg.getOtrKey());
+//
+//            message.attachment = Base64.getEncoder().encodeToString(img);
             message.text = msg.getName();
             message.mimeType = msg.getMimeType();
             message.size = msg.getSize();
-            message.conversationId = client.getConversationId();
 
             message.meta = extractAssetMeta(msg);
 
@@ -187,18 +188,19 @@ public class MessageHandler extends MessageHandlerBase {
 
         try {
             OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+            message.conversationId = client.getConversationId();
 
-            byte[] img = client.downloadAsset(msg.getAssetKey(),
-                    msg.getAssetToken(),
-                    msg.getSha256(),
-                    msg.getOtrKey());
-            message.attachment = Base64.getEncoder().encodeToString(img);
+//            byte[] img = client.downloadAsset(msg.getAssetKey(),
+//                    msg.getAssetToken(),
+//                    msg.getSha256(),
+//                    msg.getOtrKey());
+//            message.attachment = Base64.getEncoder().encodeToString(img);
+
             message.text = msg.getName();
             message.mimeType = msg.getMimeType();
             message.size = msg.getSize();
             message.duration = msg.getDuration();
             message.levels = msg.getLevels();
-            message.conversationId = client.getConversationId();
 
             message.meta = extractAssetMeta(msg);
 
