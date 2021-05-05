@@ -19,7 +19,7 @@
     </repositories>
 
     <properties>
-        <lithium.version>3.1.0</lithium.version>
+        <lithium.version>3.1.1</lithium.version>
         <dropwizard.version>2.0.15</dropwizard.version>
         <maven.test.skip>true</maven.test.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
