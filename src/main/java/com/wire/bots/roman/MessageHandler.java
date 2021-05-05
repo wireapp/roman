@@ -211,6 +211,58 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     @Override
+    public void onPhotoPreview(WireClient client, PhotoPreviewMessage msg) {
+
+    }
+
+    @Override
+    public void onFilePreview(WireClient client, FilePreviewMessage msg) {
+
+    }
+
+    @Override
+    public void onAssetData(WireClient client, RemoteMessage msg) {
+        final String type = "conversation.asset.data";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+            message.conversationId = client.getConversationId();
+            message.meta = extractAssetMeta(msg);
+
+            send(message);
+        } catch (Exception e) {
+            Logger.exception("onAssetData: %s", e, e.getMessage());
+        }
+    }
+
+    @Override
+    public void onAudioPreview(WireClient client, AudioPreviewMessage msg) {
+        final String type = "conversation.audio.preview";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
+            message.conversationId = client.getConversationId();
+            message.text = msg.getName();
+            message.mimeType = msg.getMimeType();
+            message.size = msg.getSize();
+            message.duration = msg.getDuration();
+            message.levels = msg.getLevels();
+
+            send(message);
+        } catch (Exception e) {
+            Logger.exception("onAudioPreview: %s", e, e.getMessage());
+        }
+    }
+
+    @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
         final UUID botId = client.getId();
 
@@ -436,6 +488,15 @@ public class MessageHandler extends MessageHandlerBase {
     private AssetMeta extractAssetMeta(MessageAssetBase msg) {
         AssetMeta meta = new AssetMeta();
         meta.assetKey = msg.getAssetKey();
+        meta.assetToken = msg.getAssetToken();
+        meta.sha256 = Base64.getEncoder().encodeToString(msg.getSha256());
+        meta.otrKey = Base64.getEncoder().encodeToString(msg.getOtrKey());
+        return meta;
+    }
+
+    private AssetMeta extractAssetMeta(RemoteMessage msg) {
+        AssetMeta meta = new AssetMeta();
+        meta.assetKey = msg.getAssetId();
         meta.assetToken = msg.getAssetToken();
         meta.sha256 = Base64.getEncoder().encodeToString(msg.getSha256());
         meta.otrKey = Base64.getEncoder().encodeToString(msg.getOtrKey());

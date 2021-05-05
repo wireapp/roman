@@ -113,8 +113,8 @@ public class Sender {
             final AudioAsset audioAsset = new AudioAsset(bytes, preview);
 
             final AssetKey assetKey = wireClient.uploadAsset(audioAsset);
-            audioAsset.setAssetToken(assetKey.token != null ? assetKey.token : "");
-            audioAsset.setAssetKey(assetKey.key != null ? assetKey.key : "");
+            audioAsset.setAssetToken(assetKey.token);
+            audioAsset.setAssetKey(assetKey.id);
 
             wireClient.send(audioAsset);
             return audioAsset.getMessageId();
@@ -165,9 +165,11 @@ public class Sender {
             FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
 
             wireClient.send(preview);
+
             final AssetKey assetKey = wireClient.uploadAsset(asset);
-            asset.setAssetKey(assetKey.key != null ? assetKey.key : "");
-            asset.setAssetToken(assetKey.token != null ? assetKey.token : "");
+            asset.setAssetKey(assetKey.id);
+            asset.setAssetToken(assetKey.token);
+
             wireClient.send(asset);
             return messageId;
         }
@@ -205,9 +207,11 @@ public class Sender {
             if (wireClient == null)
                 return null;
             final Picture picture = new Picture(base64Decode(message), message.attachment.mimeType);
+
             final AssetKey assetKey = wireClient.uploadAsset(picture);
             picture.setAssetToken(assetKey.token);
-            picture.setAssetKey(assetKey.key);
+            picture.setAssetKey(assetKey.id);
+
             wireClient.send(picture);
             return picture.getMessageId();
         }

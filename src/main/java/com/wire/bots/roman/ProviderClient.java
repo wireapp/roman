@@ -188,7 +188,7 @@ public class ProviderClient {
 
         AssetKey assetKey = response.readEntity(AssetKey.class);
 
-        return assetKey.key;
+        return assetKey.id;
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

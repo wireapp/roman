@@ -129,7 +129,7 @@ public class BroadcastResource {
         final List<UUID> botIds = botsDAO.getBotIds(providerId);
 
         final AssetKey assetKey = uploadAsset(picture, botIds);
-        picture.setAssetKey(assetKey.key);
+        picture.setAssetKey(assetKey.id);
         picture.setAssetToken(assetKey.token);
 
         for (UUID botId : botIds) {
@@ -152,7 +152,7 @@ public class BroadcastResource {
         final List<UUID> botIds = botsDAO.getBotIds(providerId);
 
         final AssetKey assetKey = uploadAsset(audioAsset, botIds);
-        audioAsset.setAssetKey(assetKey.key);
+        audioAsset.setAssetKey(assetKey.id);
         audioAsset.setAssetToken(assetKey.token);
 
         for (UUID botId : botIds) {
@@ -174,7 +174,7 @@ public class BroadcastResource {
         final List<UUID> botIds = botsDAO.getBotIds(providerId);
 
         final AssetKey assetKey = uploadAsset(fileAsset, botIds);
-        fileAsset.setAssetKey(assetKey.key);
+        fileAsset.setAssetKey(assetKey.id);
         fileAsset.setAssetToken(assetKey.token);
 
         for (UUID botId : botIds) {
