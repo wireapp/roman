@@ -97,7 +97,7 @@ public class IncomingBroadcastMessageTest {
         pdf.attachment = new Attachment();
         pdf.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("plan.pdf"));
         pdf.attachment.mimeType = "application/pdf";
-        pdf.attachment.filename = "plan.pdf";
+        pdf.attachment.name = "plan.pdf";
 
         Response res = post(serviceAuth, pdf);
         assertThat(res.getStatus()).isEqualTo(200);
@@ -132,7 +132,7 @@ public class IncomingBroadcastMessageTest {
         audio.attachment = new Attachment();
         audio.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("audio.m4a"));
         audio.attachment.mimeType = "audio/x-m4a";
-        audio.attachment.filename = "test.m4a";
+        audio.attachment.name = "test.m4a";
         audio.attachment.duration = 27000L;
         audio.attachment.levels = new byte[100];
         new Random().nextBytes(audio.attachment.levels);

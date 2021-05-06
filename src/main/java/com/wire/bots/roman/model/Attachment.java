@@ -11,20 +11,34 @@ import javax.validation.constraints.NotNull;
 public class Attachment {
     @JsonProperty
     @NotNull
+    @Deprecated
     public String data;
 
     @JsonProperty
-    public String filename;
+    public String name;
 
     @JsonProperty
     @NotNull
     public String mimeType;
 
     @JsonProperty
+    @NotNull
+    public Long size;
+
+    @JsonProperty
     public Long duration;
 
     @JsonProperty
     public byte[] levels;
+
+    @JsonProperty
+    public Integer height;
+
+    @JsonProperty
+    public Integer width;
+
+    @JsonProperty
+    public AssetMeta meta;
 
     @JsonIgnore
     @ValidationMethod(message = "`data` is not a Base64 encoded string")

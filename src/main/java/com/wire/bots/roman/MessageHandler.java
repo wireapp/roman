@@ -9,7 +9,6 @@ import com.wire.bots.roman.model.*;
 import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.WireClient;
-import com.wire.xenon.assets.DeliveryReceipt;
 import com.wire.xenon.backend.models.NewBot;
 import com.wire.xenon.backend.models.SystemMessage;
 import com.wire.xenon.backend.models.User;
@@ -79,7 +78,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.conversationId = msg.conversation.id;
         message.messageId = msg.id;
         message.type = "conversation.init";
-        message.text = msg.conversation.name;
+        message.conversation = msg.conversation.name;
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
 
         boolean send = send(message);
@@ -93,12 +92,22 @@ public class MessageHandler extends MessageHandlerBase {
         validate(botId);
         final String type = "conversation.new_text";
 
-        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-        message.conversationId = client.getConversationId();
+        OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
         message.refMessageId = msg.getQuotedMessageId();
-        message.text = msg.getText();
-        for (TextMessage.Mention mention : msg.getMentions())
-            message.addMention(mention.userId, mention.offset, mention.length);
+        message.text = new Text();
+        message.text.data = msg.getText();
+
+        for (TextMessage.Mention mention : msg.getMentions()) {
+            Mention m = new Mention();
+            m.userId = mention.userId;
+            m.offset = mention.offset;
+            m.length = mention.length;
+
+            if (message.text.mentions == null)
+                message.text.mentions = new ArrayList<>();
+
+            message.text.mentions.add(m);
+        }
 
         send(message);
     }
@@ -111,131 +120,55 @@ public class MessageHandler extends MessageHandlerBase {
 
         validate(botId);
 
-        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-        message.conversationId = client.getConversationId();
+        OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
 
         message.refMessageId = msg.getReactionMessageId();
-        message.text = msg.getEmoji();
+        message.emoji = msg.getEmoji();
 
         send(message);
     }
 
     @Override
-    public void onImage(WireClient client, ImageMessage msg) {
-        final String type = "conversation.new_image";
-
-        UUID botId = client.getId();
-
-        validate(botId);
-
-        try {
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
-
-            byte[] img = client.downloadAsset(msg.getAssetKey(),
-                    msg.getAssetToken(),
-                    msg.getSha256(),
-                    msg.getOtrKey());
-
-            message.image = Base64.getEncoder().encodeToString(img);
-            message.mimeType = msg.getMimeType();
-            message.size = msg.getSize();
-
-            message.meta = extractAssetMeta(msg);
-
-            send(message);
-        } catch (Exception e) {
-            Logger.exception("onImage: %s", e, e.getMessage());
-        }
-    }
-
-    public void onAttachment(WireClient client, AttachmentMessage msg) {
-        final String type = "conversation.file.new";
-
-        UUID botId = client.getId();
-
-        validate(botId);
-
-        try {
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
-
-//            byte[] img = client.downloadAsset(msg.getAssetKey(),
-//                    msg.getAssetToken(),
-//                    msg.getSha256(),
-//                    msg.getOtrKey());
-//
-//            message.attachment = Base64.getEncoder().encodeToString(img);
-            message.text = msg.getName();
-            message.mimeType = msg.getMimeType();
-            message.size = msg.getSize();
-
-            message.meta = extractAssetMeta(msg);
-
-            send(message);
-        } catch (Exception e) {
-            Logger.exception("onAttachment: %s", e, e.getMessage());
-        }
-    }
-
-    @Override
-    public void onAudio(WireClient client, AudioMessage msg) {
-        final String type = "conversation.audio.new";
-
-        UUID botId = client.getId();
-
-        validate(botId);
-
-        try {
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
-
-//            byte[] img = client.downloadAsset(msg.getAssetKey(),
-//                    msg.getAssetToken(),
-//                    msg.getSha256(),
-//                    msg.getOtrKey());
-//            message.attachment = Base64.getEncoder().encodeToString(img);
-
-            message.text = msg.getName();
-            message.mimeType = msg.getMimeType();
-            message.size = msg.getSize();
-            message.duration = msg.getDuration();
-            message.levels = msg.getLevels();
-
-            message.meta = extractAssetMeta(msg);
-
-            send(message);
-        } catch (Exception e) {
-            Logger.exception("onAudio: %s", e, e.getMessage());
-        }
-    }
-
-    @Override
     public void onPhotoPreview(WireClient client, PhotoPreviewMessage msg) {
+        final String type = "conversation.image.preview";
 
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+            message.attachment = new Attachment();
+            message.attachment.name = msg.getName();
+            message.attachment.mimeType = msg.getMimeType();
+            message.attachment.size = msg.getSize();
+            message.attachment.width = msg.getWidth();
+            message.attachment.height = msg.getHeight();
+
+            send(message);
+        } catch (Exception e) {
+            Logger.exception("onPhotoPreview: %s", e, e.getMessage());
+        }
     }
 
     @Override
     public void onFilePreview(WireClient client, FilePreviewMessage msg) {
-
-    }
-
-    @Override
-    public void onAssetData(WireClient client, RemoteMessage msg) {
-        final String type = "conversation.asset.data";
+        final String type = "conversation.file.preview";
 
         UUID botId = client.getId();
 
         validate(botId);
 
         try {
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
-            message.meta = extractAssetMeta(msg);
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+            message.attachment = new Attachment();
+            message.attachment.name = msg.getName();
+            message.attachment.mimeType = msg.getMimeType();
+            message.attachment.size = msg.getSize();
 
             send(message);
         } catch (Exception e) {
-            Logger.exception("onAssetData: %s", e, e.getMessage());
+            Logger.exception("onFilePreview: %s", e, e.getMessage());
         }
     }
 
@@ -248,17 +181,36 @@ public class MessageHandler extends MessageHandlerBase {
         validate(botId);
 
         try {
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
-            message.text = msg.getName();
-            message.mimeType = msg.getMimeType();
-            message.size = msg.getSize();
-            message.duration = msg.getDuration();
-            message.levels = msg.getLevels();
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+            message.attachment = new Attachment();
+            message.attachment.name = msg.getName();
+            message.attachment.mimeType = msg.getMimeType();
+            message.attachment.size = msg.getSize();
+            message.attachment.duration = msg.getDuration();
+            message.attachment.levels = msg.getLevels();
 
             send(message);
         } catch (Exception e) {
             Logger.exception("onAudioPreview: %s", e, e.getMessage());
+        }
+    }
+
+    @Override
+    public void onAssetData(WireClient client, RemoteMessage msg) {
+        final String type = "conversation.asset.data";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+            message.attachment = new Attachment();
+            message.attachment.meta = extractAssetMeta(msg);
+
+            send(message);
+        } catch (Exception e) {
+            Logger.exception("onAssetData: %s", e, e.getMessage());
         }
     }
 
@@ -304,7 +256,8 @@ public class MessageHandler extends MessageHandlerBase {
         message.poll.buttons = new ArrayList<>();
         for (Messages.Composite.Item item : composite.getItemsList()) {
             if (item.hasText()) {
-                message.text = item.getText().getContent();
+                message.text = new Text();
+                message.text.data = item.getText().getContent();
             }
             if (item.hasButton()) {
                 message.poll.buttons.add(item.getButton().getText());
@@ -344,8 +297,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             validate(botId);
 
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
             message.call = mapper.readValue(msg.getContent(), Call.class);
 
             send(message);
@@ -391,12 +343,13 @@ public class MessageHandler extends MessageHandlerBase {
         botsDAO.remove(botId);
     }
 
-    private OutgoingMessage getOutgoingMessage(UUID botId, String type, MessageBase msg) {
+    private OutgoingMessage createOutgoingMessage(UUID botId, String type, UUID conversationId, MessageBase msg) {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.type = type;
         message.userId = msg.getUserId();
         message.messageId = msg.getMessageId();
+        message.conversationId = conversationId;
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
         return message;
     }
@@ -448,16 +401,6 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
-    private void sendDeliveryReceipt(WireClient client, UUID messageId, UUID userId) {
-        try {
-            client.send(new DeliveryReceipt(messageId), userId);
-        } catch (Exception e) {
-            Logger.exception("sendDeliveryReceipt: failed to deliver the receipt for message: %s",
-                    e,
-                    e.getMessage());
-        }
-    }
-
     private void trace(OutgoingMessage message) {
         try {
             if (Logger.getLevel() == Level.FINE) {
@@ -483,15 +426,6 @@ public class MessageHandler extends MessageHandlerBase {
             throw new RuntimeException("Unknown botId: " + botId.toString());
         MDCUtils.put("providerId", providerId);
         return providerId;
-    }
-
-    private AssetMeta extractAssetMeta(MessageAssetBase msg) {
-        AssetMeta meta = new AssetMeta();
-        meta.assetKey = msg.getAssetKey();
-        meta.assetToken = msg.getAssetToken();
-        meta.sha256 = Base64.getEncoder().encodeToString(msg.getSha256());
-        meta.otrKey = Base64.getEncoder().encodeToString(msg.getOtrKey());
-        return meta;
     }
 
     private AssetMeta extractAssetMeta(RemoteMessage msg) {

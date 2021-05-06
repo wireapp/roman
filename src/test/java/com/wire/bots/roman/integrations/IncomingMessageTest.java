@@ -89,7 +89,7 @@ public class IncomingMessageTest {
         new Random().nextBytes(pic);
         file.attachment.data = Base64.getEncoder().encodeToString(pic);
         file.attachment.mimeType = "attachment/x";
-        file.attachment.filename = "test.x";
+        file.attachment.name = "test.x";
 
         res = post(serviceAuth, file);
         assertThat(res.getStatus()).isEqualTo(200);
@@ -99,7 +99,7 @@ public class IncomingMessageTest {
         audio.attachment = new Attachment();
         audio.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("audio.m4a"));
         audio.attachment.mimeType = "audio/x-m4a";
-        audio.attachment.filename = "test.m4a";
+        audio.attachment.name = "test.m4a";
         audio.attachment.duration = 27000L;
         audio.attachment.levels = new byte[100];
         new Random().nextBytes(audio.attachment.levels);

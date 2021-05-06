@@ -141,7 +141,7 @@ public class BroadcastResource {
         final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
 
         final AudioPreview preview = new AudioPreview(
-                message.attachment.filename,
+                message.attachment.name,
                 message.attachment.mimeType,
                 message.attachment.duration,
                 message.attachment.levels,
@@ -164,7 +164,7 @@ public class BroadcastResource {
         final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
 
         final UUID messageId = UUID.randomUUID();
-        FileAssetPreview preview = new FileAssetPreview(message.attachment.filename,
+        FileAssetPreview preview = new FileAssetPreview(message.attachment.name,
                 message.attachment.mimeType,
                 bytes.length,
                 messageId);

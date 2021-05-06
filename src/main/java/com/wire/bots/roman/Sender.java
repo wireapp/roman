@@ -102,7 +102,7 @@ public class Sender {
             final byte[] bytes = base64Decode(message);
 
             final AudioPreview preview = new AudioPreview(
-                    message.attachment.filename,
+                    message.attachment.name,
                     message.attachment.mimeType,
                     message.attachment.duration,
                     message.attachment.levels,
@@ -158,7 +158,7 @@ public class Sender {
             final Attachment attachment = message.attachment;
             final byte[] decode = base64Decode(message);
 
-            FileAssetPreview preview = new FileAssetPreview(attachment.filename,
+            FileAssetPreview preview = new FileAssetPreview(attachment.name,
                     attachment.mimeType,
                     decode.length,
                     messageId);
