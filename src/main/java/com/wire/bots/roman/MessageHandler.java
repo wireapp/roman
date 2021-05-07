@@ -60,6 +60,7 @@ public class MessageHandler extends MessageHandlerBase {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.conversationId = newBot.conversation.id;
+        message.conversation = newBot.conversation.name;
         message.userId = newBot.origin.id;
         message.handle = newBot.origin.handle;
         message.locale = newBot.locale;
@@ -76,11 +77,11 @@ public class MessageHandler extends MessageHandlerBase {
         validate(botId);
 
         OutgoingMessage message = new OutgoingMessage();
+        message.type = "conversation.init";
         message.botId = botId;
         message.userId = msg.from;
         message.conversationId = msg.conversation.id;
         message.messageId = msg.id;
-        message.type = "conversation.init";
         message.conversation = msg.conversation.name;
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
 
@@ -215,7 +216,6 @@ public class MessageHandler extends MessageHandlerBase {
             OutgoingMessage message = outgoingMessageDAO.get(msg.getMessageId());
             message.type = type;
             message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
-            message.attachment = new Attachment();
             message.attachment.meta = extractAssetMeta(msg);
 
             send(message);

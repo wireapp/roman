@@ -66,7 +66,7 @@ public class BroadcastResource {
             final UUID broadcastId = UUID.randomUUID();
 
             MDCUtils.put("broadcastId", broadcastId);
-            Logger.info("BroadcastV2Resource.post: `%s`", message.type);
+            Logger.info("BroadcastResource.post: `%s`", message.type);
 
             for (UUID botId : botIds) {
                 broadcast.submit(() -> {
@@ -77,7 +77,7 @@ public class BroadcastResource {
                             Logger.info("Broadcast: id: %s, botId: %s, messageId: %s", broadcastId, botId, messageId);
                         }
                     } catch (Exception e) {
-                        Logger.exception("BroadcastV2Resource: send", e);
+                        Logger.exception("BroadcastResource: send", e);
                     }
                 });
             }
@@ -90,7 +90,7 @@ public class BroadcastResource {
                     ok(ret).
                     build();
         } catch (Exception e) {
-            Logger.exception("BroadcastV2Resource.post", e);
+            Logger.exception("BroadcastResource.post", e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
@@ -120,7 +120,7 @@ public class BroadcastResource {
             }
 
             MDCUtils.put("broadcastId", broadcastId);
-            Logger.info("BroadcastV2Resource.get: broadcast: %s", broadcastId);
+            Logger.info("BroadcastResource.get: broadcast: %s", broadcastId);
 
             Report ret = new Report();
             ret.broadcastId = broadcastId;
@@ -130,7 +130,7 @@ public class BroadcastResource {
                     ok(ret).
                     build();
         } catch (Exception e) {
-            Logger.exception("BroadcastV2Resource.get", e);
+            Logger.exception("BroadcastResource.get", e);
             return Response
                     .ok(new ErrorMessage(e.getMessage()))
                     .status(500)
