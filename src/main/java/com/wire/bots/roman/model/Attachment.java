@@ -10,6 +10,9 @@ import javax.validation.constraints.NotNull;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Attachment {
     @JsonProperty
+    public String data;
+
+    @JsonProperty
     public String name;
 
     @JsonProperty

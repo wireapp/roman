@@ -10,6 +10,7 @@ import com.wire.lithium.ClientRepo;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.assets.*;
 import com.wire.xenon.backend.models.Conversation;
+import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
 
 import javax.annotation.Nullable;
@@ -107,12 +108,81 @@ public class Sender {
 
             wireClient.send(preview);
 
-            final AudioAsset audioAsset = new AudioAsset(preview.getMessageId(), preview.getMimeType());
+            AssetBase asset;
+            if (message.attachment.meta != null) {
+                asset = new AudioAsset(preview.getMessageId(), attachment.mimeType);
+                setAssetMetadata(asset, message.attachment.meta);
+            } else if (message.attachment.data != null) {
+                final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
+                asset = new AudioAsset(bytes, preview);
+                uploadAssetData(wireClient, asset);
+            } else {
+                throw new Exception("Meta or Data need to be set");
+            }
 
-            setAssetMetadata(audioAsset, attachment.meta);
+            wireClient.send(asset);
+            return asset.getMessageId();
+        }
+    }
 
-            wireClient.send(audioAsset);
-            return audioAsset.getMessageId();
+    @Nullable
+    private UUID sendAttachment(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+
+            final Attachment attachment = message.attachment;
+
+            FileAssetPreview preview = new FileAssetPreview(attachment.name,
+                    attachment.mimeType,
+                    attachment.size,
+                    UUID.randomUUID());
+
+            wireClient.send(preview);
+
+            AssetBase asset;
+            if (message.attachment.meta != null) {
+                asset = new FileAsset(preview.getMessageId(), attachment.mimeType);
+                setAssetMetadata(asset, message.attachment.meta);
+            } else if (message.attachment.data != null) {
+                final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
+                asset = new FileAsset(bytes, attachment.mimeType, preview.getMessageId());
+                uploadAssetData(wireClient, asset);
+            } else {
+                throw new Exception("Meta or Data need to be set");
+            }
+
+            wireClient.send(asset);
+            return asset.getMessageId();
+        }
+    }
+
+    @Nullable
+    private UUID sendPicture(IncomingMessage message, UUID botId) throws Exception {
+        try (WireClient wireClient = repo.getClient(botId)) {
+            if (wireClient == null)
+                return null;
+
+            final UUID messageId = UUID.randomUUID();
+            final Attachment attachment = message.attachment;
+
+            Picture asset;
+            if (message.attachment.meta != null) {
+                asset = new Picture(messageId, attachment.mimeType);
+                setAssetMetadata(asset, message.attachment.meta);
+                asset.setHeight(attachment.height);
+                asset.setWidth(attachment.width);
+                asset.setSize(attachment.size.intValue());
+            } else if (message.attachment.data != null) {
+                final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
+                asset = new Picture(bytes, attachment.mimeType);
+                uploadAssetData(wireClient, asset);
+            } else {
+                throw new Exception("Meta or Data need to be set");
+            }
+
+            wireClient.send(asset);
+            return asset.getMessageId();
         }
     }
 
@@ -144,32 +214,6 @@ public class Sender {
     }
 
     @Nullable
-    private UUID sendAttachment(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
-            if (wireClient == null)
-                return null;
-            UUID messageId = UUID.randomUUID();
-
-            final Attachment attachment = message.attachment;
-
-            FileAssetPreview preview = new FileAssetPreview(attachment.name,
-                    attachment.mimeType,
-                    attachment.size,
-                    messageId);
-
-            wireClient.send(preview);
-
-            FileAsset asset = new FileAsset(messageId, attachment.mimeType);
-
-            setAssetMetadata(asset, message.attachment.meta);
-
-            wireClient.send(asset);
-
-            return messageId;
-        }
-    }
-
-    @Nullable
     public UUID sendPollConfirmation(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = repo.getClient(botId)) {
             if (wireClient == null)
@@ -196,23 +240,6 @@ public class Sender {
     }
 
     @Nullable
-    private UUID sendPicture(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
-            if (wireClient == null)
-                return null;
-
-            final Attachment attachment = message.attachment;
-
-            final Picture picture = new Picture(UUID.randomUUID(), attachment.mimeType);
-
-            setAssetMetadata(picture, attachment.meta);
-
-            wireClient.send(picture);
-            return picture.getMessageId();
-        }
-    }
-
-    @Nullable
     public UUID send(IGeneric message, UUID botId) throws Exception {
         try (WireClient wireClient = repo.getClient(botId)) {
             if (wireClient == null)
@@ -228,5 +255,11 @@ public class Sender {
         asset.setAssetToken(meta.assetToken);
         asset.setSha256(Base64.getDecoder().decode(meta.sha256));
         asset.setOtrKey(Base64.getDecoder().decode(meta.otrKey));
+    }
+
+    private void uploadAssetData(WireClient wireClient, AssetBase asset) throws Exception {
+        final AssetKey assetKey = wireClient.uploadAsset(asset);
+        asset.setAssetKey(assetKey.id);
+        asset.setAssetToken(assetKey.token);
     }
 }

@@ -91,18 +91,6 @@ public class IncomingBroadcastMessageTest {
         final Report report = res.readEntity(Report.class);
     }
 
-    private void attachment(String serviceAuth) throws IOException {
-        IncomingMessage pdf = new IncomingMessage();
-        pdf.type = "attachment";
-        pdf.attachment = new Attachment();
-        pdf.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("plan.pdf"));
-        pdf.attachment.mimeType = "application/pdf";
-        pdf.attachment.name = "plan.pdf";
-
-        Response res = post(serviceAuth, pdf);
-        assertThat(res.getStatus()).isEqualTo(200);
-    }
-
     private void text(String serviceAuth) {
         IncomingMessage txt = new IncomingMessage();
         txt.type = "text";
@@ -113,13 +101,31 @@ public class IncomingBroadcastMessageTest {
         assertThat(res.getStatus()).isEqualTo(200);
     }
 
+    private void attachment(String serviceAuth) throws IOException {
+        IncomingMessage pdf = new IncomingMessage();
+        pdf.type = "attachment";
+        pdf.attachment = new Attachment();
+        final byte[] bytes = Util.getResource("plan.pdf");
+        pdf.attachment.data = Base64.getEncoder().encodeToString(bytes);
+        pdf.attachment.mimeType = "application/pdf";
+        pdf.attachment.name = "plan.pdf";
+        pdf.attachment.size = (long) bytes.length;
+
+        Response res = post(serviceAuth, pdf);
+        assertThat(res.getStatus()).isEqualTo(200);
+    }
+
     private void picture(String serviceAuth) throws IOException {
         Response res;
         IncomingMessage picture = new IncomingMessage();
         picture.type = "attachment";
         picture.attachment = new Attachment();
-        picture.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("moon.jpeg"));
+        final byte[] bytes = Util.getResource("moon.jpeg");
+        picture.attachment.data = Base64.getEncoder().encodeToString(bytes);
         picture.attachment.mimeType = "image/jpeg";
+        picture.attachment.size = (long) bytes.length;
+        picture.attachment.width = 460;
+        picture.attachment.height = 575;
 
         res = post(serviceAuth, picture);
         assertThat(res.getStatus()).isEqualTo(200);
@@ -130,11 +136,13 @@ public class IncomingBroadcastMessageTest {
         IncomingMessage audio = new IncomingMessage();
         audio.type = "attachment";
         audio.attachment = new Attachment();
-        audio.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("audio.m4a"));
+        final byte[] bytes = Util.getResource("audio.m4a");
+        audio.attachment.data = Base64.getEncoder().encodeToString(bytes);
         audio.attachment.mimeType = "audio/x-m4a";
         audio.attachment.name = "test.m4a";
         audio.attachment.duration = 27000L;
         audio.attachment.levels = new byte[100];
+        audio.attachment.size = (long) bytes.length;
         new Random().nextBytes(audio.attachment.levels);
 
         res = post(serviceAuth, audio);
