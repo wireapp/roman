@@ -25,14 +25,6 @@ public class BroadcastMessage {
     public byte[] levels;
 
     @JsonProperty
-    public String assetKey;
+    public AssetMeta meta;
 
-    @JsonProperty
-    public String assetToken;
-
-    @JsonProperty
-    public String sha256;
-
-    @JsonProperty
-    public String otrKey;
 }

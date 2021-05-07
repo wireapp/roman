@@ -7,12 +7,12 @@ import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ServiceTokenAuthorization;
+import com.wire.bots.roman.model.AssetMeta;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Report;
 import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.assets.*;
 import com.wire.xenon.backend.models.ErrorMessage;
-import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
 import org.jdbi.v3.core.Jdbi;
@@ -121,61 +121,56 @@ public class BroadcastResource {
         }
     }
 
-    private void broadcastPicture(IncomingMessage message, UUID providerId, UUID broadcastId) throws Exception {
-        final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
-
-        final Picture picture = new Picture(bytes, message.attachment.mimeType);
+    private void broadcastPicture(IncomingMessage message, UUID providerId, UUID broadcastId) {
+        final Picture picture = new Picture(UUID.randomUUID(), message.attachment.mimeType);
 
         final List<UUID> botIds = botsDAO.getBotIds(providerId);
 
-        final AssetKey assetKey = uploadAsset(picture, botIds);
-        picture.setAssetKey(assetKey.id);
-        picture.setAssetToken(assetKey.token);
+        setAssetMetadata(picture, message.attachment.meta);
 
         for (UUID botId : botIds) {
             broadcast.submit(() -> send(providerId, broadcastId, picture, botId));
         }
     }
 
-    private void broadcastAudio(IncomingMessage message, UUID providerId, UUID broadcastId) throws Exception {
-        final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
+    private void setAssetMetadata(AssetBase asset, AssetMeta meta) {
+        asset.setAssetKey(meta.assetId);
+        asset.setAssetToken(meta.assetToken);
+        asset.setSha256(Base64.getDecoder().decode(meta.sha256));
+        asset.setOtrKey(Base64.getDecoder().decode(meta.otrKey));
+    }
 
+    private void broadcastAudio(IncomingMessage message, UUID providerId, UUID broadcastId) {
         final AudioPreview preview = new AudioPreview(
                 message.attachment.name,
                 message.attachment.mimeType,
                 message.attachment.duration,
                 message.attachment.levels,
-                bytes.length);
+                message.attachment.size.intValue());
 
-        final AudioAsset audioAsset = new AudioAsset(bytes, preview);
+        final AudioAsset audioAsset = new AudioAsset(preview.getMessageId(), message.attachment.mimeType);
 
         final List<UUID> botIds = botsDAO.getBotIds(providerId);
 
-        final AssetKey assetKey = uploadAsset(audioAsset, botIds);
-        audioAsset.setAssetKey(assetKey.id);
-        audioAsset.setAssetToken(assetKey.token);
+        setAssetMetadata(audioAsset, message.attachment.meta);
 
         for (UUID botId : botIds) {
             broadcast.submit(() -> send(providerId, broadcastId, preview, audioAsset, botId));
         }
     }
 
-    private void broadcastFile(IncomingMessage message, UUID providerId, UUID broadcastId) throws Exception {
-        final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
-
+    private void broadcastFile(IncomingMessage message, UUID providerId, UUID broadcastId) {
         final UUID messageId = UUID.randomUUID();
         FileAssetPreview preview = new FileAssetPreview(message.attachment.name,
                 message.attachment.mimeType,
-                bytes.length,
+                message.attachment.size.intValue(),
                 messageId);
 
-        FileAsset fileAsset = new FileAsset(bytes, message.attachment.mimeType, messageId);
+        FileAsset fileAsset = new FileAsset(messageId, message.attachment.mimeType);
 
         final List<UUID> botIds = botsDAO.getBotIds(providerId);
 
-        final AssetKey assetKey = uploadAsset(fileAsset, botIds);
-        fileAsset.setAssetKey(assetKey.id);
-        fileAsset.setAssetToken(assetKey.token);
+        setAssetMetadata(fileAsset, message.attachment.meta);
 
         for (UUID botId : botIds) {
             broadcast.submit(() -> send(providerId, broadcastId, preview, fileAsset, botId));
@@ -235,15 +230,6 @@ public class BroadcastResource {
                     .status(500)
                     .build();
         }
-    }
-
-    private AssetKey uploadAsset(AssetBase asset, List<UUID> bots) throws Exception {
-        for (UUID botId : bots) {
-            final AssetKey assetKey = sender.uploadAsset(asset, botId);
-            if (assetKey != null)
-                return assetKey;
-        }
-        throw new Exception("Failed to upload the asset");
     }
 
     private void send(UUID providerId, UUID broadcastId, AudioPreview preview, AudioAsset audioAsset, UUID botId) {

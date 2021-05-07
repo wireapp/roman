@@ -121,7 +121,6 @@ public class MessageHandler extends MessageHandlerBase {
         validate(botId);
 
         OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
-
         message.refMessageId = msg.getReactionMessageId();
         message.emoji = msg.getEmoji();
 
@@ -217,14 +216,15 @@ public class MessageHandler extends MessageHandlerBase {
     @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
         final UUID botId = client.getId();
+        final UUID conversationId = client.getConversationId();
 
         // User clicked on a Poll Button
         if (event.hasButtonAction()) {
-            onButtonAction(botId, userId, event);
+            onButtonAction(botId, userId, conversationId, event);
         }
         // New Poll has been created
         if (event.hasComposite()) {
-            onComposite(botId, userId, event);
+            onComposite(botId, userId, conversationId, event);
         }
     }
 
@@ -240,21 +240,18 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
-    private void onComposite(UUID botId, UUID userId, Messages.GenericMessage event) {
-        final Messages.Composite composite = event.getComposite();
+    private void onComposite(UUID botId, UUID userId, UUID conversationId, Messages.GenericMessage event) {
+        final String type = "conversation.poll.new";
         final UUID messageId = UUID.fromString(event.getMessageId());
 
-        OutgoingMessage message = new OutgoingMessage();
-        message.botId = botId;
-        message.userId = userId;
-        message.messageId = messageId;
-        message.type = "conversation.poll.new";
-        message.token = generateToken(botId);
+        OutgoingMessage message = createOutgoingMessage(botId, userId, type, conversationId, messageId);
+
         message.poll = new Poll();
         message.poll.id = messageId;
         message.poll.type = "new";
         message.poll.buttons = new ArrayList<>();
-        for (Messages.Composite.Item item : composite.getItemsList()) {
+
+        for (Messages.Composite.Item item : event.getComposite().getItemsList()) {
             if (item.hasText()) {
                 message.text = new Text();
                 message.text.data = item.getText().getContent();
@@ -269,16 +266,13 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
-    private void onButtonAction(UUID botId, UUID userId, Messages.GenericMessage event) {
-        final Messages.ButtonAction action = event.getButtonAction();
-        final UUID messageId = UUID.fromString(event.getMessageId());
+    private void onButtonAction(UUID botId, UUID userId, UUID conversationId, Messages.GenericMessage event) {
+        final String type = "conversation.poll.action";
 
-        OutgoingMessage message = new OutgoingMessage();
-        message.botId = botId;
-        message.userId = userId;
-        message.messageId = messageId;
-        message.type = "conversation.poll.action";
-        message.token = generateToken(botId);
+        final UUID messageId = UUID.fromString(event.getMessageId());
+        OutgoingMessage message = createOutgoingMessage(botId, userId, type, conversationId, messageId);
+
+        final Messages.ButtonAction action = event.getButtonAction();
         message.poll = new Poll();
         message.poll.id = UUID.fromString(action.getReferenceMessageId());
         message.poll.offset = Integer.parseInt(action.getButtonId());
@@ -341,17 +335,6 @@ public class MessageHandler extends MessageHandlerBase {
             Logger.warning("onBotRemoved: failed to deliver message");
 
         botsDAO.remove(botId);
-    }
-
-    private OutgoingMessage createOutgoingMessage(UUID botId, String type, UUID conversationId, MessageBase msg) {
-        OutgoingMessage message = new OutgoingMessage();
-        message.botId = botId;
-        message.type = type;
-        message.userId = msg.getUserId();
-        message.messageId = msg.getMessageId();
-        message.conversationId = conversationId;
-        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
-        return message;
     }
 
     private boolean send(OutgoingMessage message) {
@@ -428,9 +411,31 @@ public class MessageHandler extends MessageHandlerBase {
         return providerId;
     }
 
+    private OutgoingMessage createOutgoingMessage(UUID botId, UUID userId, String type, UUID conversationId, UUID messageId) {
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.userId = userId;
+        message.messageId = messageId;
+        message.type = type;
+        message.conversationId = conversationId;
+        message.token = generateToken(botId);
+        return message;
+    }
+
+    private OutgoingMessage createOutgoingMessage(UUID botId, String type, UUID conversationId, MessageBase msg) {
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.type = type;
+        message.userId = msg.getUserId();
+        message.messageId = msg.getMessageId();
+        message.conversationId = conversationId;
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
+        return message;
+    }
+
     private AssetMeta extractAssetMeta(RemoteMessage msg) {
         AssetMeta meta = new AssetMeta();
-        meta.assetKey = msg.getAssetId();
+        meta.assetId = msg.getAssetId();
         meta.assetToken = msg.getAssetToken();
         meta.sha256 = Base64.getEncoder().encodeToString(msg.getSha256());
         meta.otrKey = Base64.getEncoder().encodeToString(msg.getOtrKey());

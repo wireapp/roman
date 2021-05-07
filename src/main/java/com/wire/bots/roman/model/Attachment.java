@@ -10,11 +10,6 @@ import javax.validation.constraints.NotNull;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Attachment {
     @JsonProperty
-    @NotNull
-    @Deprecated
-    public String data;
-
-    @JsonProperty
     public String name;
 
     @JsonProperty
@@ -39,12 +34,6 @@ public class Attachment {
 
     @JsonProperty
     public AssetMeta meta;
-
-    @JsonIgnore
-    @ValidationMethod(message = "`data` is not a Base64 encoded string")
-    public boolean isValidAttachment() {
-        return data.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
-    }
 
     @JsonIgnore
     @ValidationMethod(message = "Invalid `mimeType`")

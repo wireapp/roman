@@ -7,6 +7,7 @@ import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ServiceTokenAuthorization;
+import com.wire.bots.roman.model.AssetMeta;
 import com.wire.bots.roman.model.BroadcastMessage;
 import com.wire.bots.roman.model.Report;
 import com.wire.lithium.server.monitoring.MDCUtils;
@@ -107,11 +108,8 @@ public class BroadcastV2Resource {
                 message.levels,
                 message.size);
 
-        final AudioAsset audioAsset = new AudioAsset(preview.getMessageId(), message.mimeType);
-        audioAsset.setAssetKey(message.assetKey);
-        audioAsset.setAssetToken(message.assetToken);
-        audioAsset.setSha256(Base64.getDecoder().decode(message.sha256));
-        audioAsset.setOtrKey(Base64.getDecoder().decode(message.otrKey));
+        final AudioAsset audioAsset = new AudioAsset(preview.getMessageId(), preview.getMimeType());
+        setAssetMetadata(audioAsset, message.meta);
 
         sendAsset(providerId, broadcastId, preview, audioAsset, botId);
     }
@@ -123,21 +121,17 @@ public class BroadcastV2Resource {
                 message.size,
                 UUID.randomUUID());
 
-        final FileAsset audioAsset = new FileAsset(message.assetKey,
-                message.assetToken,
-                Base64.getDecoder().decode(message.sha256),
-                Base64.getDecoder().decode(message.otrKey),
-                preview.getMessageId());
+        final FileAsset fileAsset = new FileAsset(preview.getMessageId(), preview.getMimeType());
 
-        sendAsset(providerId, broadcastId, preview, audioAsset, botId);
+        setAssetMetadata(fileAsset, message.meta);
+
+        sendAsset(providerId, broadcastId, preview, fileAsset, botId);
     }
 
     private void sendPicture(BroadcastMessage message, UUID providerId, UUID broadcastId, UUID botId) {
         final Picture picture = new Picture(UUID.randomUUID(), message.mimeType);
-        picture.setAssetKey(message.assetKey);
-        picture.setAssetToken(message.assetToken);
-        picture.setSha256(Base64.getDecoder().decode(message.sha256));
-        picture.setOtrKey(Base64.getDecoder().decode(message.otrKey));
+
+        setAssetMetadata(picture, message.meta);
 
         sendAsset(providerId, broadcastId, null, picture, botId);
     }
@@ -205,5 +199,12 @@ public class BroadcastV2Resource {
         if (Logger.getLevel() == Level.FINE) {
             Logger.debug(objectMapper.writeValueAsString(message));
         }
+    }
+
+    private void setAssetMetadata(AssetBase asset, AssetMeta meta) {
+        asset.setAssetKey(meta.assetId);
+        asset.setAssetToken(meta.assetToken);
+        asset.setSha256(Base64.getDecoder().decode(meta.sha256));
+        asset.setOtrKey(Base64.getDecoder().decode(meta.otrKey));
     }
 }

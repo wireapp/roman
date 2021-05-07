@@ -4,6 +4,7 @@ import com.wire.bots.roman.Application;
 import com.wire.bots.roman.Const;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.Tools;
+import com.wire.bots.roman.model.AssetMeta;
 import com.wire.bots.roman.model.BroadcastMessage;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Report;
@@ -22,7 +23,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
@@ -53,7 +53,7 @@ public class IncomingBroadcastV2MessageTest {
     }
 
     @Test
-    public void broadcastTest() throws IOException, InterruptedException {
+    public void broadcastTest() throws InterruptedException {
         final Random random = new Random();
         final UUID botId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
@@ -81,15 +81,16 @@ public class IncomingBroadcastV2MessageTest {
         audio.size = 1024 * 1024 * 4;
         random.nextBytes(audio.levels);
 
-        audio.assetKey = UUID.randomUUID().toString();
-        audio.assetToken = UUID.randomUUID().toString();
+        audio.meta = new AssetMeta();
+        audio.meta.assetId = UUID.randomUUID().toString();
+        audio.meta.assetToken = UUID.randomUUID().toString();
         final byte[] sha256 = new byte[256];
         random.nextBytes(sha256);
         final byte[] otrKey = new byte[32];
         random.nextBytes(otrKey);
 
-        audio.sha256 = Base64.getEncoder().encodeToString(sha256);
-        audio.otrKey = Base64.getEncoder().encodeToString(otrKey);
+        audio.meta.sha256 = Base64.getEncoder().encodeToString(sha256);
+        audio.meta.otrKey = Base64.getEncoder().encodeToString(otrKey);
 
         Response res = post(serviceAuth, audio);
         assertThat(res.getStatus()).isEqualTo(200);
@@ -100,6 +101,7 @@ public class IncomingBroadcastV2MessageTest {
         assertThat(res.getStatus()).isEqualTo(200);
 
         final Report report = res.readEntity(Report.class);
+        assertThat(report.broadcastId).isNotNull();
     }
 
     private Response post(String serviceAuth, BroadcastMessage msg) {

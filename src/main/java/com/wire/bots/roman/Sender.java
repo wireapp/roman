@@ -2,6 +2,7 @@ package com.wire.bots.roman;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.cryptobox.CryptoException;
+import com.wire.bots.roman.model.AssetMeta;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Mention;
@@ -9,7 +10,6 @@ import com.wire.lithium.ClientRepo;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.assets.*;
 import com.wire.xenon.backend.models.Conversation;
-import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
 
 import javax.annotation.Nullable;
@@ -24,10 +24,6 @@ public class Sender {
 
     public Sender(ClientRepo repo) {
         this.repo = repo;
-    }
-
-    private static byte[] base64Decode(IncomingMessage message) {
-        return Base64.getDecoder().decode(message.attachment.data);
     }
 
     @Nullable
@@ -99,22 +95,21 @@ public class Sender {
         try (WireClient wireClient = repo.getClient(botId)) {
             if (wireClient == null)
                 return null;
-            final byte[] bytes = base64Decode(message);
+
+            final Attachment attachment = message.attachment;
 
             final AudioPreview preview = new AudioPreview(
-                    message.attachment.name,
-                    message.attachment.mimeType,
-                    message.attachment.duration,
-                    message.attachment.levels,
-                    bytes.length);
+                    attachment.name,
+                    attachment.mimeType,
+                    attachment.duration,
+                    attachment.levels,
+                    attachment.size.intValue());
 
             wireClient.send(preview);
 
-            final AudioAsset audioAsset = new AudioAsset(bytes, preview);
+            final AudioAsset audioAsset = new AudioAsset(preview.getMessageId(), preview.getMimeType());
 
-            final AssetKey assetKey = wireClient.uploadAsset(audioAsset);
-            audioAsset.setAssetToken(assetKey.token);
-            audioAsset.setAssetKey(assetKey.id);
+            setAssetMetadata(audioAsset, attachment.meta);
 
             wireClient.send(audioAsset);
             return audioAsset.getMessageId();
@@ -156,21 +151,20 @@ public class Sender {
             UUID messageId = UUID.randomUUID();
 
             final Attachment attachment = message.attachment;
-            final byte[] decode = base64Decode(message);
 
             FileAssetPreview preview = new FileAssetPreview(attachment.name,
                     attachment.mimeType,
-                    decode.length,
+                    attachment.size,
                     messageId);
-            FileAsset asset = new FileAsset(decode, attachment.mimeType, messageId);
 
             wireClient.send(preview);
 
-            final AssetKey assetKey = wireClient.uploadAsset(asset);
-            asset.setAssetKey(assetKey.id);
-            asset.setAssetToken(assetKey.token);
+            FileAsset asset = new FileAsset(messageId, attachment.mimeType);
+
+            setAssetMetadata(asset, message.attachment.meta);
 
             wireClient.send(asset);
+
             return messageId;
         }
     }
@@ -206,23 +200,15 @@ public class Sender {
         try (WireClient wireClient = repo.getClient(botId)) {
             if (wireClient == null)
                 return null;
-            final Picture picture = new Picture(base64Decode(message), message.attachment.mimeType);
 
-            final AssetKey assetKey = wireClient.uploadAsset(picture);
-            picture.setAssetToken(assetKey.token);
-            picture.setAssetKey(assetKey.id);
+            final Attachment attachment = message.attachment;
+
+            final Picture picture = new Picture(UUID.randomUUID(), attachment.mimeType);
+
+            setAssetMetadata(picture, attachment.meta);
 
             wireClient.send(picture);
             return picture.getMessageId();
-        }
-    }
-
-    @Nullable
-    public AssetKey uploadAsset(IAsset asset, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
-            if (wireClient == null)
-                return null;
-            return wireClient.uploadAsset(asset);
         }
     }
 
@@ -235,5 +221,12 @@ public class Sender {
             wireClient.send(message);
             return message.getMessageId();
         }
+    }
+
+    private void setAssetMetadata(AssetBase asset, AssetMeta meta) {
+        asset.setAssetKey(meta.assetId);
+        asset.setAssetToken(meta.assetToken);
+        asset.setSha256(Base64.getDecoder().decode(meta.sha256));
+        asset.setOtrKey(Base64.getDecoder().decode(meta.otrKey));
     }
 }

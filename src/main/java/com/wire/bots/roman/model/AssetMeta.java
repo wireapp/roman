@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 public class AssetMeta {
     @JsonProperty
     @NotNull
-    public String assetKey;
+    public String assetId;
 
     @JsonProperty
     public String assetToken;
