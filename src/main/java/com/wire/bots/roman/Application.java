@@ -102,7 +102,7 @@ public class Application extends Server<Config> {
         addResource(new ServiceResource(jdbi, providerClient));
         addResource(new ConversationResource(sender));
         addResource(new UsersResource(getRepo()));
-        addResource(new BroadcastV2Resource(jdbi, sender, executorService));
+        addResource(new BroadcastResource(jdbi, sender, executorService));
         addResource(new MessagesResource());
 
         messageHandler.setSender(sender);

@@ -7,17 +7,14 @@ import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
 import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.filters.ServiceTokenAuthorization;
-import com.wire.bots.roman.model.AssetMeta;
-import com.wire.bots.roman.model.BroadcastMessage;
+import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Report;
 import com.wire.lithium.server.monitoring.MDCUtils;
-import com.wire.xenon.assets.*;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
 import org.jdbi.v3.core.Jdbi;
 
-import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
@@ -25,7 +22,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -35,16 +31,16 @@ import static com.wire.bots.roman.Const.APP_KEY;
 import static com.wire.bots.roman.Const.PROVIDER_ID;
 
 @Api
-@Path("/broadcast/v2")
+@Path("/broadcast")
 @Produces(MediaType.APPLICATION_JSON)
-public class BroadcastV2Resource {
+public class BroadcastResource {
     private final Sender sender;
     private final BotsDAO botsDAO;
     private final BroadcastDAO broadcastDAO;
     private final ExecutorService broadcast;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public BroadcastV2Resource(Jdbi jdbi, Sender sender, ExecutorService broadcast) {
+    public BroadcastResource(Jdbi jdbi, Sender sender, ExecutorService broadcast) {
         this.sender = sender;
         this.broadcast = broadcast;
 
@@ -59,7 +55,7 @@ public class BroadcastV2Resource {
     @ServiceTokenAuthorization
     public Response post(@Context ContainerRequestContext context,
                          @ApiParam @HeaderParam(APP_KEY) String token,
-                         @ApiParam @NotNull @Valid BroadcastMessage message) {
+                         @ApiParam @NotNull @Valid IncomingMessage message) {
         try {
             trace(message);
 
@@ -70,16 +66,18 @@ public class BroadcastV2Resource {
             final UUID broadcastId = UUID.randomUUID();
 
             MDCUtils.put("broadcastId", broadcastId);
-            Logger.info("BroadcastV2Resource.post: `%s`", message.mimeType);
+            Logger.info("BroadcastV2Resource.post: `%s`", message.type);
 
             for (UUID botId : botIds) {
                 broadcast.submit(() -> {
-                    if (message.mimeType.startsWith("audio")) {
-                        sendAudio(message, providerId, broadcastId, botId);
-                    } else if (message.mimeType.startsWith("image")) {
-                        sendPicture(message, providerId, broadcastId, botId);
-                    } else {
-                        sendFile(message, providerId, broadcastId, botId);
+                    try {
+                        final UUID messageId = sender.send(message, botId);
+                        if (messageId != null) {
+                            persist(providerId, broadcastId, botId, messageId);
+                            Logger.info("Broadcast: id: %s, botId: %s, messageId: %s", broadcastId, botId, messageId);
+                        }
+                    } catch (Exception e) {
+                        Logger.exception("BroadcastV2Resource: send", e);
                     }
                 });
             }
@@ -98,42 +96,6 @@ public class BroadcastV2Resource {
                     .status(500)
                     .build();
         }
-    }
-
-    private void sendAudio(BroadcastMessage message, UUID providerId, UUID broadcastId, UUID botId) {
-        final AudioPreview preview = new AudioPreview(
-                message.filename,
-                message.mimeType,
-                message.duration,
-                message.levels,
-                message.size);
-
-        final AudioAsset audioAsset = new AudioAsset(preview.getMessageId(), preview.getMimeType());
-        setAssetMetadata(audioAsset, message.meta);
-
-        sendAsset(providerId, broadcastId, preview, audioAsset, botId);
-    }
-
-    private void sendFile(BroadcastMessage message, UUID providerId, UUID broadcastId, UUID botId) {
-        final FileAssetPreview preview = new FileAssetPreview(
-                message.filename,
-                message.mimeType,
-                message.size,
-                UUID.randomUUID());
-
-        final FileAsset fileAsset = new FileAsset(preview.getMessageId(), preview.getMimeType());
-
-        setAssetMetadata(fileAsset, message.meta);
-
-        sendAsset(providerId, broadcastId, preview, fileAsset, botId);
-    }
-
-    private void sendPicture(BroadcastMessage message, UUID providerId, UUID broadcastId, UUID botId) {
-        final Picture picture = new Picture(UUID.randomUUID(), message.mimeType);
-
-        setAssetMetadata(picture, message.meta);
-
-        sendAsset(providerId, broadcastId, null, picture, botId);
     }
 
     @GET
@@ -180,31 +142,9 @@ public class BroadcastV2Resource {
         broadcastDAO.insert(broadcastId, botId, providerId, messageId, BroadcastDAO.Type.SENT.ordinal());
     }
 
-    private void sendAsset(UUID providerId, UUID broadcastId, @Nullable IGeneric preview, AssetBase asset, UUID botId) {
-        try {
-            if (preview != null) {
-                sender.send(preview, botId);
-            }
-
-            final UUID messageId = sender.send(asset, botId);
-            if (messageId != null) {
-                persist(providerId, broadcastId, botId, messageId);
-            }
-        } catch (Exception e) {
-            Logger.exception("Broadcast send", e);
-        }
-    }
-
-    private void trace(BroadcastMessage message) throws JsonProcessingException {
+    private void trace(IncomingMessage message) throws JsonProcessingException {
         if (Logger.getLevel() == Level.FINE) {
             Logger.debug(objectMapper.writeValueAsString(message));
         }
-    }
-
-    private void setAssetMetadata(AssetBase asset, AssetMeta meta) {
-        asset.setAssetKey(meta.assetId);
-        asset.setAssetToken(meta.assetToken);
-        asset.setSha256(Base64.getDecoder().decode(meta.sha256));
-        asset.setOtrKey(Base64.getDecoder().decode(meta.otrKey));
     }
 }
