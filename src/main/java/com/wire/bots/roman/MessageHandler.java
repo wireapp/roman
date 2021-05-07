@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
+import com.wire.bots.roman.DAO.OutgoingMessageDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.*;
 import com.wire.lithium.server.monitoring.MDCUtils;
@@ -39,6 +40,7 @@ public class MessageHandler extends MessageHandlerBase {
     private final ProvidersDAO providersDAO;
     private final BotsDAO botsDAO;
     private final BroadcastDAO broadcastDAO;
+    private final OutgoingMessageDAO outgoingMessageDAO;
     private Sender sender;
 
     MessageHandler(Jdbi jdbi, Client jerseyClient) {
@@ -46,6 +48,7 @@ public class MessageHandler extends MessageHandlerBase {
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
         botsDAO = jdbi.onDemand(BotsDAO.class);
         broadcastDAO = jdbi.onDemand(BroadcastDAO.class);
+        outgoingMessageDAO = jdbi.onDemand(OutgoingMessageDAO.class);
     }
 
     @Override
@@ -144,6 +147,8 @@ public class MessageHandler extends MessageHandlerBase {
             message.attachment.width = msg.getWidth();
             message.attachment.height = msg.getHeight();
 
+            outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
+
             send(message);
         } catch (Exception e) {
             Logger.exception("onPhotoPreview: %s", e, e.getMessage());
@@ -164,6 +169,8 @@ public class MessageHandler extends MessageHandlerBase {
             message.attachment.name = msg.getName();
             message.attachment.mimeType = msg.getMimeType();
             message.attachment.size = msg.getSize();
+
+            outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
 
             send(message);
         } catch (Exception e) {
@@ -188,6 +195,8 @@ public class MessageHandler extends MessageHandlerBase {
             message.attachment.duration = msg.getDuration();
             message.attachment.levels = msg.getLevels();
 
+            outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
+
             send(message);
         } catch (Exception e) {
             Logger.exception("onAudioPreview: %s", e, e.getMessage());
@@ -203,11 +212,15 @@ public class MessageHandler extends MessageHandlerBase {
         validate(botId);
 
         try {
-            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+            OutgoingMessage message = outgoingMessageDAO.get(msg.getMessageId());
+            message.type = type;
+            message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
             message.attachment = new Attachment();
             message.attachment.meta = extractAssetMeta(msg);
 
             send(message);
+
+            outgoingMessageDAO.delete(msg.getMessageId());
         } catch (Exception e) {
             Logger.exception("onAssetData: %s", e, e.getMessage());
         }
