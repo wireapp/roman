@@ -77,6 +77,7 @@ wss://proxy.services.wire.com/await/`<app_key>`
     "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",  // Unique identifier for this bot
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who requested this bot  
     "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
+    "conversation": "Bot Example Conversation"                // Conversation name
     "handle": "dejan_wire",  // username of the user who requested this bot
     "locale": "en_US",       // locale of the user who requested this bot    
     "token": "..."           // Access token. Store this token so the bot can post back later
@@ -95,7 +96,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who originally created this conversation    
     "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
     "token": "...",                                   // Use this token to reply to this message - valid for 20 sec
-    "text": "Bot Example Conversation"                // Conversation name
+    "conversation": "Bot Example Conversation"        // Conversation name
 }
 ```
 
@@ -104,65 +105,97 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 {
     "type": "conversation.new_text",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
-    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",        // Author of this message      
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",         // Author of this message      
     "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
     "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",     
     "token": "..."                                           // Use this token to reply to this message - valid for 20 sec
-    "refMessageId" : "caf93012-23f2-429e-b76a-b7649511db2e", // reference msgId in case of Reply, Reaction,.. (can be null)
-    "text": "Hi everybody!"
+    "refMessageId" : "caf93012-23f2-429e-b76a-b7649511db2e", // reference msgId in case of a Reply, Reaction,.. (can be null)
+    "text": {
+        "data": "Hi everybody!"
+    }
 }
-```
-- `conversation.new_image` When an image is posted in a conversation where this bot is present
+```         
 
+- `conversation.image.preview` When new image preview is posted in a conversation where this bot is present
 ```
 {
-    "type": "conversation.new_image",
+    "type": "conversation.image.preview",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
-    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
-    "token": "...", // Use this token to reply to this message - valid for 20 sec  
-    "size": 256,    // Size in bytes    
-    "mimeType": "image/jpeg", // Mime type of this image   
-    "image": "..."            // Base64 encoded image
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",   
+    "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
+    "token": "...",           // Use this token to reply to this message - valid for 20 sec    
+    "attachment" : {
+        "size": 4096,               // Size in bytes    
+        "mimeType": "image/jpeg",   // Mime type of this image 
+        "width": 512,               // Resotion in pixels
+        "height": 1024              // Resotion in pixels 
+    }       
 }
 ```
 
-- `conversation.file.new` When an attachment is posted in a conversation where this bot is present
-
+- `conversation.file.preview` When a file preview is posted in a conversation where this bot is present
 ```
 {
-    "type": "conversation.file.new",
+    "type": "conversation.file.preview",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
-    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d", 
+    "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
+    "token": "...",                 // Use this token to reply to this message - valid for 20 sec 
+    "attachment" : { 
+        "size": 4096,                   // Size in bytes    
+        "mimeType": "application/pdf",  // Mime type of this file   
+        "name": "plan.pdf",             // Filename
+    }
+}
+```
+
+- `conversation.audio.preview` When preview of an audio recording is posted in a conversation where this bot is present
+```
+{
+    "type": "conversation.audio.preview",
+    "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
+    "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",      
+    "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
     "token": "...",      // Use this token to reply to this message - valid for 20 sec  
-    "size": 256,         // Size in bytes    
-    "mimeType": "application/pdf", // Mime type of this file   
-    "text": "plan.pdf",            // Filename
-    "attachment": "..."            // Base64 encoded binary data
+    "attachment" : {
+        "size": 4096,                           // Size in bytes    
+        "mimeType": "audio/mp3",                // Mime type of this file  
+        "duration": 79000,                      // Duration of the recording in mills  
+        "levels": [ 123, 62, 124, 255, ... ],   // Loudness levels normalized to [0, 255]
+        "name": "Fortunate song",               // Filename    
+    }
 }
 ```
 
-- `conversation.audio.new` When an audio recording is posted in a conversation where this bot is present
-
+- `conversation.asset.data` When an asset is ready to be downloaded/forwarded
 ```
 {
-    "type": "conversation.audio.new",
+    "type": "conversation.asset.data",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
-    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",
-    "token": "...",      // Use this token to reply to this message - valid for 20 sec  
-    "size": 256,         // Size in bytes    
-    "mimeType": "audio/mp3",          // Mime type of this file  
-    "duration": 79000,                // Duration of the recording in mills  
-    "levels": { 123, 62, 124, 255, ... },  // Loudness levels normalized to [0, 256]
-    "text": "Fortunate song",         // Filename
-    "attachment": "..."               // Base64 encoded binary data
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",     // MessageID the same as the one from the Preview! 
+    "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
+    "token": "...",      // Use this token to reply to this message - valid for 20 sec 
+    "attachment" : {
+        "size": 4096,                          // Size in bytes    
+        "mimeType": "audio/mp3",               // Mime type of this file  
+        "duration": 79000,                     // Duration of the recording in mills  
+        "levels": [ 123, 62, 124, 255, ... ],  // Loudness levels normalized to [0, 255]
+        "name": "Fortunate song",              // Filename  
+        "meta" : { 
+                "assetId": "3-cef231a2-23f2-429e-b76a-b7649594d3fe",
+                "assetToken": "...",          // Optional
+                "sha256": "...",              // Base64 encoded SHA256 digest of the file
+                "otrKey": "..."               // Base64 encoded otr key used to encrypt the file
+        }
+    }
 }
 ```
 
 - `conversation.poll.action` When the user clicks the button in the Poll
-
 ```
 {
   "botId" : "11b040df-7335-462e-bf93-c7a5adaa7e79",
@@ -186,7 +219,7 @@ POST https://proxy.services.wire.com/conversation -d '{"type": "text", "text": {
 -H'Authorization: Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
 ```
 
-In order to post text or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
+In order to post text, or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
 You must also specify the HTTP header as `Authorization:Bearer <token>` where `token` was obtained in `init` or other events
  like: `new_text` or `new_image`.
 

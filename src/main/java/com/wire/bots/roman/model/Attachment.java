@@ -10,15 +10,18 @@ import javax.validation.constraints.NotNull;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Attachment {
     @JsonProperty
-    @NotNull
     public String data;
 
     @JsonProperty
-    public String filename;
+    public String name;
 
     @JsonProperty
     @NotNull
     public String mimeType;
+
+    @JsonProperty
+    @NotNull
+    public Long size;
 
     @JsonProperty
     public Long duration;
@@ -26,11 +29,14 @@ public class Attachment {
     @JsonProperty
     public byte[] levels;
 
-    @JsonIgnore
-    @ValidationMethod(message = "`data` is not a Base64 encoded string")
-    public boolean isValidAttachment() {
-        return data.matches("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
-    }
+    @JsonProperty
+    public Integer height;
+
+    @JsonProperty
+    public Integer width;
+
+    @JsonProperty
+    public AssetMeta meta;
 
     @JsonIgnore
     @ValidationMethod(message = "Invalid `mimeType`")

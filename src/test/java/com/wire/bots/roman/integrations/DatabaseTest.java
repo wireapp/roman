@@ -1,9 +1,14 @@
 package com.wire.bots.roman.integrations;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.BroadcastDAO;
+import com.wire.bots.roman.DAO.OutgoingMessageDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
+import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.Config;
+import com.wire.bots.roman.model.OutgoingMessage;
 import com.wire.bots.roman.model.Provider;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -138,5 +143,24 @@ public class DatabaseTest {
         final UUID get2 = broadcastDAO.getBroadcastId(providerId);
         assert get2 != null;
         assert get2.equals(broadcastId2);
+    }
+
+    @Test
+    public void testOutgoingMessageDAO() throws JsonProcessingException {
+        final ObjectMapper mapper = new ObjectMapper();
+        final OutgoingMessageDAO outgoingMessageDAO = jdbi.onDemand(OutgoingMessageDAO.class);
+        OutgoingMessage message = new OutgoingMessage();
+        message.messageId = UUID.randomUUID();
+        message.token = "token";
+        message.attachment = new Attachment();
+        message.attachment.data = "data";
+
+        outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
+
+        final OutgoingMessage challenge = outgoingMessageDAO.get(message.messageId);
+        assert challenge != null;
+        assert challenge.messageId.equals(message.messageId);
+
+        outgoingMessageDAO.delete(message.messageId);
     }
 }

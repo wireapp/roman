@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waz.model.Messages;
 import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.DAO.BroadcastDAO;
+import com.wire.bots.roman.DAO.OutgoingMessageDAO;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.model.*;
 import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.WireClient;
-import com.wire.xenon.assets.DeliveryReceipt;
 import com.wire.xenon.backend.models.NewBot;
 import com.wire.xenon.backend.models.SystemMessage;
 import com.wire.xenon.backend.models.User;
@@ -40,6 +40,7 @@ public class MessageHandler extends MessageHandlerBase {
     private final ProvidersDAO providersDAO;
     private final BotsDAO botsDAO;
     private final BroadcastDAO broadcastDAO;
+    private final OutgoingMessageDAO outgoingMessageDAO;
     private Sender sender;
 
     MessageHandler(Jdbi jdbi, Client jerseyClient) {
@@ -47,6 +48,7 @@ public class MessageHandler extends MessageHandlerBase {
         providersDAO = jdbi.onDemand(ProvidersDAO.class);
         botsDAO = jdbi.onDemand(BotsDAO.class);
         broadcastDAO = jdbi.onDemand(BroadcastDAO.class);
+        outgoingMessageDAO = jdbi.onDemand(OutgoingMessageDAO.class);
     }
 
     @Override
@@ -58,6 +60,7 @@ public class MessageHandler extends MessageHandlerBase {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.conversationId = newBot.conversation.id;
+        message.conversation = newBot.conversation.name;
         message.userId = newBot.origin.id;
         message.handle = newBot.origin.handle;
         message.locale = newBot.locale;
@@ -74,12 +77,12 @@ public class MessageHandler extends MessageHandlerBase {
         validate(botId);
 
         OutgoingMessage message = new OutgoingMessage();
+        message.type = "conversation.init";
         message.botId = botId;
         message.userId = msg.from;
         message.conversationId = msg.conversation.id;
         message.messageId = msg.id;
-        message.type = "conversation.init";
-        message.text = msg.conversation.name;
+        message.conversation = msg.conversation.name;
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
 
         boolean send = send(message);
@@ -93,12 +96,22 @@ public class MessageHandler extends MessageHandlerBase {
         validate(botId);
         final String type = "conversation.new_text";
 
-        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-        message.conversationId = client.getConversationId();
+        OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
         message.refMessageId = msg.getQuotedMessageId();
-        message.text = msg.getText();
-        for (TextMessage.Mention mention : msg.getMentions())
-            message.addMention(mention.userId, mention.offset, mention.length);
+        message.text = new Text();
+        message.text.data = msg.getText();
+
+        for (TextMessage.Mention mention : msg.getMentions()) {
+            Mention m = new Mention();
+            m.userId = mention.userId;
+            m.offset = mention.offset;
+            m.length = mention.length;
+
+            if (message.text.mentions == null)
+                message.text.mentions = new ArrayList<>();
+
+            message.text.mentions.add(m);
+        }
 
         send(message);
     }
@@ -111,116 +124,124 @@ public class MessageHandler extends MessageHandlerBase {
 
         validate(botId);
 
-        OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-        message.conversationId = client.getConversationId();
-
+        OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
         message.refMessageId = msg.getReactionMessageId();
-        message.text = msg.getEmoji();
+        message.emoji = msg.getEmoji();
 
         send(message);
     }
 
     @Override
-    public void onImage(WireClient client, ImageMessage msg) {
-        final String type = "conversation.new_image";
+    public void onPhotoPreview(WireClient client, PhotoPreviewMessage msg) {
+        final String type = "conversation.image.preview";
 
         UUID botId = client.getId();
 
         validate(botId);
 
         try {
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+            message.attachment = new Attachment();
+            message.attachment.name = msg.getName();
+            message.attachment.mimeType = msg.getMimeType();
+            message.attachment.size = msg.getSize();
+            message.attachment.width = msg.getWidth();
+            message.attachment.height = msg.getHeight();
 
-            byte[] img = client.downloadAsset(msg.getAssetKey(),
-                    msg.getAssetToken(),
-                    msg.getSha256(),
-                    msg.getOtrKey());
-
-            message.image = Base64.getEncoder().encodeToString(img);
-            message.mimeType = msg.getMimeType();
-            message.size = msg.getSize();
-
-            message.meta = extractAssetMeta(msg);
+            outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
 
             send(message);
         } catch (Exception e) {
-            Logger.exception("onImage: %s", e, e.getMessage());
-        }
-    }
-
-    public void onAttachment(WireClient client, AttachmentMessage msg) {
-        final String type = "conversation.file.new";
-
-        UUID botId = client.getId();
-
-        validate(botId);
-
-        try {
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
-
-//            byte[] img = client.downloadAsset(msg.getAssetKey(),
-//                    msg.getAssetToken(),
-//                    msg.getSha256(),
-//                    msg.getOtrKey());
-//
-//            message.attachment = Base64.getEncoder().encodeToString(img);
-            message.text = msg.getName();
-            message.mimeType = msg.getMimeType();
-            message.size = msg.getSize();
-
-            message.meta = extractAssetMeta(msg);
-
-            send(message);
-        } catch (Exception e) {
-            Logger.exception("onAttachment: %s", e, e.getMessage());
+            Logger.exception("onPhotoPreview: %s", e, e.getMessage());
         }
     }
 
     @Override
-    public void onAudio(WireClient client, AudioMessage msg) {
-        final String type = "conversation.audio.new";
+    public void onFilePreview(WireClient client, FilePreviewMessage msg) {
+        final String type = "conversation.file.preview";
 
         UUID botId = client.getId();
 
         validate(botId);
 
         try {
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+            message.attachment = new Attachment();
+            message.attachment.name = msg.getName();
+            message.attachment.mimeType = msg.getMimeType();
+            message.attachment.size = msg.getSize();
 
-//            byte[] img = client.downloadAsset(msg.getAssetKey(),
-//                    msg.getAssetToken(),
-//                    msg.getSha256(),
-//                    msg.getOtrKey());
-//            message.attachment = Base64.getEncoder().encodeToString(img);
-
-            message.text = msg.getName();
-            message.mimeType = msg.getMimeType();
-            message.size = msg.getSize();
-            message.duration = msg.getDuration();
-            message.levels = msg.getLevels();
-
-            message.meta = extractAssetMeta(msg);
+            outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
 
             send(message);
         } catch (Exception e) {
-            Logger.exception("onAudio: %s", e, e.getMessage());
+            Logger.exception("onFilePreview: %s", e, e.getMessage());
+        }
+    }
+
+    @Override
+    public void onAudioPreview(WireClient client, AudioPreviewMessage msg) {
+        final String type = "conversation.audio.preview";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+            message.attachment = new Attachment();
+            message.attachment.name = msg.getName();
+            message.attachment.mimeType = msg.getMimeType();
+            message.attachment.size = msg.getSize();
+            message.attachment.duration = msg.getDuration();
+            message.attachment.levels = msg.getLevels();
+
+            outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
+
+            send(message);
+        } catch (Exception e) {
+            Logger.exception("onAudioPreview: %s", e, e.getMessage());
+        }
+    }
+
+    @Override
+    public void onAssetData(WireClient client, RemoteMessage msg) {
+        final String type = "conversation.asset.data";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = outgoingMessageDAO.get(msg.getMessageId());
+            if (message == null) {
+                throw new Exception("No asset preview data for: " + msg.getMessageId());
+            }
+
+            message.type = type;
+            message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
+            message.attachment.meta = extractAssetMeta(msg);
+
+            send(message);
+
+            outgoingMessageDAO.delete(msg.getMessageId());
+        } catch (Exception e) {
+            Logger.exception("onAssetData: %s", e, e.getMessage());
         }
     }
 
     @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
         final UUID botId = client.getId();
+        final UUID conversationId = client.getConversationId();
 
         // User clicked on a Poll Button
         if (event.hasButtonAction()) {
-            onButtonAction(botId, userId, event);
+            onButtonAction(botId, userId, conversationId, event);
         }
         // New Poll has been created
         if (event.hasComposite()) {
-            onComposite(botId, userId, event);
+            onComposite(botId, userId, conversationId, event);
         }
     }
 
@@ -236,23 +257,21 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
-    private void onComposite(UUID botId, UUID userId, Messages.GenericMessage event) {
-        final Messages.Composite composite = event.getComposite();
+    private void onComposite(UUID botId, UUID userId, UUID conversationId, Messages.GenericMessage event) {
+        final String type = "conversation.poll.new";
         final UUID messageId = UUID.fromString(event.getMessageId());
 
-        OutgoingMessage message = new OutgoingMessage();
-        message.botId = botId;
-        message.userId = userId;
-        message.messageId = messageId;
-        message.type = "conversation.poll.new";
-        message.token = generateToken(botId);
+        OutgoingMessage message = createOutgoingMessage(botId, userId, type, conversationId, messageId);
+
         message.poll = new Poll();
         message.poll.id = messageId;
         message.poll.type = "new";
         message.poll.buttons = new ArrayList<>();
-        for (Messages.Composite.Item item : composite.getItemsList()) {
+
+        for (Messages.Composite.Item item : event.getComposite().getItemsList()) {
             if (item.hasText()) {
-                message.text = item.getText().getContent();
+                message.text = new Text();
+                message.text.data = item.getText().getContent();
             }
             if (item.hasButton()) {
                 message.poll.buttons.add(item.getButton().getText());
@@ -264,16 +283,13 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
-    private void onButtonAction(UUID botId, UUID userId, Messages.GenericMessage event) {
-        final Messages.ButtonAction action = event.getButtonAction();
-        final UUID messageId = UUID.fromString(event.getMessageId());
+    private void onButtonAction(UUID botId, UUID userId, UUID conversationId, Messages.GenericMessage event) {
+        final String type = "conversation.poll.action";
 
-        OutgoingMessage message = new OutgoingMessage();
-        message.botId = botId;
-        message.userId = userId;
-        message.messageId = messageId;
-        message.type = "conversation.poll.action";
-        message.token = generateToken(botId);
+        final UUID messageId = UUID.fromString(event.getMessageId());
+        OutgoingMessage message = createOutgoingMessage(botId, userId, type, conversationId, messageId);
+
+        final Messages.ButtonAction action = event.getButtonAction();
         message.poll = new Poll();
         message.poll.id = UUID.fromString(action.getReferenceMessageId());
         message.poll.offset = Integer.parseInt(action.getButtonId());
@@ -292,8 +308,7 @@ public class MessageHandler extends MessageHandlerBase {
 
             validate(botId);
 
-            OutgoingMessage message = getOutgoingMessage(botId, type, msg);
-            message.conversationId = client.getConversationId();
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
             message.call = mapper.readValue(msg.getContent(), Call.class);
 
             send(message);
@@ -337,16 +352,6 @@ public class MessageHandler extends MessageHandlerBase {
             Logger.warning("onBotRemoved: failed to deliver message");
 
         botsDAO.remove(botId);
-    }
-
-    private OutgoingMessage getOutgoingMessage(UUID botId, String type, MessageBase msg) {
-        OutgoingMessage message = new OutgoingMessage();
-        message.botId = botId;
-        message.type = type;
-        message.userId = msg.getUserId();
-        message.messageId = msg.getMessageId();
-        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
-        return message;
     }
 
     private boolean send(OutgoingMessage message) {
@@ -396,16 +401,6 @@ public class MessageHandler extends MessageHandlerBase {
         }
     }
 
-    private void sendDeliveryReceipt(WireClient client, UUID messageId, UUID userId) {
-        try {
-            client.send(new DeliveryReceipt(messageId), userId);
-        } catch (Exception e) {
-            Logger.exception("sendDeliveryReceipt: failed to deliver the receipt for message: %s",
-                    e,
-                    e.getMessage());
-        }
-    }
-
     private void trace(OutgoingMessage message) {
         try {
             if (Logger.getLevel() == Level.FINE) {
@@ -433,9 +428,31 @@ public class MessageHandler extends MessageHandlerBase {
         return providerId;
     }
 
-    private AssetMeta extractAssetMeta(MessageAssetBase msg) {
+    private OutgoingMessage createOutgoingMessage(UUID botId, UUID userId, String type, UUID conversationId, UUID messageId) {
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.userId = userId;
+        message.messageId = messageId;
+        message.type = type;
+        message.conversationId = conversationId;
+        message.token = generateToken(botId);
+        return message;
+    }
+
+    private OutgoingMessage createOutgoingMessage(UUID botId, String type, UUID conversationId, MessageBase msg) {
+        OutgoingMessage message = new OutgoingMessage();
+        message.botId = botId;
+        message.type = type;
+        message.userId = msg.getUserId();
+        message.messageId = msg.getMessageId();
+        message.conversationId = conversationId;
+        message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
+        return message;
+    }
+
+    private AssetMeta extractAssetMeta(RemoteMessage msg) {
         AssetMeta meta = new AssetMeta();
-        meta.assetKey = msg.getAssetKey();
+        meta.assetId = msg.getAssetId();
         meta.assetToken = msg.getAssetToken();
         meta.sha256 = Base64.getEncoder().encodeToString(msg.getSha256());
         meta.otrKey = Base64.getEncoder().encodeToString(msg.getOtrKey());

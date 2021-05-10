@@ -103,7 +103,6 @@ public class Application extends Server<Config> {
         addResource(new ConversationResource(sender));
         addResource(new UsersResource(getRepo()));
         addResource(new BroadcastResource(jdbi, sender, executorService));
-        addResource(new BroadcastV2Resource(jdbi, sender, executorService));
         addResource(new MessagesResource());
 
         messageHandler.setSender(sender);

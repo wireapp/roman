@@ -9,7 +9,6 @@ import com.wire.lithium.models.NewBotResponseModel;
 import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.backend.models.NewBot;
 import com.wire.xenon.backend.models.User;
-import com.wire.xenon.tools.Util;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
 import org.jdbi.v3.core.Jdbi;
@@ -21,7 +20,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
@@ -29,11 +27,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/*
-In order to simulate Wire BE on port 8090 you need to:
-docker run -d -p 8090:80 --rm -t mendhak/http-https-echo
- */
-public class IncomingBroadcastMessageTest {
+public class BroadcastResourceTest {
     private static final String BOT_CLIENT_DUMMY = "bot_client_dummy";
     private static final DropwizardTestSupport<Config> SUPPORT = new DropwizardTestSupport<>(
             Application.class, "roman.yaml",
@@ -56,7 +50,8 @@ public class IncomingBroadcastMessageTest {
     }
 
     @Test
-    public void broadcastTest() throws IOException, InterruptedException {
+    public void broadcastTest() throws InterruptedException {
+        final Random random = new Random();
         final UUID botId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
         final UUID convId = UUID.randomUUID();
@@ -75,79 +70,46 @@ public class IncomingBroadcastMessageTest {
         assertThat(newBotResponseModel.lastPreKey).isNotNull();
         assertThat(newBotResponseModel.preKeys).isNotNull();
 
-        text(serviceAuth);
+        IncomingMessage message = new IncomingMessage();
+        message.type = "attachment";
+        message.attachment = new Attachment();
+        message.attachment.mimeType = "audio/x-m4a";
+        message.attachment.name = "test.m4a";
+        message.attachment.duration = 27000L;
+        message.attachment.levels = new byte[100];
+        message.attachment.size = 1024 * 1024 * 4L;
+        random.nextBytes(message.attachment.levels);
 
-        audio(serviceAuth);
+        message.attachment.meta = new AssetMeta();
+        message.attachment.meta.assetId = UUID.randomUUID().toString();
+        message.attachment.meta.assetToken = UUID.randomUUID().toString();
+        final byte[] sha256 = new byte[256];
+        random.nextBytes(sha256);
+        final byte[] otrKey = new byte[32];
+        random.nextBytes(otrKey);
 
-        picture(serviceAuth);
+        message.attachment.meta.sha256 = Base64.getEncoder().encodeToString(sha256);
+        message.attachment.meta.otrKey = Base64.getEncoder().encodeToString(otrKey);
 
-        attachment(serviceAuth);
+        Response res = post(serviceAuth, message);
+        assertThat(res.getStatus()).isEqualTo(200);
 
         Thread.sleep(5000);
 
-        Response res = get(serviceAuth);
+        res = get(serviceAuth);
         assertThat(res.getStatus()).isEqualTo(200);
 
         final Report report = res.readEntity(Report.class);
+        assertThat(report.broadcastId).isNotNull();
     }
 
-    private void attachment(String serviceAuth) throws IOException {
-        IncomingMessage pdf = new IncomingMessage();
-        pdf.type = "attachment";
-        pdf.attachment = new Attachment();
-        pdf.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("plan.pdf"));
-        pdf.attachment.mimeType = "application/pdf";
-        pdf.attachment.filename = "plan.pdf";
-
-        Response res = post(serviceAuth, pdf);
-        assertThat(res.getStatus()).isEqualTo(200);
-    }
-
-    private void text(String serviceAuth) {
-        IncomingMessage txt = new IncomingMessage();
-        txt.type = "text";
-        txt.text = new Text();
-        txt.text.data = "Hello Alice";
-
-        Response res = post(serviceAuth, txt);
-        assertThat(res.getStatus()).isEqualTo(200);
-    }
-
-    private void picture(String serviceAuth) throws IOException {
-        Response res;
-        IncomingMessage picture = new IncomingMessage();
-        picture.type = "attachment";
-        picture.attachment = new Attachment();
-        picture.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("moon.jpeg"));
-        picture.attachment.mimeType = "image/jpeg";
-
-        res = post(serviceAuth, picture);
-        assertThat(res.getStatus()).isEqualTo(200);
-    }
-
-    private void audio(String serviceAuth) throws IOException {
-        Response res;
-        IncomingMessage audio = new IncomingMessage();
-        audio.type = "attachment";
-        audio.attachment = new Attachment();
-        audio.attachment.data = Base64.getEncoder().encodeToString(Util.getResource("audio.m4a"));
-        audio.attachment.mimeType = "audio/x-m4a";
-        audio.attachment.filename = "test.m4a";
-        audio.attachment.duration = 27000L;
-        audio.attachment.levels = new byte[100];
-        new Random().nextBytes(audio.attachment.levels);
-
-        res = post(serviceAuth, audio);
-        assertThat(res.getStatus()).isEqualTo(200);
-    }
-
-    private Response post(String serviceAuth, IncomingMessage txt) {
+    private Response post(String serviceAuth, IncomingMessage msg) {
         return client
                 .target("http://localhost:" + SUPPORT.getLocalPort())
                 .path("broadcast")
                 .request()
                 .header(Const.APP_KEY, serviceAuth)
-                .post(Entity.entity(txt, MediaType.APPLICATION_JSON_TYPE));
+                .post(Entity.entity(msg, MediaType.APPLICATION_JSON_TYPE));
     }
 
     private Response get(String serviceAuth) {

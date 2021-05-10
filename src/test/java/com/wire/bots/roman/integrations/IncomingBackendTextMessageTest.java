@@ -1,6 +1,5 @@
 package com.wire.bots.roman.integrations;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.waz.model.Messages;
 import com.wire.bots.cryptobox.CryptoException;
 import com.wire.bots.roman.Application;
@@ -60,7 +59,7 @@ public class IncomingBackendTextMessageTest {
     }
 
     @Test
-    public void test() throws CryptoException, JsonProcessingException {
+    public void testNewTextMessage() throws CryptoException {
         final UUID botId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
         final UUID convId = UUID.randomUUID();
