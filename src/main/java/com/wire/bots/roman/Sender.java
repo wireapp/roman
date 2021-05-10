@@ -2,7 +2,6 @@ package com.wire.bots.roman;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.cryptobox.CryptoException;
-import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.model.AssetMeta;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
@@ -11,9 +10,9 @@ import com.wire.lithium.ClientRepo;
 import com.wire.xenon.WireClient;
 import com.wire.xenon.assets.*;
 import com.wire.xenon.backend.models.Conversation;
+import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
-import org.jdbi.v3.core.Jdbi;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -24,12 +23,9 @@ public class Sender {
     private final ObjectMapper mapper = new ObjectMapper();
 
     private final ClientRepo repo;
-    private final BotsDAO botsDAO;
 
-
-    public Sender(ClientRepo repo, Jdbi jdbi) {
+    public Sender(ClientRepo repo) {
         this.repo = repo;
-        botsDAO = jdbi.onDemand(BotsDAO.class);
     }
 
     @Nullable
@@ -68,8 +64,6 @@ public class Sender {
     @Nullable
     public UUID sendCall(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = getWireClient(botId)) {
-            if (wireClient == null)
-                return null;
             String content = message.call != null
                     ? mapper.writeValueAsString(message.call)
                     : "{\"version\":\"3.0\",\"type\":\"GROUPSTART\",\"sessid\":\"\",\"resp\":false}";
@@ -82,9 +76,6 @@ public class Sender {
     @Nullable
     public UUID sendText(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = getWireClient(botId)) {
-            if (wireClient == null)
-                return null;
-
             MessageText text = new MessageText(message.text.data);
             text.setExpectsReadConfirmation(true);
             if (message.text.mentions != null) {
@@ -99,9 +90,6 @@ public class Sender {
     @Nullable
     private UUID sendAudio(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = getWireClient(botId)) {
-            if (wireClient == null)
-                return null;
-
             final Attachment attachment = message.attachment;
 
             final AudioPreview preview = new AudioPreview(
@@ -133,9 +121,6 @@ public class Sender {
     @Nullable
     private UUID sendAttachment(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = getWireClient(botId)) {
-            if (wireClient == null)
-                return null;
-
             final Attachment attachment = message.attachment;
 
             FileAssetPreview preview = new FileAssetPreview(attachment.name,
@@ -165,9 +150,6 @@ public class Sender {
     @Nullable
     private UUID sendPicture(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = getWireClient(botId)) {
-            if (wireClient == null)
-                return null;
-
             final UUID messageId = UUID.randomUUID();
             final Attachment attachment = message.attachment;
 
@@ -194,8 +176,7 @@ public class Sender {
     private WireClient getWireClient(UUID botId) throws IOException, CryptoException {
         final WireClient wireClient = repo.getClient(botId);
         if (wireClient == null) {
-            final int remove = botsDAO.remove(botId);
-            Logger.info("Sender.getWireClient: botId: %s, Deleted: %d", botId, remove);
+            throw new MissingStateException(botId);
         }
         return wireClient;
     }
@@ -203,8 +184,6 @@ public class Sender {
     @Nullable
     public UUID sendNewPoll(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = getWireClient(botId)) {
-            if (wireClient == null)
-                return null;
             MessageText messageText = new MessageText(message.text.data);
             if (message.text.mentions != null) {
                 for (Mention mention : message.text.mentions)
@@ -230,8 +209,6 @@ public class Sender {
     @Nullable
     public UUID sendPollConfirmation(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = getWireClient(botId)) {
-            if (wireClient == null)
-                return null;
             ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
                     message.poll.id,
                     message.poll.offset.toString());
@@ -247,8 +224,6 @@ public class Sender {
     @Nullable
     public Conversation getConversation(UUID botId) throws IOException, CryptoException {
         try (WireClient wireClient = getWireClient(botId)) {
-            if (wireClient == null)
-                return null;
             return wireClient.getConversation();
         }
     }

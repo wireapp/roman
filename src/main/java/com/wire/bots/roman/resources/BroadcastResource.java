@@ -11,6 +11,7 @@ import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Report;
 import com.wire.lithium.server.monitoring.MDCUtils;
 import com.wire.xenon.backend.models.ErrorMessage;
+import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
 import org.jdbi.v3.core.Jdbi;
@@ -72,10 +73,11 @@ public class BroadcastResource {
                 broadcast.submit(() -> {
                     try {
                         final UUID messageId = sender.send(message, botId);
-                        if (messageId != null) {
-                            persist(providerId, broadcastId, botId, messageId);
-                            Logger.info("Broadcast: id: %s, botId: %s, messageId: %s", broadcastId, botId, messageId);
-                        }
+                        persist(providerId, broadcastId, botId, messageId);
+                        Logger.info("Broadcast: id: %s, botId: %s, messageId: %s", broadcastId, botId, messageId);
+                    } catch (MissingStateException e) {
+                        final int remove = botsDAO.remove(botId);
+                        Logger.info("Broadcast: id: %s, botId: %s, Deleted: %d", broadcastId, botId, remove);
                     } catch (Exception e) {
                         Logger.exception("BroadcastResource: send", e);
                     }
