@@ -111,10 +111,11 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "token": "..."                                           // Use this token to reply to this message - valid for 20 sec
     "refMessageId" : "caf93012-23f2-429e-b76a-b7649511db2e", // reference msgId in case of a Reply, Reaction,.. (can be null)
     "text": {
-        "data": Hi everybody!"
+        "data": "Hi everybody!"
     }
 }
-```
+```         
+
 - `conversation.image.preview` When new image preview is posted in a conversation where this bot is present
 ```
 {
@@ -125,8 +126,10 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
     "token": "...",           // Use this token to reply to this message - valid for 20 sec    
     "attachment" : {
-        "size": 4096,             // Size in bytes    
-        "mimeType": "image/jpeg", // Mime type of this image   
+        "size": 4096,               // Size in bytes    
+        "mimeType": "image/jpeg",   // Mime type of this image 
+        "width": 512,               // Resotion in pixels
+        "height": 1024              // Resotion in pixels 
     }       
 }
 ```
@@ -161,7 +164,7 @@ Your service must be available at the moment `bot_request` event is sent. It mus
         "size": 4096,                           // Size in bytes    
         "mimeType": "audio/mp3",                // Mime type of this file  
         "duration": 79000,                      // Duration of the recording in mills  
-        "levels": { 123, 62, 124, 255, ... },   // Loudness levels normalized to [0, 256]
+        "levels": [ 123, 62, 124, 255, ... ],   // Loudness levels normalized to [0, 255]
         "name": "Fortunate song",               // Filename    
     }
 }
@@ -173,14 +176,14 @@ Your service must be available at the moment `bot_request` event is sent. It mus
     "type": "conversation.asset.data",
     "botId": "216efc31-d483-4bd6-aec7-4adc2da50ca5",
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", 
-    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",      
+    "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",     // MessageID the same as the one from the Preview! 
     "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
     "token": "...",      // Use this token to reply to this message - valid for 20 sec 
     "attachment" : {
         "size": 4096,                          // Size in bytes    
         "mimeType": "audio/mp3",               // Mime type of this file  
         "duration": 79000,                     // Duration of the recording in mills  
-        "levels": { 123, 62, 124, 255, ... },  // Loudness levels normalized to [0, 256]
+        "levels": [ 123, 62, 124, 255, ... ],  // Loudness levels normalized to [0, 255]
         "name": "Fortunate song",              // Filename  
         "meta" : { 
                 "assetId": "3-cef231a2-23f2-429e-b76a-b7649594d3fe",
@@ -193,7 +196,6 @@ Your service must be available at the moment `bot_request` event is sent. It mus
 ```
 
 - `conversation.poll.action` When the user clicks the button in the Poll
-
 ```
 {
   "botId" : "11b040df-7335-462e-bf93-c7a5adaa7e79",
@@ -217,7 +219,7 @@ POST https://proxy.services.wire.com/conversation -d '{"type": "text", "text": {
 -H'Authorization: Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
 ```
 
-In order to post text or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
+In order to post text, or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
 You must also specify the HTTP header as `Authorization:Bearer <token>` where `token` was obtained in `init` or other events
  like: `new_text` or `new_image`.
 

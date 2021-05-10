@@ -214,6 +214,10 @@ public class MessageHandler extends MessageHandlerBase {
 
         try {
             OutgoingMessage message = outgoingMessageDAO.get(msg.getMessageId());
+            if (message == null) {
+                throw new Exception("No asset preview data for: " + msg.getMessageId());
+            }
+
             message.type = type;
             message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
             message.attachment.meta = extractAssetMeta(msg);
