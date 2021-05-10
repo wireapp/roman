@@ -94,7 +94,7 @@ public class Application extends Server<Config> {
                 .build();
 
         ProviderClient providerClient = new ProviderClient(getClient(), config.apiHost);
-        Sender sender = new Sender(getRepo());
+        Sender sender = new Sender(getRepo(), jdbi);
 
         final Jdbi jdbi = getJdbi();
 

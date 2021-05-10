@@ -2,6 +2,7 @@ package com.wire.bots.roman;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wire.bots.cryptobox.CryptoException;
+import com.wire.bots.roman.DAO.BotsDAO;
 import com.wire.bots.roman.model.AssetMeta;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
@@ -12,6 +13,7 @@ import com.wire.xenon.assets.*;
 import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
+import org.jdbi.v3.core.Jdbi;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -22,9 +24,12 @@ public class Sender {
     private final ObjectMapper mapper = new ObjectMapper();
 
     private final ClientRepo repo;
+    private final BotsDAO botsDAO;
 
-    public Sender(ClientRepo repo) {
+
+    public Sender(ClientRepo repo, Jdbi jdbi) {
         this.repo = repo;
+        botsDAO = jdbi.onDemand(BotsDAO.class);
     }
 
     @Nullable
@@ -62,7 +67,7 @@ public class Sender {
 
     @Nullable
     public UUID sendCall(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
+        try (WireClient wireClient = getWireClient(botId)) {
             if (wireClient == null)
                 return null;
             String content = message.call != null
@@ -76,7 +81,7 @@ public class Sender {
 
     @Nullable
     public UUID sendText(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
+        try (WireClient wireClient = getWireClient(botId)) {
             if (wireClient == null)
                 return null;
 
@@ -93,7 +98,7 @@ public class Sender {
 
     @Nullable
     private UUID sendAudio(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
+        try (WireClient wireClient = getWireClient(botId)) {
             if (wireClient == null)
                 return null;
 
@@ -127,7 +132,7 @@ public class Sender {
 
     @Nullable
     private UUID sendAttachment(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
+        try (WireClient wireClient = getWireClient(botId)) {
             if (wireClient == null)
                 return null;
 
@@ -159,7 +164,7 @@ public class Sender {
 
     @Nullable
     private UUID sendPicture(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
+        try (WireClient wireClient = getWireClient(botId)) {
             if (wireClient == null)
                 return null;
 
@@ -186,9 +191,18 @@ public class Sender {
         }
     }
 
+    private WireClient getWireClient(UUID botId) throws IOException, CryptoException {
+        final WireClient wireClient = repo.getClient(botId);
+        if (wireClient == null) {
+            final int remove = botsDAO.remove(botId);
+            Logger.info("Sender.getWireClient: botId: %s, Deleted: %d", botId, remove);
+        }
+        return wireClient;
+    }
+
     @Nullable
     public UUID sendNewPoll(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
+        try (WireClient wireClient = getWireClient(botId)) {
             if (wireClient == null)
                 return null;
             MessageText messageText = new MessageText(message.text.data);
@@ -215,7 +229,7 @@ public class Sender {
 
     @Nullable
     public UUID sendPollConfirmation(IncomingMessage message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
+        try (WireClient wireClient = getWireClient(botId)) {
             if (wireClient == null)
                 return null;
             ButtonActionConfirmation confirmation = new ButtonActionConfirmation(
@@ -232,21 +246,10 @@ public class Sender {
 
     @Nullable
     public Conversation getConversation(UUID botId) throws IOException, CryptoException {
-        try (WireClient wireClient = repo.getClient(botId)) {
+        try (WireClient wireClient = getWireClient(botId)) {
             if (wireClient == null)
                 return null;
             return wireClient.getConversation();
-        }
-    }
-
-    @Nullable
-    public UUID send(IGeneric message, UUID botId) throws Exception {
-        try (WireClient wireClient = repo.getClient(botId)) {
-            if (wireClient == null)
-                return null;
-
-            wireClient.send(message);
-            return message.getMessageId();
         }
     }
 
