@@ -205,6 +205,32 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     @Override
+    public void onVideoPreview(WireClient client, VideoPreviewMessage msg) {
+        final String type = "conversation.video.preview";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        try {
+            OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+            message.attachment = new Attachment();
+            message.attachment.name = msg.getName();
+            message.attachment.mimeType = msg.getMimeType();
+            message.attachment.size = msg.getSize();
+            message.attachment.width = msg.getWidth();
+            message.attachment.height = msg.getHeight();
+            message.attachment.duration = msg.getDuration();
+
+            outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
+
+            send(message);
+        } catch (Exception e) {
+            Logger.exception("onVideoPreview: %s", e, e.getMessage());
+        }
+    }
+
+    @Override
     public void onAssetData(WireClient client, RemoteMessage msg) {
         final String type = "conversation.asset.data";
 
@@ -215,7 +241,7 @@ public class MessageHandler extends MessageHandlerBase {
         try {
             OutgoingMessage message = outgoingMessageDAO.get(msg.getMessageId());
             if (message == null) {
-                throw new Exception("No asset preview data for: " + msg.getMessageId());
+                throw new Exception("No asset preview data for msg: " + msg.getMessageId());
             }
 
             message.type = type;
