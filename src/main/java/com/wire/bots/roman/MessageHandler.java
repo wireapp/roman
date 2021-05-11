@@ -141,10 +141,7 @@ public class MessageHandler extends MessageHandlerBase {
 
         try {
             OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
-            message.attachment = new Attachment();
-            message.attachment.name = msg.getName();
-            message.attachment.mimeType = msg.getMimeType();
-            message.attachment.size = msg.getSize();
+            message.attachment = fromOriginal(msg);
             message.attachment.width = msg.getWidth();
             message.attachment.height = msg.getHeight();
 
@@ -166,10 +163,7 @@ public class MessageHandler extends MessageHandlerBase {
 
         try {
             OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
-            message.attachment = new Attachment();
-            message.attachment.name = msg.getName();
-            message.attachment.mimeType = msg.getMimeType();
-            message.attachment.size = msg.getSize();
+            message.attachment = fromOriginal(msg);
 
             outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
 
@@ -189,10 +183,7 @@ public class MessageHandler extends MessageHandlerBase {
 
         try {
             OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
-            message.attachment = new Attachment();
-            message.attachment.name = msg.getName();
-            message.attachment.mimeType = msg.getMimeType();
-            message.attachment.size = msg.getSize();
+            message.attachment = fromOriginal(msg);
             message.attachment.duration = msg.getDuration();
             message.attachment.levels = msg.getLevels();
 
@@ -214,10 +205,7 @@ public class MessageHandler extends MessageHandlerBase {
 
         try {
             OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
-            message.attachment = new Attachment();
-            message.attachment.name = msg.getName();
-            message.attachment.mimeType = msg.getMimeType();
-            message.attachment.size = msg.getSize();
+            message.attachment = fromOriginal(msg);
             message.attachment.width = msg.getWidth();
             message.attachment.height = msg.getHeight();
             message.attachment.duration = msg.getDuration();
@@ -474,6 +462,14 @@ public class MessageHandler extends MessageHandlerBase {
         message.conversationId = conversationId;
         message.token = generateToken(botId, TimeUnit.SECONDS.toMillis(TOKEN_DURATION));
         return message;
+    }
+
+    private Attachment fromOriginal(OriginMessage msg) {
+        final Attachment attachment = new Attachment();
+        attachment.name = msg.getName();
+        attachment.mimeType = msg.getMimeType();
+        attachment.size = msg.getSize();
+        return attachment;
     }
 
     private AssetMeta extractAssetMeta(RemoteMessage msg) {
