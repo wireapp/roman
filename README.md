@@ -1,5 +1,5 @@
 # Wire Bot API Proxy
-Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API
+Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API.
 
 ### API documentation:
 [swagger](https://proxy.services.wire.com/swagger#/default)
@@ -269,19 +269,27 @@ _Outgoing Message_ can be of 4 types:
   }
 }
 ```
+
 Full description: https://proxy.services.wire.com/swagger#!/default/post
 
 **Note:** `token` that comes with `conversation.init` events is _lifelong_. It should be stored for later usage. `token`
- that comes with other event types has lifespan of 20 seconds.
+that comes with other event types has lifespan of 20 seconds.
 
 ### Bot Examples
+
 - Echo bot in Java: https://github.com/dkovacevic/demo-proxy
 - Poll bot in Kotlin: https://github.com/wireapp/poll-bot
 
+## Running Roman
+
+Please note that Roman requires JVM 11.
+
 ## Build docker image from source code
+
 docker build -t $DOCKER_USERNAME/roman:latest .
 
 ## Example of Docker run command
+
 ```
 docker run \     
 -e LD_LIBRARY_PATH='/opt/wire/lib' \
