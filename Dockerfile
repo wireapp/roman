@@ -1,4 +1,4 @@
-FROM maven:3.6.3-jdk-8-slim AS build
+FROM maven:3-openjdk-11 AS build
 LABEL description="Wire Roman"
 LABEL project="wire-bots:roman"
 
