@@ -1,0 +1,62 @@
+version: '3.8'
+services:
+  proxy:
+    image: traefik:v2.4
+    container_name: proxy
+    restart: always
+    command:
+      # TODO once everything is tested, delete log.level=DEBUG
+      - "--log.level=DEBUG"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.resolver.acme.tlschallenge=true"
+      # TODO change developers@example.com to your e-mail address
+      - "--certificatesresolvers.resolver.acme.email=developers@example.com"
+      - "--certificatesresolvers.resolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - 443:443
+      - 80:80
+    volumes:
+      - roman-lets-encrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  roman:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - release_version=docker-compose
+    container_name: roman
+    restart: always
+    env_file: .env.prod
+    environment:
+      - DB_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - db
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.be.loadbalancer.server.port=8080"
+      # TODO change roman.exmaple.com to your domain
+      - "traefik.http.routers.be.rule=Host(`roman.example.com`)"
+      - "traefik.http.routers.be.entrypoints=websecure"
+      - "traefik.http.routers.be.tls.certresolver=resolver"
+
+  db:
+    image: postgres:13
+    container_name: db
+    restart: always
+    env_file: .env.prod
+    volumes:
+      - roman-prod-db:/var/lib/postgresql/data/
+
+volumes:
+  roman-prod-db:
+  roman-lets-encrypt:
