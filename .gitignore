@@ -1,3 +1,4 @@
+.env.prod
 target/
 data/
 .idea/
