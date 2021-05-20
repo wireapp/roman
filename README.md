@@ -407,7 +407,7 @@ docker-compose -f docker-compose.yml up
 #### Production deployment
 
 In order to run the Roman in the production, one needs to have an HTTPS and to set the `ROMAN_PUB_KEY_BASE64` as well as `PROXY_DOMAIN`
-env variables. See [Configuration section](#Configuration) how to obtain them.
+env variables. See [Configuration section](#configuration) how to obtain them.
 
 ### Native JVM
 
@@ -417,7 +417,7 @@ and other cryptographic libraries. You can use
 [Docker Build Image](https://github.com/wireapp/cryptobox4j/blob/master/dockerfiles/Dockerfile.cryptobox)
 as an inspiration what needs to be installed and what environment variables need to be set to get the Cryptobox working.
 
-Also, don't forget to read the [Configuration section](#Configuration) and set all necessary environment variables for the Roman itselgf.
+Also, don't forget to read the [Configuration section](#configuration) and set all necessary environment variables for the Roman itselgf.
 
 First, it is necessary to build the application:
 
@@ -488,7 +488,7 @@ docker-compose -f docker-compose.prod.yml --env-file .env.prod up --build -d
 6. Give it some time to obtain necessary certificates - around 10 minutes should be fine. Then try to access the `https://roman.example.com`
    to see whether the HTTPS works as expected. If yes, proceed, if no troubleshoot with Traefik proxy.
 7. Now you need to download real public key and encode it in base64 -
-   see [Getting the ROMAN_PUB_KEY_BASE64](#Getting the ROMAN_PUB_KEY_BASE64)
+   see [Getting the ROMAN_PUB_KEY_BASE64](#getting-the-roman_pub_key_base64)
 8. Once you have the `ROMAN_PUB_KEY_BASE64`, replace it in `.env.prod`.
 9. Restart whole stack.
 
