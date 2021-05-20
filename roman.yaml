@@ -23,6 +23,11 @@ logging:
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
 swagger:
+  title: Roman Swagger
+  description: Roman - Wire Bots Proxy
+  contactEmail: dejan@wire.com
+  license: GPLv3
+  version: 1.14.0
   resourcePackage: com.wire.bots.roman.resources
   schemes:
     - https
