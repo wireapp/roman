@@ -127,6 +127,7 @@ public class ServiceResource {
             result.code = String.format("%s:%s", providerId, provider.serviceId);
             result.url = provider.serviceUrl;
             result.service = provider.serviceName;
+            result.company = provider.name;
 
             Logger.info("ServiceResource.create: service authentication %s, code: %s", result.auth, result.code);
 
@@ -198,6 +199,7 @@ public class ServiceResource {
             result.code = String.format("%s:%s", provider.id, provider.serviceId);
             result.url = provider.serviceUrl;
             result.service = provider.serviceName;
+            result.company = provider.name;
 
             return Response.
                     ok(result).
