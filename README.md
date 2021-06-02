@@ -501,4 +501,8 @@ docker-compose -f docker-compose.prod.yml rm -f
 docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
 
-10. All set! You can go to `https://roman.example.com/swagger` and start using Roman. 
+10. All set! You can go to `https://roman.example.com/swagger` and start using Roman.
+
+## Comprehensive tutorial how to onboard new bot
+
+Step-by-step guide, how to create a simple bot for Roman - [onboarding.md](docs/onboarding.md).
