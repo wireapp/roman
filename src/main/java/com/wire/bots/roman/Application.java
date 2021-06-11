@@ -33,11 +33,16 @@ import io.dropwizard.bundles.redirect.PathRedirect;
 import io.dropwizard.bundles.redirect.RedirectBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Strings;
 import io.dropwizard.websockets.WebsocketBundle;
 import io.jsonwebtoken.security.Keys;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.jdbi.v3.core.Jdbi;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import java.security.Key;
+import java.util.EnumSet;
 import java.util.concurrent.ExecutorService;
 
 public class Application extends Server<Config> {
@@ -85,6 +90,19 @@ public class Application extends Server<Config> {
     protected void initialize(Config config, Environment env) {
         this.config = config;
         this.key = Keys.hmacShaKeyFor(config.key.getBytes());
+
+        if (!Strings.isNullOrEmpty(this.config.allowedCors)) {
+            // Enable CORS headers
+            final FilterRegistration.Dynamic cors = environment.servlets().addFilter("CORS", CrossOriginFilter.class);
+
+            // Configure CORS parameters
+            cors.setInitParameter("allowedOrigins", this.config.allowedCors);
+            cors.setInitParameter("allowedHeaders", "Authorization,X-Requested-With,Content-Type,Accept,Origin");
+            cors.setInitParameter("allowedMethods", "OPTIONS,GET,PUT,POST,DELETE,HEAD");
+
+            // Add URL mapping
+            cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
+        }
     }
 
     @Override

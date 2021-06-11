@@ -62,3 +62,6 @@ apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
 
 # TLS public key in base64 format
 romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-}
+
+# optional enabling of CORS - in format a.domain.com,another.domain.com
+allowedCors: ${ALLOWED_CORS}
