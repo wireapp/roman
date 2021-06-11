@@ -35,6 +35,9 @@ public class Config extends Configuration {
     @JsonProperty
     public String domain;
 
+    @JsonProperty
+    public String allowedCors;
+
     @NotNull
     @NotEmpty
     @JsonProperty
