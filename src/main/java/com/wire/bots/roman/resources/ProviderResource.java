@@ -23,7 +23,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 import static com.wire.bots.roman.Tools.generateToken;
@@ -106,9 +105,9 @@ public class ProviderResource {
             String jwt = generateToken(provider.id);
 
             return Response.
-                    ok().
-                    cookie(new NewCookie("zroman", jwt)).
-                    build();
+                    ok()
+                    .header("Set-Cookie", String.format("%s=%s; SameSite=None; Secure", "zroman", jwt))
+                    .build();
         } catch (Exception e) {
             Logger.exception("RegisterResource.login: %s", e, e.getMessage());
             return Response
