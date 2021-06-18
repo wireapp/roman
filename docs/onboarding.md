@@ -26,7 +26,7 @@ In order to register a bot in Wire, you need to have a developer account. As of 
 Or execute following `curl` command with your own values.
 
 ```bash
-curl -X POST 'https://roman.integrations.zinfra.io/register' \ 
+curl -X POST 'https://roman.integrations.zinfra.io/api/register' \ 
   -H 'Content-Type: application/json' \  
   -d '{"name": "Wire Roman Bot guide", "email": "lukas+roman-guide@wire.com", "password": "my_awesome_password_#1"}"
 ```
@@ -156,13 +156,13 @@ You will get a URL (in our case `https://7058bca84fb6.ngrok.io`) where the servi
 
 Now when we have a functional bot with a public URL, we need to register it in Wire. In order to do that, you must do following steps.
 
-1. Go to https://roman.integrations.zinfra.io/swagger#/default/login
+1. Go to https://roman.integrations.zinfra.io/api/swagger#/default/login
 2. Click on `Try it out`
 3. Fill the credentials used in the previous step of this tutorial when you created a Wire Developer account
    ![](assets/onboarding-login.png)
 4. Click on `Execute` - now you should be logged in
-5. Now you should create a new service - go to `POST /service` or click on this
-   link https://roman.integrations.zinfra.io/swagger#/default/create *(what does it mean is in more detail
+5. Now you should create a new service - go to `POST /api/service` or click on this
+   link https://roman.integrations.zinfra.io/api/swagger#/default/create *(what does it mean is in more detail
    described [in README.md](../README.md#create-a-service) )*
 6. Click on `Try it out`
 7. Fill the information about your bot, only `name` and `URL` are required - the `URL` is an URL where does the bot listen for requests.

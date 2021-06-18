@@ -64,11 +64,16 @@ database:
   maxSize: 33
 
 token: dummy
+# used to sign JWT
 key: ${APP_KEY:-}
-domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com}
+# the public URL of the Roman instance, should end with "/api" as all Roman endpoints
+# are served starting with /api
+domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com/api}
+# URL of the Wire Backend
 apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
 
-# TLS public key in base64 format
+# TLS public key of "domain" in base64 format - used to pin certificates in Wire backend
+# for the bot
 romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-}
 
 # optional enabling of CORS - in format a.domain.com,another.domain.com

@@ -6,7 +6,7 @@
 
     <groupId>com.wire.bots</groupId>
     <artifactId>roman</artifactId>
-    <version>1.14.0</version>
+    <version>1.15.0</version>
 
     <name>Roman</name>
     <description>Wire Bot API Proxy</description>
