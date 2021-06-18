@@ -5,3 +5,6 @@ Dockerfile
 docker-compose.yml
 README.md
 roman.iml
+node_modules
+build
+*.iml

@@ -1,0 +1,75 @@
+server:
+  applicationConnectors:
+    - type: http
+      port: ${HTTP_PORT:-8080}
+      maxRequestHeaderSize: 16KiB
+
+  gzip:
+    bufferSize: 8KiB
+    enabled: true
+
+  requestLog:
+    appenders:
+      - type: ${APPENDER_TYPE:-console}
+        filterFactories:
+          - type: status-filter-factory
+
+logging:
+  level: INFO
+  appenders:
+    - type: ${APPENDER_TYPE:-console}
+  loggers:
+    "org.reflections.Reflections": ERROR
+    "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
+
+swagger:
+  uriPrefix: /api
+  title: Roman Swagger
+  description: Roman - Wire Bots Proxy
+  contactEmail: dejan@wire.com
+  license: GPLv3
+  version: 1.15.0
+  resourcePackage: com.wire.bots.roman.resources
+  schemes:
+    - https
+    - http
+
+assets:
+  mappings:
+    /assets: /
+  overrides:
+    # the default assumes you have build frontend by "npm run build"
+    /: ${FRONTEND_PATH:-../frontend/build}
+
+jerseyClient:
+  timeout: 40s
+  connectionTimeout: 40s
+  connectionRequestTimeout: 40s
+  keepAlive: 0ms
+  retries: 3
+  userAgent: roman
+  tls:
+    protocol: TLSv1.2
+    provider: SunJSSE
+    supportedProtocols:
+      - TLSv1.1
+      - TLSv1.2
+
+database:
+  driverClass: org.postgresql.Driver
+  url: ${DB_URL:-jdbc:postgresql://localhost/roman}
+  user: ${DB_USER:-}
+  password: ${DB_PASSWORD:-}
+  baseline: ${DB_BASELINE:-}
+  maxSize: 33
+
+token: dummy
+key: ${APP_KEY:-}
+domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com}
+apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
+
+# TLS public key in base64 format
+romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-}
+
+# optional enabling of CORS - in format a.domain.com,another.domain.com
+allowedCors: ${ALLOWED_CORS}
