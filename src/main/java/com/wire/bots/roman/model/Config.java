@@ -21,12 +21,14 @@ package com.wire.bots.roman.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wire.lithium.Configuration;
+import io.dropwizard.bundles.assets.AssetsBundleConfiguration;
+import io.dropwizard.bundles.assets.AssetsConfiguration;
 import io.dropwizard.validation.ValidationMethod;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-public class Config extends Configuration {
+public class Config extends Configuration implements AssetsBundleConfiguration {
     @NotNull
     @JsonProperty
     public String key;
@@ -42,6 +44,14 @@ public class Config extends Configuration {
     @NotEmpty
     @JsonProperty
     public String romanPubKeyBase64;
+
+    @JsonProperty
+    public AssetsConfiguration assets;
+
+    @Override
+    public AssetsConfiguration getAssetsConfiguration() {
+        return assets;
+    }
 
     @ValidationMethod(message = "`romanPubKeyBase64` is not in a valid base64 format")
     @JsonIgnore

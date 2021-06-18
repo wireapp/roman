@@ -23,6 +23,7 @@ logging:
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
 swagger:
+  uriPrefix: /api
   title: Roman Swagger
   description: Roman - Wire Bots Proxy
   contactEmail: dejan@wire.com
@@ -32,6 +33,13 @@ swagger:
   schemes:
     - https
     - http
+
+assets:
+  mappings:
+    /assets: /
+  overrides:
+    # the default assumes you have cloned https://github.com/wireapp/roman-client next to the roman
+    /: ${FRONTEND_PATH:-../roman-client/build}
 
 jerseyClient:
   timeout: 40s

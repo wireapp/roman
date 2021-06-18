@@ -29,6 +29,7 @@ import com.wire.lithium.Server;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.factories.CryptoFactory;
 import com.wire.xenon.factories.StorageFactory;
+import io.dropwizard.bundles.assets.ConfiguredAssetsBundle;
 import io.dropwizard.bundles.redirect.PathRedirect;
 import io.dropwizard.bundles.redirect.RedirectBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -65,11 +66,13 @@ public class Application extends Server<Config> {
     @Override
     public void initialize(Bootstrap<Config> bootstrap) {
         super.initialize(bootstrap);
+
         instance = (Application) bootstrap.getApplication();
 
         bootstrap.addBundle(new WebsocketBundle(WebSocket.class));
         bootstrap.addCommand(new UpdateCertCommand());
-        bootstrap.addBundle(new RedirectBundle(new PathRedirect("/", "/swagger#/default")));
+        bootstrap.addBundle(new RedirectBundle(new PathRedirect("/swagger-ui", "/api/swagger#/default")));
+        bootstrap.addBundle(new ConfiguredAssetsBundle("/assets/", "/", "index.html"));
     }
 
     @Override
@@ -84,6 +87,7 @@ public class Application extends Server<Config> {
         environment.jersey().register(ServiceAuthenticationFilter.ServiceAuthenticationFeature.class);
         environment.jersey().register(ServiceTokenAuthenticationFilter.ServiceTokenAuthenticationFeature.class);
         environment.jersey().register(BackendAuthenticationFilter.BackendAuthenticationFeature.class);
+        environment.jersey().setUrlPattern("/api/*");
     }
 
     @Override
