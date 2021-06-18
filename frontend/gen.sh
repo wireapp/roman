@@ -1,5 +1,5 @@
 set -e
-src="https://roman.integrations.zinfra.io/swagger.json"
+src="http://localhost:8080/api/swagger.json"
 #src="${1}"
 out="src/app/generated"
 

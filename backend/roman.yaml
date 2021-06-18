@@ -28,7 +28,7 @@ swagger:
   description: Roman - Wire Bots Proxy
   contactEmail: dejan@wire.com
   license: GPLv3
-  version: 1.14.0
+  version: 1.15.0
   resourcePackage: com.wire.bots.roman.resources
   schemes:
     - https
@@ -38,8 +38,8 @@ assets:
   mappings:
     /assets: /
   overrides:
-    # the default assumes you have cloned https://github.com/wireapp/roman-client next to the roman
-    /: ${FRONTEND_PATH:-../roman-client/build}
+    # the default assumes you have build frontend by "npm run build"
+    /: ${FRONTEND_PATH:-../frontend/build}
 
 jerseyClient:
   timeout: 40s

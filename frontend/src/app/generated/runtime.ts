@@ -13,7 +13,7 @@
  */
 
 
-export const BASE_PATH = "http://localhost".replace(/\/+$/, "");
+export const BASE_PATH = "http://localhost/api".replace(/\/+$/, "");
 
 const isBlob = (value: any) => typeof Blob !== 'undefined' && value instanceof Blob;
 
@@ -125,7 +125,8 @@ export const COLLECTION_FORMATS = {
     pipes: "|",
 };
 
-// @ts-ignore probably some bug
+// this is some weird bug from the generator
+// @ts-ignore
 export type FetchAPI = GlobalFetch['fetch'];
 
 export interface ConfigurationParameters {
