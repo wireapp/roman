@@ -5,7 +5,7 @@ Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API.
 ### API documentation:
 
 * Production - [swagger](https://proxy.services.wire.com/swagger#/default)
-* Staging - [swagger](https://roman.integrations.zinfra.io/swagger#/default)
+* Staging - [swagger](https://roman.integrations.zinfra.io/api/swagger#/default)
 
 ### Register as Wire Bot Developer
 
