@@ -2,13 +2,13 @@ FROM maven:3-openjdk-11 AS build
 LABEL description="Wire Roman"
 LABEL project="wire-bots:roman"
 
-WORKDIR /app
+WORKDIR /app/backend
 
-COPY pom.xml ./
+COPY backend/pom.xml ./
 
 RUN mvn verify --fail-never -U
 
-COPY . ./
+COPY backend/ ./
 
 RUN mvn -Dmaven.test.skip=true package
 
@@ -16,7 +16,7 @@ FROM wirebot/runtime
 
 COPY --from=build /app/target/roman.jar /opt/roman/
 
-COPY roman.yaml         /etc/roman/
+COPY backend/roman.yaml /etc/roman/
 
 # create version file
 ARG release_version=development
