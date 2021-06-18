@@ -72,6 +72,7 @@ public class Application extends Server<Config> {
         bootstrap.addBundle(new WebsocketBundle(WebSocket.class));
         bootstrap.addCommand(new UpdateCertCommand());
         bootstrap.addBundle(new RedirectBundle(new PathRedirect("/swagger-ui", "/api/swagger#/default")));
+        bootstrap.addBundle(new RedirectBundle(new PathRedirect("/swagger", "/api/swagger#/default")));
         bootstrap.addBundle(new ConfiguredAssetsBundle("/assets/", "/", "index.html"));
     }
 
