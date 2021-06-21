@@ -12,97 +12,88 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
-import {
-    Asset,
-    AssetFromJSON,
-    AssetFromJSONTyped,
-    AssetToJSON,
-    Service,
-    ServiceFromJSON,
-    ServiceFromJSONTyped,
-    ServiceToJSON,
-} from './';
+import {exists} from '../runtime';
+import {Asset, AssetFromJSON, AssetToJSON, Service, ServiceFromJSON, ServiceToJSON} from './';
 
 /**
- * 
+ *
  * @export
  * @interface User
  */
 export interface User {
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    handle?: string;
-    /**
-     * 
-     * @type {Service}
-     * @memberof User
-     */
-    service?: Service;
-    /**
-     * 
-     * @type {Array<Asset>}
-     * @memberof User
-     */
-    assets?: Array<Asset>;
-    /**
-     * 
-     * @type {number}
-     * @memberof User
-     */
-    accentId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof User
+   */
+  id?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof User
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof User
+   */
+  handle?: string;
+  /**
+   *
+   * @type {Service}
+   * @memberof User
+   */
+  service?: Service;
+  /**
+   *
+   * @type {Array<Asset>}
+   * @memberof User
+   */
+  assets?: Array<Asset>;
+  /**
+   *
+   * @type {number}
+   * @memberof User
+   */
+  accentId?: number;
 }
 
 export function UserFromJSON(json: any): User {
-    return UserFromJSONTyped(json, false);
+  return UserFromJSONTyped(json, false);
 }
 
 export function UserFromJSONTyped(json: any, ignoreDiscriminator: boolean): User {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'id': !exists(json, 'id') ? undefined : json['id'],
-        'name': !exists(json, 'name') ? undefined : json['name'],
-        'handle': !exists(json, 'handle') ? undefined : json['handle'],
-        'service': !exists(json, 'service') ? undefined : ServiceFromJSON(json['service']),
-        'assets': !exists(json, 'assets') ? undefined : ((json['assets'] as Array<any>).map(AssetFromJSON)),
-        'accentId': !exists(json, 'accent_id') ? undefined : json['accent_id'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'id': !exists(json, 'id') ? undefined : json['id'],
+    'name': !exists(json, 'name') ? undefined : json['name'],
+    'handle': !exists(json, 'handle') ? undefined : json['handle'],
+    'service': !exists(json, 'service') ? undefined : ServiceFromJSON(json['service']),
+    'assets': !exists(json, 'assets') ? undefined : ((json['assets'] as Array<any>).map(AssetFromJSON)),
+    'accentId': !exists(json, 'accent_id') ? undefined : json['accent_id']
+  };
 }
 
 export function UserToJSON(value?: User | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'id': value.id,
-        'name': value.name,
-        'handle': value.handle,
-        'service': ServiceToJSON(value.service),
-        'assets': value.assets === undefined ? undefined : ((value.assets as Array<any>).map(AssetToJSON)),
-        'accent_id': value.accentId,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'id': value.id,
+    'name': value.name,
+    'handle': value.handle,
+    'service': ServiceToJSON(value.service),
+    'assets': value.assets === undefined ? undefined : ((value.assets as Array<any>).map(AssetToJSON)),
+    'accent_id': value.accentId
+  };
 }
 
 

@@ -12,177 +12,173 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import {exists} from '../runtime';
 import {
-    Attachment,
-    AttachmentFromJSON,
-    AttachmentFromJSONTyped,
-    AttachmentToJSON,
-    Call,
-    CallFromJSON,
-    CallFromJSONTyped,
-    CallToJSON,
-    Poll,
-    PollFromJSON,
-    PollFromJSONTyped,
-    PollToJSON,
-    Text,
-    TextFromJSON,
-    TextFromJSONTyped,
-    TextToJSON,
+  Attachment,
+  AttachmentFromJSON,
+  AttachmentToJSON,
+  Call,
+  CallFromJSON,
+  CallToJSON,
+  Poll,
+  PollFromJSON,
+  PollToJSON,
+  Text,
+  TextFromJSON,
+  TextToJSON
 } from './';
 
 /**
- * 
+ *
  * @export
  * @interface OutgoingMessage
  */
 export interface OutgoingMessage {
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    botId: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    type: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    userId: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    handle?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    locale?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    token?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    messageId?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    refMessageId?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    conversationId?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    conversation?: string;
-    /**
-     * 
-     * @type {Text}
-     * @memberof OutgoingMessage
-     */
-    text?: Text;
-    /**
-     * 
-     * @type {Attachment}
-     * @memberof OutgoingMessage
-     */
-    attachment?: Attachment;
-    /**
-     * 
-     * @type {Poll}
-     * @memberof OutgoingMessage
-     */
-    poll?: Poll;
-    /**
-     * 
-     * @type {Call}
-     * @memberof OutgoingMessage
-     */
-    call?: Call;
-    /**
-     * 
-     * @type {string}
-     * @memberof OutgoingMessage
-     */
-    emoji?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  botId: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  type: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  userId: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  handle?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  locale?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  token?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  messageId?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  refMessageId?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  conversationId?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  conversation?: string;
+  /**
+   *
+   * @type {Text}
+   * @memberof OutgoingMessage
+   */
+  text?: Text;
+  /**
+   *
+   * @type {Attachment}
+   * @memberof OutgoingMessage
+   */
+  attachment?: Attachment;
+  /**
+   *
+   * @type {Poll}
+   * @memberof OutgoingMessage
+   */
+  poll?: Poll;
+  /**
+   *
+   * @type {Call}
+   * @memberof OutgoingMessage
+   */
+  call?: Call;
+  /**
+   *
+   * @type {string}
+   * @memberof OutgoingMessage
+   */
+  emoji?: string;
 }
 
 export function OutgoingMessageFromJSON(json: any): OutgoingMessage {
-    return OutgoingMessageFromJSONTyped(json, false);
+  return OutgoingMessageFromJSONTyped(json, false);
 }
 
 export function OutgoingMessageFromJSONTyped(json: any, ignoreDiscriminator: boolean): OutgoingMessage {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'botId': json['botId'],
-        'type': json['type'],
-        'userId': json['userId'],
-        'handle': !exists(json, 'handle') ? undefined : json['handle'],
-        'locale': !exists(json, 'locale') ? undefined : json['locale'],
-        'token': !exists(json, 'token') ? undefined : json['token'],
-        'messageId': !exists(json, 'messageId') ? undefined : json['messageId'],
-        'refMessageId': !exists(json, 'refMessageId') ? undefined : json['refMessageId'],
-        'conversationId': !exists(json, 'conversationId') ? undefined : json['conversationId'],
-        'conversation': !exists(json, 'conversation') ? undefined : json['conversation'],
-        'text': !exists(json, 'text') ? undefined : TextFromJSON(json['text']),
-        'attachment': !exists(json, 'attachment') ? undefined : AttachmentFromJSON(json['attachment']),
-        'poll': !exists(json, 'poll') ? undefined : PollFromJSON(json['poll']),
-        'call': !exists(json, 'call') ? undefined : CallFromJSON(json['call']),
-        'emoji': !exists(json, 'emoji') ? undefined : json['emoji'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'botId': json['botId'],
+    'type': json['type'],
+    'userId': json['userId'],
+    'handle': !exists(json, 'handle') ? undefined : json['handle'],
+    'locale': !exists(json, 'locale') ? undefined : json['locale'],
+    'token': !exists(json, 'token') ? undefined : json['token'],
+    'messageId': !exists(json, 'messageId') ? undefined : json['messageId'],
+    'refMessageId': !exists(json, 'refMessageId') ? undefined : json['refMessageId'],
+    'conversationId': !exists(json, 'conversationId') ? undefined : json['conversationId'],
+    'conversation': !exists(json, 'conversation') ? undefined : json['conversation'],
+    'text': !exists(json, 'text') ? undefined : TextFromJSON(json['text']),
+    'attachment': !exists(json, 'attachment') ? undefined : AttachmentFromJSON(json['attachment']),
+    'poll': !exists(json, 'poll') ? undefined : PollFromJSON(json['poll']),
+    'call': !exists(json, 'call') ? undefined : CallFromJSON(json['call']),
+    'emoji': !exists(json, 'emoji') ? undefined : json['emoji']
+  };
 }
 
 export function OutgoingMessageToJSON(value?: OutgoingMessage | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'botId': value.botId,
-        'type': value.type,
-        'userId': value.userId,
-        'handle': value.handle,
-        'locale': value.locale,
-        'token': value.token,
-        'messageId': value.messageId,
-        'refMessageId': value.refMessageId,
-        'conversationId': value.conversationId,
-        'conversation': value.conversation,
-        'text': TextToJSON(value.text),
-        'attachment': AttachmentToJSON(value.attachment),
-        'poll': PollToJSON(value.poll),
-        'call': CallToJSON(value.call),
-        'emoji': value.emoji,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'botId': value.botId,
+    'type': value.type,
+    'userId': value.userId,
+    'handle': value.handle,
+    'locale': value.locale,
+    'token': value.token,
+    'messageId': value.messageId,
+    'refMessageId': value.refMessageId,
+    'conversationId': value.conversationId,
+    'conversation': value.conversation,
+    'text': TextToJSON(value.text),
+    'attachment': AttachmentToJSON(value.attachment),
+    'poll': PollToJSON(value.poll),
+    'call': CallToJSON(value.call),
+    'emoji': value.emoji
+  };
 }
 
 

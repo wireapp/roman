@@ -12,117 +12,112 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
-import {
-    AssetMeta,
-    AssetMetaFromJSON,
-    AssetMetaFromJSONTyped,
-    AssetMetaToJSON,
-} from './';
+import {exists} from '../runtime';
+import {AssetMeta, AssetMetaFromJSON, AssetMetaToJSON} from './';
 
 /**
- * 
+ *
  * @export
  * @interface Attachment
  */
 export interface Attachment {
-    /**
-     * 
-     * @type {string}
-     * @memberof Attachment
-     */
-    data?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Attachment
-     */
-    name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Attachment
-     */
-    mimeType: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof Attachment
-     */
-    size: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Attachment
-     */
-    duration?: number;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof Attachment
-     */
-    levels?: Array<string>;
-    /**
-     * 
-     * @type {number}
-     * @memberof Attachment
-     */
-    height?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Attachment
-     */
-    width?: number;
-    /**
-     * 
-     * @type {AssetMeta}
-     * @memberof Attachment
-     */
-    meta?: AssetMeta;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  data?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Attachment
+   */
+  mimeType: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Attachment
+   */
+  size: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Attachment
+   */
+  duration?: number;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof Attachment
+   */
+  levels?: Array<string>;
+  /**
+   *
+   * @type {number}
+   * @memberof Attachment
+   */
+  height?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Attachment
+   */
+  width?: number;
+  /**
+   *
+   * @type {AssetMeta}
+   * @memberof Attachment
+   */
+  meta?: AssetMeta;
 }
 
 export function AttachmentFromJSON(json: any): Attachment {
-    return AttachmentFromJSONTyped(json, false);
+  return AttachmentFromJSONTyped(json, false);
 }
 
 export function AttachmentFromJSONTyped(json: any, ignoreDiscriminator: boolean): Attachment {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : json['data'],
-        'name': !exists(json, 'name') ? undefined : json['name'],
-        'mimeType': json['mimeType'],
-        'size': json['size'],
-        'duration': !exists(json, 'duration') ? undefined : json['duration'],
-        'levels': !exists(json, 'levels') ? undefined : json['levels'],
-        'height': !exists(json, 'height') ? undefined : json['height'],
-        'width': !exists(json, 'width') ? undefined : json['width'],
-        'meta': !exists(json, 'meta') ? undefined : AssetMetaFromJSON(json['meta']),
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'data': !exists(json, 'data') ? undefined : json['data'],
+    'name': !exists(json, 'name') ? undefined : json['name'],
+    'mimeType': json['mimeType'],
+    'size': json['size'],
+    'duration': !exists(json, 'duration') ? undefined : json['duration'],
+    'levels': !exists(json, 'levels') ? undefined : json['levels'],
+    'height': !exists(json, 'height') ? undefined : json['height'],
+    'width': !exists(json, 'width') ? undefined : json['width'],
+    'meta': !exists(json, 'meta') ? undefined : AssetMetaFromJSON(json['meta'])
+  };
 }
 
 export function AttachmentToJSON(value?: Attachment | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data,
-        'name': value.name,
-        'mimeType': value.mimeType,
-        'size': value.size,
-        'duration': value.duration,
-        'levels': value.levels,
-        'height': value.height,
-        'width': value.width,
-        'meta': AssetMetaToJSON(value.meta),
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'data': value.data,
+    'name': value.name,
+    'mimeType': value.mimeType,
+    'size': value.size,
+    'duration': value.duration,
+    'levels': value.levels,
+    'height': value.height,
+    'width': value.width,
+    'meta': AssetMetaToJSON(value.meta)
+  };
 }
 
 

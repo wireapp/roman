@@ -1,6 +1,6 @@
 import React from 'react';
 import Routing from './modules/Routing';
-import { makeStyles } from '@material-ui/styles';
+import {makeStyles} from '@material-ui/styles';
 
 
 export default function App() {

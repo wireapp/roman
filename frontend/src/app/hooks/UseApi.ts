@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import {useState} from 'react';
 
-import { Configuration, DefaultApi, RequestContext, ResponseContext } from '../generated';
+import {Configuration, DefaultApi, RequestContext, ResponseContext} from '../generated';
 import useUser from './UseUser';
 
 // the localhost is here just as a template for local development

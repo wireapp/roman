@@ -12,69 +12,64 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
-import {
-    Service,
-    ServiceFromJSON,
-    ServiceFromJSONTyped,
-    ServiceToJSON,
-} from './';
+import {exists} from '../runtime';
+import {Service, ServiceFromJSON, ServiceToJSON} from './';
 
 /**
- * 
+ *
  * @export
  * @interface Member
  */
 export interface Member {
-    /**
-     * 
-     * @type {string}
-     * @memberof Member
-     */
-    id?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof Member
-     */
-    status?: number;
-    /**
-     * 
-     * @type {Service}
-     * @memberof Member
-     */
-    service?: Service;
+  /**
+   *
+   * @type {string}
+   * @memberof Member
+   */
+  id?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Member
+   */
+  status?: number;
+  /**
+   *
+   * @type {Service}
+   * @memberof Member
+   */
+  service?: Service;
 }
 
 export function MemberFromJSON(json: any): Member {
-    return MemberFromJSONTyped(json, false);
+  return MemberFromJSONTyped(json, false);
 }
 
 export function MemberFromJSONTyped(json: any, ignoreDiscriminator: boolean): Member {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'id': !exists(json, 'id') ? undefined : json['id'],
-        'status': !exists(json, 'status') ? undefined : json['status'],
-        'service': !exists(json, 'service') ? undefined : ServiceFromJSON(json['service']),
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'id': !exists(json, 'id') ? undefined : json['id'],
+    'status': !exists(json, 'status') ? undefined : json['status'],
+    'service': !exists(json, 'service') ? undefined : ServiceFromJSON(json['service'])
+  };
 }
 
 export function MemberToJSON(value?: Member | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'id': value.id,
-        'status': value.status,
-        'service': ServiceToJSON(value.service),
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'id': value.id,
+    'status': value.status,
+    'service': ServiceToJSON(value.service)
+  };
 }
 
 

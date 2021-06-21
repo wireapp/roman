@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useHistory, useLocation, useParams, useRouteMatch } from 'react-router-dom';
+import {useMemo} from 'react';
+import {useHistory, useLocation, useParams, useRouteMatch} from 'react-router-dom';
 // @ts-ignore, it does not have types unfortunately
 import queryString from 'query-string';
 

@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
-import { useRequireAuth } from '../../hooks/UseAuth';
-import { makeStyles } from '@material-ui/styles';
+import {useEffect, useState} from 'react';
+import {useRequireAuth} from '../../hooks/UseAuth';
+import {makeStyles} from '@material-ui/styles';
 import ComponentOrPending from '../../modules/ComponentOrPending';
 import Service from './components/Service';
 import Header from './components/Header';
-import { ServiceData } from '../../types/TypeAliases';
+import {ServiceData} from '../../types/TypeAliases';
 
 /**
  * Login Page, redirects to home after
  */
 export default function HomePage() {
-  const { api } = useRequireAuth();
+  const {api} = useRequireAuth();
 
   const [status, setStatus] = useState<'idle' | 'pending'>('idle');
   const [service, setService] = useState<ServiceData | undefined>(undefined);
@@ -23,9 +23,9 @@ export default function HomePage() {
     setStatus('pending');
 
     api.get2()
-    .then(r => setService(r))
-    .then(() => setStatus('idle'))
-    .catch((e) => console.error(e)); // todo maybe some error handling
+      .then(r => setService(r))
+      .then(() => setStatus('idle'))
+      .catch((e) => console.error(e)); // todo maybe some error handling
   }, [service, api]);
 
   const classes = useStyles();

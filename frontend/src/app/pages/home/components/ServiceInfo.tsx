@@ -1,8 +1,8 @@
-import { makeStyles } from '@material-ui/styles';
-import { Button, CircularProgress, Paper, TextField } from '@material-ui/core';
-import { useState } from 'react';
-import { useAuthContext } from '../../../hooks/UseAuth';
-import { ServiceData } from '../../../types/TypeAliases';
+import {makeStyles} from '@material-ui/styles';
+import {Button, CircularProgress, Paper, TextField} from '@material-ui/core';
+import {useState} from 'react';
+import {useAuthContext} from '../../../hooks/UseAuth';
+import {ServiceData} from '../../../types/TypeAliases';
 
 export interface ServiceInfoProps {
   name: string
@@ -14,7 +14,7 @@ export interface ServiceInfoProps {
  * Editable part of the service data.
  */
 export default function ServiceInfo(info: ServiceInfoProps) {
-  const { api } = useAuthContext();
+  const {api} = useAuthContext();
 
   const [serviceName, setServiceName] = useState(info.name);
   const [webHook, setWebHook] = useState(info.webhook);
@@ -24,14 +24,14 @@ export default function ServiceInfo(info: ServiceInfoProps) {
     e.preventDefault();
 
     setStatus('pending'); // set pending status to display circle
-    api.update({ body: { url: webHook, name: serviceName } })
-    .then((r) => info.useServiceRefresh(r))
-    .then(() => setStatus('idle')) // todo maybe show some modal with OK
-    .catch(e => {
-      console.log(e); // todo better error handling would be nice
-      info.useServiceRefresh(undefined);
-      setStatus('idle');
-    });
+    api.update({body: {url: webHook, name: serviceName}})
+      .then((r) => info.useServiceRefresh(r))
+      .then(() => setStatus('idle')) // todo maybe show some modal with OK
+      .catch(e => {
+        console.log(e); // todo better error handling would be nice
+        info.useServiceRefresh(undefined);
+        setStatus('idle');
+      });
   };
 
   const handleReset = (e: any) => {

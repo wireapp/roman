@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useState} from 'react';
 
 // https://rangle.io/blog/simplifying-controlled-inputs-with-hooks/
 export default function useInput<T>(initialValue: T) {

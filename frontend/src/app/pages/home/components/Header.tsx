@@ -1,10 +1,10 @@
-import { makeStyles } from '@material-ui/styles';
-import { Button } from '@material-ui/core';
-import { useRequireAuth } from '../../../hooks/UseAuth';
-import { romanBasePath } from '../../../hooks/UseApi';
+import {makeStyles} from '@material-ui/styles';
+import {Button} from '@material-ui/core';
+import {useRequireAuth} from '../../../hooks/UseAuth';
+import {romanBasePath} from '../../../hooks/UseApi';
 
 export default function Header() {
-  const { user, logout } = useRequireAuth();
+  const {user, logout} = useRequireAuth();
   const styles = useStyles();
   return (
     <div className={styles.header}>

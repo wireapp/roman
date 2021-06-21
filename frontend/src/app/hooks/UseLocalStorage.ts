@@ -1,5 +1,5 @@
 // Hook
-import { useState } from 'react';
+import {useState} from 'react';
 
 
 export default function useLocalStorage<T>(key: string): [T | null, (value: T) => void, () => void] {

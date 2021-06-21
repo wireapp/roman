@@ -12,77 +12,72 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
-import {
-    Member,
-    MemberFromJSON,
-    MemberFromJSONTyped,
-    MemberToJSON,
-} from './';
+import {exists} from '../runtime';
+import {Member, MemberFromJSON, MemberToJSON} from './';
 
 /**
- * 
+ *
  * @export
  * @interface Conversation
  */
 export interface Conversation {
-    /**
-     * 
-     * @type {string}
-     * @memberof Conversation
-     */
-    id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Conversation
-     */
-    name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Conversation
-     */
-    creator?: string;
-    /**
-     * 
-     * @type {Array<Member>}
-     * @memberof Conversation
-     */
-    members?: Array<Member>;
+  /**
+   *
+   * @type {string}
+   * @memberof Conversation
+   */
+  id?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Conversation
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Conversation
+   */
+  creator?: string;
+  /**
+   *
+   * @type {Array<Member>}
+   * @memberof Conversation
+   */
+  members?: Array<Member>;
 }
 
 export function ConversationFromJSON(json: any): Conversation {
-    return ConversationFromJSONTyped(json, false);
+  return ConversationFromJSONTyped(json, false);
 }
 
 export function ConversationFromJSONTyped(json: any, ignoreDiscriminator: boolean): Conversation {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'id': !exists(json, 'id') ? undefined : json['id'],
-        'name': !exists(json, 'name') ? undefined : json['name'],
-        'creator': !exists(json, 'creator') ? undefined : json['creator'],
-        'members': !exists(json, 'members') ? undefined : ((json['members'] as Array<any>).map(MemberFromJSON)),
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'id': !exists(json, 'id') ? undefined : json['id'],
+    'name': !exists(json, 'name') ? undefined : json['name'],
+    'creator': !exists(json, 'creator') ? undefined : json['creator'],
+    'members': !exists(json, 'members') ? undefined : ((json['members'] as Array<any>).map(MemberFromJSON))
+  };
 }
 
 export function ConversationToJSON(value?: Conversation | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'id': value.id,
-        'name': value.name,
-        'creator': value.creator,
-        'members': value.members === undefined ? undefined : ((value.members as Array<any>).map(MemberToJSON)),
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'id': value.id,
+    'name': value.name,
+    'creator': value.creator,
+    'members': value.members === undefined ? undefined : ((value.members as Array<any>).map(MemberToJSON))
+  };
 }
 
 

@@ -1,5 +1,5 @@
 // Hook
-import { useCallback, useEffect, useState } from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 export function useAsyncParams<T, P, E = string>(
   asyncFunction: (params: P) => Promise<T>,
@@ -20,14 +20,14 @@ export function useAsyncParams<T, P, E = string>(
     setError(null);
 
     return asyncFunction(params)
-    .then((response: any) => {
-      setValue(response);
-      setStatus('success');
-    })
-    .catch((error: any) => {
-      setError(error);
-      setStatus('error');
-    });
+      .then((response: any) => {
+        setValue(response);
+        setStatus('success');
+      })
+      .catch((error: any) => {
+        setError(error);
+        setStatus('error');
+      });
   }, [asyncFunction]);
 
   // Call execute if we want to fire it right away.
@@ -39,7 +39,7 @@ export function useAsyncParams<T, P, E = string>(
     }
   }, [execute, params, immediate]);
 
-  return { execute, status, value, error };
+  return {execute, status, value, error};
 }
 
 export function useAsync<T, E = string>(
@@ -60,14 +60,14 @@ export function useAsync<T, E = string>(
     setError(null);
 
     return asyncFunction()
-    .then((response: any) => {
-      setValue(response);
-      setStatus('success');
-    })
-    .catch((error: any) => {
-      setError(error);
-      setStatus('error');
-    });
+      .then((response: any) => {
+        setValue(response);
+        setStatus('success');
+      })
+      .catch((error: any) => {
+        setError(error);
+        setStatus('error');
+      });
   }, [asyncFunction]);
 
   // Call execute if we want to fire it right away.
@@ -79,5 +79,5 @@ export function useAsync<T, E = string>(
     }
   }, [execute, immediate]);
 
-  return { execute, status, value, error };
+  return {execute, status, value, error};
 }

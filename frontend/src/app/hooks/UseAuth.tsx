@@ -1,8 +1,8 @@
-import React, { createContext, ReactNode, useContext, useEffect } from 'react';
-import { DefaultApi, SignIn } from '../generated';
+import React, {createContext, ReactNode, useContext, useEffect} from 'react';
+import {DefaultApi, SignIn} from '../generated';
 import useApi from './UseApi';
 import useRouter from './UseRouter';
-import { routes } from '../modules/Routing';
+import {routes} from '../modules/Routing';
 import useUser from './UseUser';
 
 // @ts-ignore it's going to be replaced after initialization so we don't need to initialize that
@@ -13,7 +13,7 @@ const authContext = createContext<UserService>(undefined);
  *
  * See https://usehooks.com/useAuth.
  */
-export function ProvideAuth({ children }: { children: ReactNode }) {
+export function ProvideAuth({children}: { children: ReactNode }) {
   const auth = useProvideAuth();
   return (
     <authContext.Provider value={auth}>
@@ -48,7 +48,7 @@ function useProvideAuth(): UserService {
 
   const login = async (login: SignIn) => {
     try {
-      await api.login({ body: login });
+      await api.login({body: login});
       storeUser(login.email);
       return true;
     } catch (e) {
@@ -81,7 +81,7 @@ export function useRequireAuth(redirectUrl = routes.login): UserService {
   // logged in and should redirect.
   useEffect(() => {
     if (auth.user === null) {
-      router.push(redirectUrl, { state: { from: router.location } });
+      router.push(redirectUrl, {state: {from: router.location}});
     }
   }, [auth, router, redirectUrl]);
 

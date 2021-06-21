@@ -12,46 +12,47 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import {exists} from '../runtime';
+
 /**
- * 
+ *
  * @export
  * @interface PostMessageResult
  */
 export interface PostMessageResult {
-    /**
-     * 
-     * @type {string}
-     * @memberof PostMessageResult
-     */
-    messageId?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PostMessageResult
+   */
+  messageId?: string;
 }
 
 export function PostMessageResultFromJSON(json: any): PostMessageResult {
-    return PostMessageResultFromJSONTyped(json, false);
+  return PostMessageResultFromJSONTyped(json, false);
 }
 
 export function PostMessageResultFromJSONTyped(json: any, ignoreDiscriminator: boolean): PostMessageResult {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'messageId': !exists(json, 'messageId') ? undefined : json['messageId'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'messageId': !exists(json, 'messageId') ? undefined : json['messageId']
+  };
 }
 
 export function PostMessageResultToJSON(value?: PostMessageResult | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'messageId': value.messageId,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'messageId': value.messageId
+  };
 }
 
 
