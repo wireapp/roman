@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+
 /**
  * Roman Swagger
  * Roman - Wire Bots Proxy
@@ -12,62 +13,61 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
- * 
+ *
  * @export
  * @interface Mention
  */
 export interface Mention {
-    /**
-     * 
-     * @type {string}
-     * @memberof Mention
-     */
-    userId: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof Mention
-     */
-    offset: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Mention
-     */
-    length: number;
+  /**
+   *
+   * @type {string}
+   * @memberof Mention
+   */
+  userId: string;
+  /**
+   *
+   * @type {number}
+   * @memberof Mention
+   */
+  offset: number;
+  /**
+   *
+   * @type {number}
+   * @memberof Mention
+   */
+  length: number;
 }
 
 export function MentionFromJSON(json: any): Mention {
-    return MentionFromJSONTyped(json, false);
+  return MentionFromJSONTyped(json, false);
 }
 
 export function MentionFromJSONTyped(json: any, ignoreDiscriminator: boolean): Mention {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'userId': json['userId'],
-        'offset': json['offset'],
-        'length': json['length'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'userId': json['userId'],
+    'offset': json['offset'],
+    'length': json['length']
+  };
 }
 
 export function MentionToJSON(value?: Mention | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'userId': value.userId,
-        'offset': value.offset,
-        'length': value.length,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'userId': value.userId,
+    'offset': value.offset,
+    'length': value.length
+  };
 }
 
 

@@ -12,46 +12,47 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import {exists} from '../runtime';
+
 /**
- * 
+ *
  * @export
  * @interface ErrorMessage
  */
 export interface ErrorMessage {
-    /**
-     * 
-     * @type {string}
-     * @memberof ErrorMessage
-     */
-    message?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ErrorMessage
+   */
+  message?: string;
 }
 
 export function ErrorMessageFromJSON(json: any): ErrorMessage {
-    return ErrorMessageFromJSONTyped(json, false);
+  return ErrorMessageFromJSONTyped(json, false);
 }
 
 export function ErrorMessageFromJSONTyped(json: any, ignoreDiscriminator: boolean): ErrorMessage {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'message': !exists(json, 'message') ? undefined : json['message'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'message': !exists(json, 'message') ? undefined : json['message']
+  };
 }
 
 export function ErrorMessageToJSON(value?: ErrorMessage | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'message': value.message,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'message': value.message
+  };
 }
 
 

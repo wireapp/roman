@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+
 /**
  * Roman Swagger
  * Roman - Wire Bots Proxy
@@ -12,62 +13,61 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
- * 
+ *
  * @export
  * @interface NewUser
  */
 export interface NewUser {
-    /**
-     * 
-     * @type {string}
-     * @memberof NewUser
-     */
-    name: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof NewUser
-     */
-    email: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof NewUser
-     */
-    password: string;
+  /**
+   *
+   * @type {string}
+   * @memberof NewUser
+   */
+  name: string;
+  /**
+   *
+   * @type {string}
+   * @memberof NewUser
+   */
+  email: string;
+  /**
+   *
+   * @type {string}
+   * @memberof NewUser
+   */
+  password: string;
 }
 
 export function NewUserFromJSON(json: any): NewUser {
-    return NewUserFromJSONTyped(json, false);
+  return NewUserFromJSONTyped(json, false);
 }
 
 export function NewUserFromJSONTyped(json: any, ignoreDiscriminator: boolean): NewUser {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'name': json['name'],
-        'email': json['email'],
-        'password': json['password'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'name': json['name'],
+    'email': json['email'],
+    'password': json['password']
+  };
 }
 
 export function NewUserToJSON(value?: NewUser | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'name': value.name,
-        'email': value.email,
-        'password': value.password,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'name': value.name,
+    'email': value.email,
+    'password': value.password
+  };
 }
 
 

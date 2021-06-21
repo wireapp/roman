@@ -12,62 +12,63 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import {exists} from '../runtime';
+
 /**
- * 
+ *
  * @export
  * @interface Asset
  */
 export interface Asset {
-    /**
-     * 
-     * @type {string}
-     * @memberof Asset
-     */
-    type?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Asset
-     */
-    key?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Asset
-     */
-    size?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Asset
+   */
+  type?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Asset
+   */
+  key?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Asset
+   */
+  size?: string;
 }
 
 export function AssetFromJSON(json: any): Asset {
-    return AssetFromJSONTyped(json, false);
+  return AssetFromJSONTyped(json, false);
 }
 
 export function AssetFromJSONTyped(json: any, ignoreDiscriminator: boolean): Asset {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'type': !exists(json, 'type') ? undefined : json['type'],
-        'key': !exists(json, 'key') ? undefined : json['key'],
-        'size': !exists(json, 'size') ? undefined : json['size'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'type': !exists(json, 'type') ? undefined : json['type'],
+    'key': !exists(json, 'key') ? undefined : json['key'],
+    'size': !exists(json, 'size') ? undefined : json['size']
+  };
 }
 
 export function AssetToJSON(value?: Asset | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'type': value.type,
-        'key': value.key,
-        'size': value.size,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'type': value.type,
+    'key': value.key,
+    'size': value.size
+  };
 }
 
 

@@ -1,3 +1,3 @@
-import { Result } from '../generated';
+import {Result} from '../generated';
 
 export type ServiceData = Result

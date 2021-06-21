@@ -12,61 +12,55 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
-import {
-    Pair,
-    PairFromJSON,
-    PairFromJSONTyped,
-    PairToJSON,
-} from './';
+import {Pair, PairFromJSON, PairToJSON} from './';
 
 /**
- * 
+ *
  * @export
  * @interface Report
  */
 export interface Report {
-    /**
-     * 
-     * @type {string}
-     * @memberof Report
-     */
-    broadcastId: string;
-    /**
-     * 
-     * @type {Array<Pair>}
-     * @memberof Report
-     */
-    report: Array<Pair>;
+  /**
+   *
+   * @type {string}
+   * @memberof Report
+   */
+  broadcastId: string;
+  /**
+   *
+   * @type {Array<Pair>}
+   * @memberof Report
+   */
+  report: Array<Pair>;
 }
 
 export function ReportFromJSON(json: any): Report {
-    return ReportFromJSONTyped(json, false);
+  return ReportFromJSONTyped(json, false);
 }
 
 export function ReportFromJSONTyped(json: any, ignoreDiscriminator: boolean): Report {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'broadcastId': json['broadcastId'],
-        'report': ((json['report'] as Array<any>).map(PairFromJSON)),
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'broadcastId': json['broadcastId'],
+    'report': ((json['report'] as Array<any>).map(PairFromJSON))
+  };
 }
 
 export function ReportToJSON(value?: Report | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'broadcastId': value.broadcastId,
-        'report': ((value.report as Array<any>).map(PairToJSON)),
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'broadcastId': value.broadcastId,
+    'report': ((value.report as Array<any>).map(PairToJSON))
+  };
 }
 
 

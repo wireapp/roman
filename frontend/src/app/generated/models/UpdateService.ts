@@ -12,62 +12,63 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import {exists} from '../runtime';
+
 /**
- * 
+ *
  * @export
  * @interface UpdateService
  */
 export interface UpdateService {
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateService
-     */
-    name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateService
-     */
-    url?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateService
-     */
-    avatar?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateService
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateService
+   */
+  url?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UpdateService
+   */
+  avatar?: string;
 }
 
 export function UpdateServiceFromJSON(json: any): UpdateService {
-    return UpdateServiceFromJSONTyped(json, false);
+  return UpdateServiceFromJSONTyped(json, false);
 }
 
 export function UpdateServiceFromJSONTyped(json: any, ignoreDiscriminator: boolean): UpdateService {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'name': !exists(json, 'name') ? undefined : json['name'],
-        'url': !exists(json, 'url') ? undefined : json['url'],
-        'avatar': !exists(json, 'avatar') ? undefined : json['avatar'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'name': !exists(json, 'name') ? undefined : json['name'],
+    'url': !exists(json, 'url') ? undefined : json['url'],
+    'avatar': !exists(json, 'avatar') ? undefined : json['avatar']
+  };
 }
 
 export function UpdateServiceToJSON(value?: UpdateService | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'name': value.name,
-        'url': value.url,
-        'avatar': value.avatar,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'name': value.name,
+    'url': value.url,
+    'avatar': value.avatar
+  };
 }
 
 

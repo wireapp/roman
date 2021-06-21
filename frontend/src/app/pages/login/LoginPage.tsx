@@ -1,23 +1,23 @@
 import TextField from '@material-ui/core/TextField';
-import { Button, CircularProgress } from '@material-ui/core';
-import { useEffect, useState } from 'react';
-import { useAuthContext } from '../../hooks/UseAuth';
+import {Button, CircularProgress} from '@material-ui/core';
+import {useEffect, useState} from 'react';
+import {useAuthContext} from '../../hooks/UseAuth';
 import useRouter from '../../hooks/UseRouter';
-import { makeStyles } from '@material-ui/styles';
-import { routes } from '../../modules/Routing';
+import {makeStyles} from '@material-ui/styles';
+import {routes} from '../../modules/Routing';
 
 /**
  * Login Page, redirects to home after
  */
-export default function LoginPage({ redirectAfterLogin = routes.home }) {
+export default function LoginPage({redirectAfterLogin = routes.home}) {
   const router = useRouter();
-  const { user, login } = useAuthContext();
+  const {user, login} = useAuthContext();
 
   // guarantee that the user will get redirected
   useEffect(() => {
     if (user) {
       // @ts-ignore sadly I haven't found any other way how to get the redirect
-      const { from } = router.location.state ?? { from: { pathname: redirectAfterLogin } };
+      const {from} = router.location.state ?? {from: {pathname: redirectAfterLogin}};
       router.replace(from);
     }
   }, [redirectAfterLogin, router, user]);
@@ -30,11 +30,11 @@ export default function LoginPage({ redirectAfterLogin = routes.home }) {
     e.preventDefault();
 
     setStatus('pending'); // set pending status to display circle
-    return login({ email, password })
-    .then(success => {
-      setStatus(success ? 'idle' : 'error');
-    })
-    .catch(() => setStatus('error')); // catch unauthorized
+    return login({email, password})
+      .then(success => {
+        setStatus(success ? 'idle' : 'error');
+      })
+      .catch(() => setStatus('error')); // catch unauthorized
   };
 
   const handleTyping = (e: any, change: (value: string) => void) => {
@@ -46,7 +46,7 @@ export default function LoginPage({ redirectAfterLogin = routes.home }) {
   return (
     // we use hidden just as a precaution if the suer already exist
     // to not to "blick" with the login window
-    <div className={classes.page} style={{ visibility: user === null ? 'visible' : 'hidden' }}>
+    <div className={classes.page} style={{visibility: user === null ? 'visible' : 'hidden'}}>
       <form className={classes.form} noValidate autoComplete="off">
         <TextField required id="email"
                    error={status === 'error'}
@@ -75,7 +75,7 @@ export default function LoginPage({ redirectAfterLogin = routes.home }) {
           </Button>
         </div>
         <div className={classes.infoBox}
-             style={{ visibility: status === 'error' ? 'visible' : 'hidden' }}>
+             style={{visibility: status === 'error' ? 'visible' : 'hidden'}}>
           Unauthorized!
         </div>
       </form>

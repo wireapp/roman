@@ -12,61 +12,56 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
-import {
-    Mention,
-    MentionFromJSON,
-    MentionFromJSONTyped,
-    MentionToJSON,
-} from './';
+import {exists} from '../runtime';
+import {Mention, MentionFromJSON, MentionToJSON} from './';
 
 /**
- * 
+ *
  * @export
  * @interface Text
  */
 export interface Text {
-    /**
-     * 
-     * @type {string}
-     * @memberof Text
-     */
-    data: string;
-    /**
-     * 
-     * @type {Array<Mention>}
-     * @memberof Text
-     */
-    mentions?: Array<Mention>;
+  /**
+   *
+   * @type {string}
+   * @memberof Text
+   */
+  data: string;
+  /**
+   *
+   * @type {Array<Mention>}
+   * @memberof Text
+   */
+  mentions?: Array<Mention>;
 }
 
 export function TextFromJSON(json: any): Text {
-    return TextFromJSONTyped(json, false);
+  return TextFromJSONTyped(json, false);
 }
 
 export function TextFromJSONTyped(json: any, ignoreDiscriminator: boolean): Text {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': json['data'],
-        'mentions': !exists(json, 'mentions') ? undefined : ((json['mentions'] as Array<any>).map(MentionFromJSON)),
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'data': json['data'],
+    'mentions': !exists(json, 'mentions') ? undefined : ((json['mentions'] as Array<any>).map(MentionFromJSON))
+  };
 }
 
 export function TextToJSON(value?: Text | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data,
-        'mentions': value.mentions === undefined ? undefined : ((value.mentions as Array<any>).map(MentionToJSON)),
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'data': value.data,
+    'mentions': value.mentions === undefined ? undefined : ((value.mentions as Array<any>).map(MentionToJSON))
+  };
 }
 
 

@@ -12,70 +12,71 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import {exists} from '../runtime';
+
 /**
- * 
+ *
  * @export
  * @interface AssetMeta
  */
 export interface AssetMeta {
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetMeta
-     */
-    assetId: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetMeta
-     */
-    assetToken?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetMeta
-     */
-    sha256: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetMeta
-     */
-    otrKey: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AssetMeta
+   */
+  assetId: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AssetMeta
+   */
+  assetToken?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AssetMeta
+   */
+  sha256: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AssetMeta
+   */
+  otrKey: string;
 }
 
 export function AssetMetaFromJSON(json: any): AssetMeta {
-    return AssetMetaFromJSONTyped(json, false);
+  return AssetMetaFromJSONTyped(json, false);
 }
 
 export function AssetMetaFromJSONTyped(json: any, ignoreDiscriminator: boolean): AssetMeta {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'assetId': json['assetId'],
-        'assetToken': !exists(json, 'assetToken') ? undefined : json['assetToken'],
-        'sha256': json['sha256'],
-        'otrKey': json['otrKey'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'assetId': json['assetId'],
+    'assetToken': !exists(json, 'assetToken') ? undefined : json['assetToken'],
+    'sha256': json['sha256'],
+    'otrKey': json['otrKey']
+  };
 }
 
 export function AssetMetaToJSON(value?: AssetMeta | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'assetId': value.assetId,
-        'assetToken': value.assetToken,
-        'sha256': value.sha256,
-        'otrKey': value.otrKey,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'assetId': value.assetId,
+    'assetToken': value.assetToken,
+    'sha256': value.sha256,
+    'otrKey': value.otrKey
+  };
 }
 
 

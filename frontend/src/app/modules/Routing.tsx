@@ -1,5 +1,5 @@
-import { ProvideAuth } from '../hooks/UseAuth';
-import { BrowserRouter, HashRouter, Redirect, Route, Switch } from 'react-router-dom';
+import {ProvideAuth} from '../hooks/UseAuth';
+import {BrowserRouter, HashRouter, Redirect, Route, Switch} from 'react-router-dom';
 import LoginPage from '../pages/login/LoginPage';
 // import UserProfilePage from '../pages/user/UserProfilePage';
 // import HomePage from '../pages/home/HomePage';

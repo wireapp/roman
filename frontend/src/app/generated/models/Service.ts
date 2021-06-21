@@ -12,54 +12,55 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import {exists} from '../runtime';
+
 /**
- * 
+ *
  * @export
  * @interface Service
  */
 export interface Service {
-    /**
-     * 
-     * @type {string}
-     * @memberof Service
-     */
-    id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Service
-     */
-    provider?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Service
+   */
+  id?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof Service
+   */
+  provider?: string;
 }
 
 export function ServiceFromJSON(json: any): Service {
-    return ServiceFromJSONTyped(json, false);
+  return ServiceFromJSONTyped(json, false);
 }
 
 export function ServiceFromJSONTyped(json: any, ignoreDiscriminator: boolean): Service {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'id': !exists(json, 'id') ? undefined : json['id'],
-        'provider': !exists(json, 'provider') ? undefined : json['provider'],
-    };
+  if ((json === undefined) || (json === null)) {
+    return json;
+  }
+  return {
+
+    'id': !exists(json, 'id') ? undefined : json['id'],
+    'provider': !exists(json, 'provider') ? undefined : json['provider']
+  };
 }
 
 export function ServiceToJSON(value?: Service | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'id': value.id,
-        'provider': value.provider,
-    };
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  return {
+
+    'id': value.id,
+    'provider': value.provider
+  };
 }
 
 

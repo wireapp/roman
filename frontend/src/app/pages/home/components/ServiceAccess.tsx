@@ -1,5 +1,5 @@
-import { Divider, Paper, TextField } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import {Divider, Paper, TextField} from '@material-ui/core';
+import {makeStyles} from '@material-ui/styles';
 
 export interface ServiceAccessInfoProps {
   serviceCode: string
