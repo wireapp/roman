@@ -14,9 +14,7 @@ import com.wire.xenon.assets.Picture;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.tools.Logger;
 import io.dropwizard.validation.ValidationMethod;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.hibernate.validator.constraints.Length;
 import org.jdbi.v3.core.Jdbi;
 
@@ -54,7 +52,11 @@ public class ServiceResource {
     }
 
     @POST
-    @ApiOperation(value = "Create new Service", response = _Result.class)
+    @ApiOperation(value = "Create new service.", nickname = "createNewService")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, response = _ServiceInformation.class, message = "Service created."),
+            @ApiResponse(code = 500, response = ErrorMessage.class, message = "Something went wrong."),
+    })
     @ServiceAuthorization
     public Response create(@ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
                            @Context ContainerRequestContext context,
@@ -121,7 +123,7 @@ public class ServiceResource {
 
             provider = providersDAO.get(providerId);
 
-            _Result result = new _Result();
+            _ServiceInformation result = new _ServiceInformation();
             result.auth = provider.serviceAuth;
             result.key = token;
             result.code = String.format("%s:%s", providerId, provider.serviceId);
@@ -145,7 +147,11 @@ public class ServiceResource {
     }
 
     @PUT
-    @ApiOperation(value = "Update Service", response = _Result.class)
+    @ApiOperation(value = "Update Service", response = _ServiceInformation.class, nickname = "updateService")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, response = _ServiceInformation.class, message = "Service updated."),
+            @ApiResponse(code = 500, response = ErrorMessage.class, message = "Something went wrong."),
+    })
     @ServiceAuthorization
     public Response update(@Context ContainerRequestContext context,
                            @ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
@@ -193,7 +199,7 @@ public class ServiceResource {
 
             provider = providersDAO.get(providerId);
 
-            _Result result = new _Result();
+            _ServiceInformation result = new _ServiceInformation();
             result.key = token;
             result.auth = provider.serviceAuth;
             result.code = String.format("%s:%s", provider.id, provider.serviceId);
@@ -214,7 +220,11 @@ public class ServiceResource {
     }
 
     @GET
-    @ApiOperation(value = "Get the Service", response = _Result.class)
+    @ApiOperation(value = "Get the Service", nickname = "getService")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, response = _ServiceInformation.class, message = "Service."),
+            @ApiResponse(code = 500, response = ErrorMessage.class, message = "Something went wrong."),
+    })
     @ServiceAuthorization
     public Response get(@ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
                         @Context ContainerRequestContext context) {
@@ -225,7 +235,7 @@ public class ServiceResource {
 
             Provider provider = providersDAO.get(providerId);
 
-            _Result result = new _Result();
+            _ServiceInformation result = new _ServiceInformation();
             result.key = token;
             result.auth = provider.serviceAuth;
             result.code = String.format("%s:%s", provider.id, provider.serviceId);
@@ -247,7 +257,11 @@ public class ServiceResource {
     }
 
     @DELETE
-    @ApiOperation(value = "Delete the Service", response = _Result.class)
+    @ApiOperation(value = "Delete the Service", nickname = "deleteService")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Service created."),
+            @ApiResponse(code = 500, response = ErrorMessage.class, message = "Something went wrong."),
+    })
     @ServiceAuthorization
     public Response delete(@ApiParam(hidden = true) @CookieParam(Z_ROMAN) String token,
                            @Context ContainerRequestContext context) {
@@ -369,7 +383,7 @@ public class ServiceResource {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    static class _Result {
+    static class _ServiceInformation {
         @JsonProperty("service_code")
         @NotNull
         public String code;

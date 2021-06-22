@@ -4,7 +4,7 @@ import {makeStyles} from '@material-ui/styles';
 import ComponentOrPending from '../../modules/ComponentOrPending';
 import Service from './components/Service';
 import Header from './components/Header';
-import {ServiceData} from '../../types/TypeAliases';
+import {ServiceInformation} from "../../generated";
 
 /**
  * Login Page, redirects to home after
@@ -13,7 +13,7 @@ export default function HomePage() {
   const {api} = useRequireAuth();
 
   const [status, setStatus] = useState<'idle' | 'pending'>('idle');
-  const [service, setService] = useState<ServiceData | undefined>(undefined);
+  const [service, setService] = useState<ServiceInformation | undefined>(undefined);
 
   useEffect(() => {
     if (service) {
@@ -22,7 +22,7 @@ export default function HomePage() {
 
     setStatus('pending');
 
-    api.get2()
+    api.getService()
       .then(r => setService(r))
       .then(() => setStatus('idle'))
       .catch((e) => console.error(e)); // todo maybe some error handling

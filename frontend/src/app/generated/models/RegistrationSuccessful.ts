@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+
 /**
  * Roman Swagger
  * Roman - Wire Bots Proxy
@@ -15,39 +16,32 @@
 /**
  *
  * @export
- * @interface SignIn
+ * @interface RegistrationSuccessful
  */
-export interface SignIn {
+export interface RegistrationSuccessful {
   /**
    *
    * @type {string}
-   * @memberof SignIn
+   * @memberof RegistrationSuccessful
    */
-  email: string;
-  /**
-   *
-   * @type {string}
-   * @memberof SignIn
-   */
-  password: string;
+  message: string;
 }
 
-export function SignInFromJSON(json: any): SignIn {
-  return SignInFromJSONTyped(json, false);
+export function RegistrationSuccessfulFromJSON(json: any): RegistrationSuccessful {
+  return RegistrationSuccessfulFromJSONTyped(json, false);
 }
 
-export function SignInFromJSONTyped(json: any, ignoreDiscriminator: boolean): SignIn {
+export function RegistrationSuccessfulFromJSONTyped(json: any, ignoreDiscriminator: boolean): RegistrationSuccessful {
   if ((json === undefined) || (json === null)) {
     return json;
   }
   return {
 
-    'email': json['email'],
-    'password': json['password'],
+    'message': json['message'],
   };
 }
 
-export function SignInToJSON(value?: SignIn | null): any {
+export function RegistrationSuccessfulToJSON(value?: RegistrationSuccessful | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -56,8 +50,7 @@ export function SignInToJSON(value?: SignIn | null): any {
   }
   return {
 
-    'email': value.email,
-    'password': value.password,
+    'message': value.message,
   };
 }
 

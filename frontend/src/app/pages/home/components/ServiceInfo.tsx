@@ -24,7 +24,7 @@ export default function ServiceInfo(info: ServiceInfoProps) {
     e.preventDefault();
 
     setStatus('pending'); // set pending status to display circle
-    api.update({body: {url: webHook, name: serviceName}})
+    api.updateService({body: {url: webHook, name: serviceName}})
       .then((r) => info.useServiceRefresh(r))
       .then(() => setStatus('idle')) // todo maybe show some modal with OK
       .catch(e => {

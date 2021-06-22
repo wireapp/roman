@@ -4,7 +4,7 @@ import {Configuration, DefaultApi, RequestContext, ResponseContext} from '../gen
 import useUser from './UseUser';
 
 // the localhost is here just as a template for local development
-export const romanBasePath = process.env.BASE_PATH ?? window.origin ?? 'http://localhost:8080';
+export const romanBasePath = process.env.BASE_PATH ?? 'https://roman.integrations.zinfra.io' ?? 'http://localhost:8080';
 
 /**
  * Hook that gives access to DefaultApi.
@@ -27,7 +27,6 @@ export default function useApi(): DefaultApi {
             // todo do this in more react way
             if (context.response.status === 401) {
               deleteUser(); // delete user from the storage
-              window.location.replace(window.origin); // and redirect to homepage -> that will redirect to login page
             }
           }
         }]
