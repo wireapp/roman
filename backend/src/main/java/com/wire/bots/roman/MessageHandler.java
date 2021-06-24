@@ -68,7 +68,14 @@ public class MessageHandler extends MessageHandlerBase {
 
         message.type = "conversation.bot_request";
 
-        return send(message);
+        final boolean delivered = send(message);
+        if (!delivered) {
+            Logger.info("Failed to connect to: %s or the websocket is down, provider: %s. Rejecting this bot",
+                    provider.serviceUrl, provider.id);
+            botsDAO.remove(botId);
+        }
+
+        return delivered;
     }
 
     @Override
@@ -363,7 +370,7 @@ public class MessageHandler extends MessageHandlerBase {
         message.type = "conversation.bot_removed";
 
         if (!send(message))
-            Logger.warning("onBotRemoved: failed to deliver message");
+            Logger.info("onBotRemoved: failed to deliver message");
 
         botsDAO.remove(botId);
     }

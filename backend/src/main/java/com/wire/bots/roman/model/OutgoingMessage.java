@@ -1,6 +1,5 @@
 package com.wire.bots.roman.model;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.validation.constraints.NotNull;
