@@ -1,9 +1,11 @@
-import TextField from '@material-ui/core/TextField';
-import {Button, CircularProgress} from '@material-ui/core';
 import {useState} from 'react';
 import {makeStyles} from '@material-ui/styles';
 import useApi from "../../hooks/UseApi";
-import useInput from "../../hooks/UseInput";
+import {NewUser} from "../../generated";
+import RegistrationSuccess from "./components/RegistrationSuccess";
+import RegistrationForm from "./components/RegistrationForm";
+import {Button} from "@material-ui/core";
+import {routes} from "../../modules/Routing";
 
 /**
  * Registration page
@@ -11,64 +13,28 @@ import useInput from "../../hooks/UseInput";
 export default function RegistrationPage() {
   const api = useApi()
 
-  const {value: name, bind: bindName} = useInput('');
-  const {value: email, bind: bindEmail} = useInput('');
-  const {value: password, bind: bindPassword} = useInput('');
-  const [message, setMessage] = useState('')
-  const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [registered, setRegistered] = useState<string | undefined>(undefined)
 
-  const handleRegister = (e: any) => {
-    e.preventDefault();
-
-    setStatus('pending'); // set pending status to display circle
-    return api.registerBotProvider({body: {email, name, password}})
-      .then((r) => {
-        setMessage(r.message)
-        setStatus('success');
-      })
-      .catch((e) => {
-        console.error(e)
-        setStatus('error')
-      });
+  const register = async (registration: NewUser) => {
+    try {
+      const {message} = await api.registerBotProvider({body: registration})
+      setRegistered(message)
+    } catch (e) {
+      console.error(e)
+      throw new Error('An error occurred during registration, did you set valid email? ' +
+        'Also the password must be at least 6 characters.')
+    }
   };
 
   const classes = useStyles();
-  const disabled = () => status === 'pending' || status === 'success'
   return (
     <div className={classes.page}>
-      <form className={classes.form} noValidate autoComplete="off">
-        <TextField required id="name"
-                   label="Name"
-                   disabled={disabled()}
-                   {...bindName}/>
-        <TextField required id="email"
-                   error={status === 'error'}
-                   type="email"
-                   label="e-mail"
-                   disabled={disabled()}
-                   {...bindEmail}/>
-        <TextField required id="password"
-                   error={status === 'error'}
-                   type="password"
-                   label="Password"
-                   disabled={disabled()}
-                   {...bindPassword}/>
-        <div>
-          <Button variant="contained"
-                  type="submit"
-                  fullWidth
-                  onClick={handleRegister}
-                  disabled={!(name && email && password) || disabled()}>
-            {status === 'pending'
-              ? <CircularProgress size={'1.5rem'}/>
-              : <span>Register</span>
-            }
-          </Button>
-        </div>
-        <div style={{visibility: message ? 'visible' : 'hidden'}}>
-          {message}
-        </div>
-      </form>
+      {registered ? <RegistrationSuccess message={registered}/> : <RegistrationForm register={register}/>}
+      <Button
+        variant="outlined"
+        href={routes.login}>
+        Or login
+      </Button>
     </div>
   );
 }
@@ -88,8 +54,10 @@ const useStyles = makeStyles(() => ({
         width: '25ch'
       }
     },
-    infoBox: {
-      color: 'red'
-    }
+    warningBox: {
+      color: 'red',
+      textAlign: 'justify'
+    },
+    infoBox: {}
   })
 );
