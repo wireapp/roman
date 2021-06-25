@@ -1,4 +1,3 @@
-// Hook
 import {useCallback, useEffect, useState} from 'react';
 
 export function useAsyncParams<T, P, E = string>(

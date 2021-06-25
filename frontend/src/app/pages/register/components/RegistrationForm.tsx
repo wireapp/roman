@@ -14,11 +14,13 @@ interface Props {
  * Form which allows user to register a bot provider account.
  */
 export default function RegistrationForm({register}: Props) {
-  const {value: name, bind: bindName} = useInput('');
-  const {value: email, bind: bindEmail} = useInput('');
-  const {value: password, bind: bindPassword} = useInput('');
-  const [message, setMessage] = useState('')
   const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const handleTyping = () => setStatus('idle')
+  const [message, setMessage] = useState('')
+
+  const {value: name, bind: bindName} = useInput('', handleTyping);
+  const {value: email, bind: bindEmail} = useInput('', handleTyping);
+  const {value: password, bind: bindPassword} = useInput('', handleTyping);
 
   const handleRegister = (e: any) => {
     e.preventDefault();
