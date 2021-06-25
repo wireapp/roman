@@ -4,7 +4,7 @@ import {Configuration, DefaultApi, RequestContext, ResponseContext} from '../gen
 import useUser from './UseUser';
 
 // the localhost is here just as a template for local development
-export const romanBasePath = process.env.BASE_PATH ?? 'https://roman.integrations.zinfra.io' ?? 'http://localhost:8080';
+export const romanBasePath = process.env.REACT_APP_BASE_PATH ?? window.origin ?? 'http://localhost:8080';
 
 /**
  * Hook that gives access to DefaultApi.
