@@ -7,17 +7,17 @@ import {ServiceInformation} from "../../../generated";
 export interface ServiceInfoProps {
   name: string
   webhook: string | undefined
-  useServiceRefresh: (data: ServiceInformation | undefined) => void
+  setService: (data: ServiceInformation | undefined) => void
 }
 
 /**
  * Editable part of the service data.
  */
-export default function ServiceInfo(info: ServiceInfoProps) {
+export default function ServiceInfo({name, webhook, setService}: ServiceInfoProps) {
   const {api} = useAuthContext();
 
-  const [serviceName, setServiceName] = useState(info.name);
-  const [webHook, setWebHook] = useState(info.webhook);
+  const [serviceName, setServiceName] = useState(name);
+  const [webHook, setWebHook] = useState(webhook);
   const [status, setStatus] = useState<'idle' | 'pending'>('idle');
 
   const handleSubmit = (e: any) => {
@@ -25,22 +25,22 @@ export default function ServiceInfo(info: ServiceInfoProps) {
 
     setStatus('pending'); // set pending status to display circle
     api.updateService({body: {url: webHook, name: serviceName}})
-      .then((r) => info.useServiceRefresh(r))
+      .then((r) => setService(r))
       .then(() => setStatus('idle')) // todo maybe show some modal with OK
       .catch(e => {
         console.log(e); // todo better error handling would be nice
-        info.useServiceRefresh(undefined);
+        setService(undefined);
         setStatus('idle');
       });
   };
 
   const handleReset = (e: any) => {
     e.preventDefault();
-    setServiceName(info.name);
-    setWebHook(info.webhook);
+    setServiceName(name);
+    setWebHook(webhook);
   };
 
-  const dataNotChanged = () => serviceName === info.name && webHook === info.webhook;
+  const dataNotChanged = () => serviceName === name && webHook === webhook;
 
   const classes = useStyles();
   return (

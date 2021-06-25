@@ -4,11 +4,15 @@ import {useState} from "react";
 import TextField from "@material-ui/core/TextField";
 import {Button, CircularProgress} from "@material-ui/core";
 import {makeStyles} from "@material-ui/styles";
+import {routes} from "../../../modules/Routing";
 
 interface Props {
   register: (registration: NewUser) => Promise<void>
 }
 
+/**
+ * Form which allows user to register a bot provider account.
+ */
 export default function RegistrationForm({register}: Props) {
   const {value: name, bind: bindName} = useInput('');
   const {value: email, bind: bindEmail} = useInput('');
@@ -47,7 +51,7 @@ export default function RegistrationForm({register}: Props) {
                    label="Password"
                    disabled={disabled()}
                    {...bindPassword}/>
-        <div>
+        <div className={classes.buttons}>
           <Button variant="contained"
                   type="submit"
                   fullWidth
@@ -57,6 +61,12 @@ export default function RegistrationForm({register}: Props) {
               ? <CircularProgress size={'1.5rem'}/>
               : <span>Register</span>
             }
+          </Button>
+          <Button
+            variant="outlined"
+            fullWidth
+            href={routes.login}>
+            Or login
           </Button>
         </div>
         <div className={status === 'error' ? classes.warningBox : classes.infoBox}
@@ -81,6 +91,11 @@ const useStyles = makeStyles(() => ({
     warningBox: {
       color: 'red',
       textAlign: 'justify'
+    },
+    buttons: {
+      '& > button': {
+        marginBottom: '10px'
+      }
     },
     infoBox: {}
   })

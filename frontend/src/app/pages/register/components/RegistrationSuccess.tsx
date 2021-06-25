@@ -6,11 +6,14 @@ interface Props {
   message: string
 }
 
+/**
+ * Component that displays page that informs user about the successful registration.
+ */
 export default function RegistrationSuccess({message}: Props) {
   const classes = useStyles()
   return (
-    <>
-      <Paper className={classes.container}>
+    <div>
+      <Paper className={classes.paper} elevation={4}>
         <div className={classes.messageText}>{message}</div>
 
         <div>Please confirm the registration mail and then log in.</div>
@@ -18,24 +21,32 @@ export default function RegistrationSuccess({message}: Props) {
 
       <Button
         className={classes.loginButton}
-        variant="outlined"
+        variant="contained"
         href={routes.login}>
         Login
       </Button>
-    </>
+    </div>
   )
 }
 
 const useStyles = makeStyles(() => ({
-    container: {
-      padding: '10px',
-      margin: '20px'
-    },
-    loginButton: {
-      margin: '20px'
-    },
-    messageText: {
-      padding: '10px'
-    }
+  container: {
+    display: 'flex',
+    flexFlow: 'column',
+    alignContent: 'center',
+    justifyContent: 'center'
+  },
+  paper: {
+    padding: '30px',
+    margin: '20px'
+  },
+  loginButton: {
+    margin: '20px',
+    maxWidth: '25ch',
+    padding: '10px'
+  },
+  messageText: {
+    padding: '10px'
+  }
   })
 );

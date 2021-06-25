@@ -2,11 +2,15 @@ import ServiceAccessInfo, {ServiceAccessInfoProps} from './ServiceAccess';
 import ServiceInfo, {ServiceInfoProps} from './ServiceInfo';
 import {makeStyles} from '@material-ui/styles';
 
+interface Props {
+  serviceAccess: ServiceAccessInfoProps,
+  info: ServiceInfoProps
+}
 
-export default function Service({
-                                  serviceAccess,
-                                  info
-                                }: { serviceAccess: ServiceAccessInfoProps, info: ServiceInfoProps }) {
+/**
+ * Displays data about the service.
+ */
+export default function Service({serviceAccess, info}: Props) {
   const classes = useStyles();
   return (
     <div className={classes.service}>

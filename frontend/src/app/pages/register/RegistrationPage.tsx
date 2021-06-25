@@ -4,11 +4,9 @@ import useApi from "../../hooks/UseApi";
 import {NewUser} from "../../generated";
 import RegistrationSuccess from "./components/RegistrationSuccess";
 import RegistrationForm from "./components/RegistrationForm";
-import {Button} from "@material-ui/core";
-import {routes} from "../../modules/Routing";
 
 /**
- * Registration page
+ * Registration page.
  */
 export default function RegistrationPage() {
   const api = useApi()
@@ -29,12 +27,10 @@ export default function RegistrationPage() {
   const classes = useStyles();
   return (
     <div className={classes.page}>
-      {registered ? <RegistrationSuccess message={registered}/> : <RegistrationForm register={register}/>}
-      <Button
-        variant="outlined"
-        href={routes.login}>
-        Or login
-      </Button>
+      {registered ?
+        <RegistrationSuccess message={registered}/> :
+        <RegistrationForm register={register}/>
+      }
     </div>
   );
 }

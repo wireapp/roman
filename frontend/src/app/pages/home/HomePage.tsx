@@ -5,6 +5,7 @@ import ComponentOrPending from '../../modules/ComponentOrPending';
 import Service from './components/Service';
 import Header from './components/Header';
 import {ServiceInformation} from "../../generated";
+import {ServiceCreation} from "./components/ServiceCreation";
 
 /**
  * Login Page, redirects to home after
@@ -21,7 +22,6 @@ export default function HomePage() {
     }
 
     setStatus('pending');
-
     api.getService()
       .then(r => setService(r))
       .then(() => setStatus('idle'))
@@ -36,17 +36,24 @@ export default function HomePage() {
           <>
             <div className={classes.information}>
               <Header/>
-              <Service
-                serviceAccess={{
-                  serviceCode: service.serviceCode,
-                  serviceAuthentication: service.serviceAuthentication,
-                  appKey: service.appKey
-                }}
-                info={{
-                  name: service.service!!, // todo check when this is null
-                  webhook: service.webhook!!,
-                  useServiceRefresh: (serviceData) => setService(serviceData)
-                }}/>
+              {/* If service exists, show service data, otherwise show service dialog*/}
+              {service.service ?
+                <Service
+                  serviceAccess={{
+                    serviceCode: service.serviceCode,
+                    serviceAuthentication: service.serviceAuthentication,
+                    appKey: service.appKey
+                  }}
+                  info={{
+                    name: service.service,
+                    webhook: service.webhook,
+                    setService
+                  }}/>
+                :
+                <ServiceCreation
+                  setService={setService}
+                />
+              }
             </div>
           </>
         )}
