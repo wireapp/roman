@@ -2,12 +2,12 @@ import {makeStyles} from '@material-ui/styles';
 import {Button, CircularProgress, Paper, TextField} from '@material-ui/core';
 import {useState} from 'react';
 import {useAuthContext} from '../../../hooks/UseAuth';
-import {ServiceData} from '../../../types/TypeAliases';
+import {ServiceInformation} from "../../../generated";
 
 export interface ServiceInfoProps {
   name: string
   webhook: string | undefined
-  useServiceRefresh: (data: ServiceData | undefined) => void
+  useServiceRefresh: (data: ServiceInformation | undefined) => void
 }
 
 /**

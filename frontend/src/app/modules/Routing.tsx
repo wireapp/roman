@@ -1,11 +1,10 @@
 import {ProvideAuth} from '../hooks/UseAuth';
 import {BrowserRouter, HashRouter, Redirect, Route, Switch} from 'react-router-dom';
 import LoginPage from '../pages/login/LoginPage';
-// import UserProfilePage from '../pages/user/UserProfilePage';
-// import HomePage from '../pages/home/HomePage';
 import React from 'react';
 import HomePage from '../pages/home/HomePage';
 import PrivateRoute from './PrivateRoute';
+import RegistrationPage from "../pages/register/RegistrationPage";
 
 export const routes = {
   home: '/',
@@ -27,10 +26,9 @@ export default function Routing() {
           <Route path={routes.login}>
             <LoginPage/>
           </Route>
-
-          {/*<PrivateRoute path={routes.profile}>*/}
-          {/*  <UserProfilePage/>*/}
-          {/*</PrivateRoute>*/}
+          <Route path={routes.register}>
+            <RegistrationPage/>
+          </Route>
 
           <PrivateRoute path={routes.home}>
             <HomePage/>

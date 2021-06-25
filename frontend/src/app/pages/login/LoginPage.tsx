@@ -1,5 +1,5 @@
 import TextField from '@material-ui/core/TextField';
-import {Button, CircularProgress} from '@material-ui/core';
+import {Button, CircularProgress, Link} from '@material-ui/core';
 import {useEffect, useState} from 'react';
 import {useAuthContext} from '../../hooks/UseAuth';
 import useRouter from '../../hooks/UseRouter';
@@ -77,6 +77,9 @@ export default function LoginPage({redirectAfterLogin = routes.home}) {
         <div className={classes.infoBox}
              style={{visibility: status === 'error' ? 'visible' : 'hidden'}}>
           Unauthorized!
+        </div>
+        <div>
+          <Link href={routes.register}>Register new account</Link>
         </div>
       </form>
     </div>
