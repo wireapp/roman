@@ -22,7 +22,7 @@ export default function RegistrationSuccess({message}: Props) {
       <Button
         className={classes.loginButton}
         variant="contained"
-        href={routes.login}>
+        href={`#${routes.login}`}>
         Login
       </Button>
     </div>

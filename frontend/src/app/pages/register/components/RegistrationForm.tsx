@@ -67,7 +67,7 @@ export default function RegistrationForm({register}: Props) {
           <Button
             variant="outlined"
             fullWidth
-            href={routes.login}>
+            href={`#${routes.login}`}>
             Or login
           </Button>
         </div>

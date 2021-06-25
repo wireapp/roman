@@ -76,7 +76,8 @@ export default function LoginPage({redirectAfterLogin = routes.home}) {
           Unauthorized!
         </div>
         <div>
-          <Link href={routes.register}>Register new account</Link>
+          {/* TODO fix the routing, # is just a hotfix*/}
+          <Link href={`#${routes.register}`}>Register new account</Link>
         </div>
       </form>
     </div>
