@@ -7,6 +7,9 @@ export interface ServiceAccessInfoProps {
   appKey: string
 }
 
+/**
+ * The component displays unmodifiable data about the service.
+ */
 export default function ServiceAccessInfo(accessInfo: ServiceAccessInfoProps) {
   const classes = useStyles();
   return (

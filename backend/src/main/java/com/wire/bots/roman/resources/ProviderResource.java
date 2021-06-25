@@ -11,9 +11,7 @@ import com.wire.bots.roman.model.SignIn;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.tools.Logger;
 import io.dropwizard.validation.ValidationMethod;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.hibernate.validator.constraints.Length;
 import org.jdbi.v3.core.Jdbi;
 
@@ -42,7 +40,11 @@ public class ProviderResource {
 
     @POST
     @Path("/register")
-    @ApiOperation(value = "Register as Wire Bot Developer")
+    @ApiOperation(value = "Register as Wire Bot Developer", nickname = "registerBotProvider")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, response = _RegistrationSuccessful.class, message = "Registration was successful."),
+            @ApiResponse(code = 500, response = ErrorMessage.class, message = "Not authenticated."),
+    })
     public Response register(@ApiParam @Valid _NewUser payload) {
         try {
             String name = payload.name;
@@ -53,10 +55,10 @@ public class ProviderResource {
             Logger.debug("ProviderResource.register: login status %d", register.getStatus());
 
             if (register.getStatus() >= 400) {
-                return Response.
-                        ok(register.readEntity(String.class)).
-                        status(register.getStatus()).
-                        build();
+                return Response
+                        .ok(register.readEntity(String.class))
+                        .status(register.getStatus())
+                        .build();
             }
 
             Provider provider = register.readEntity(Provider.class);
@@ -65,7 +67,7 @@ public class ProviderResource {
             providersDAO.insert(name, provider.id, email, hash, provider.password);
 
             return Response.
-                    ok(new ErrorMessage("Email was sent to: " + payload.email)).
+                    ok(new _RegistrationSuccessful("Email was sent to: " + payload.email)).
                     status(register.getStatus()).
                     build();
         } catch (Exception e) {
@@ -79,7 +81,11 @@ public class ProviderResource {
 
     @POST
     @Path("/login")
-    @ApiOperation(value = "Login as Wire Bot Developer")
+    @ApiOperation(value = "Login as Wire Bot Developer", nickname = "loginBotProvider")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Login was successful."),
+            @ApiResponse(code = 401, response = ErrorMessage.class, message = "Wrong email or password."),
+    })
     public Response login(@ApiParam @Valid SignIn payload) {
         try {
             final String email = payload.email.toLowerCase();
@@ -138,6 +144,17 @@ public class ProviderResource {
         @ValidationMethod(message = "Malformed email")
         public boolean isEmail() {
             return email.contains("@") && email.contains(".");
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class _RegistrationSuccessful {
+        @NotNull
+        @JsonProperty
+        public String message;
+
+        public _RegistrationSuccessful(String message) {
+            this.message = message;
         }
     }
 }

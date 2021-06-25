@@ -48,7 +48,7 @@ function useProvideAuth(): UserService {
 
   const login = async (login: SignIn) => {
     try {
-      await api.login({body: login});
+      await api.loginBotProvider({body: login});
       storeUser(login.email);
       return true;
     } catch (e) {

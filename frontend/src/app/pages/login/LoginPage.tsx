@@ -1,10 +1,11 @@
 import TextField from '@material-ui/core/TextField';
-import {Button, CircularProgress} from '@material-ui/core';
+import {Button, CircularProgress, Link} from '@material-ui/core';
 import {useEffect, useState} from 'react';
 import {useAuthContext} from '../../hooks/UseAuth';
 import useRouter from '../../hooks/UseRouter';
 import {makeStyles} from '@material-ui/styles';
 import {routes} from '../../modules/Routing';
+import useInput from "../../hooks/UseInput";
 
 /**
  * Login Page, redirects to home after
@@ -12,7 +13,6 @@ import {routes} from '../../modules/Routing';
 export default function LoginPage({redirectAfterLogin = routes.home}) {
   const router = useRouter();
   const {user, login} = useAuthContext();
-
   // guarantee that the user will get redirected
   useEffect(() => {
     if (user) {
@@ -22,9 +22,10 @@ export default function LoginPage({redirectAfterLogin = routes.home}) {
     }
   }, [redirectAfterLogin, router, user]);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'pending' | 'error'>('idle');
+  const handleTyping = () => setStatus('idle') // delete error when typing
+  const {value: email, bind: bindEmail} = useInput('', handleTyping)
+  const {value: password, bind: bindPassword} = useInput('', handleTyping)
 
   const handleLogin = (e: any) => {
     e.preventDefault();
@@ -34,34 +35,30 @@ export default function LoginPage({redirectAfterLogin = routes.home}) {
       .then(success => {
         setStatus(success ? 'idle' : 'error');
       })
-      .catch(() => setStatus('error')); // catch unauthorized
-  };
-
-  const handleTyping = (e: any, change: (value: string) => void) => {
-    setStatus('idle'); // reset error flag
-    change(e.target.value);
+      .catch((e) => {
+        console.log(e)
+        setStatus('error')
+      }); // catch unauthorized
   };
 
   const classes = useStyles();
   return (
     // we use hidden just as a precaution if the suer already exist
     // to not to "blick" with the login window
-    <div className={classes.page} style={{visibility: user === null ? 'visible' : 'hidden'}}>
+    <div className={classes.page} style={{visibility: !user ? 'visible' : 'hidden'}}>
       <form className={classes.form} noValidate autoComplete="off">
         <TextField required id="email"
                    error={status === 'error'}
                    type="email"
                    label="e-mail"
-                   value={email}
                    disabled={status === 'pending'}
-                   onChange={e => handleTyping(e, setEmail)}/>
+                   {...bindEmail}/>
         <TextField required id="password"
                    error={status === 'error'}
                    type="password"
                    label="password"
-                   value={password}
                    disabled={status === 'pending'}
-                   onChange={e => handleTyping(e, setPassword)}/>
+                   {...bindPassword}/>
         <div>
           <Button variant="contained"
                   type="submit"
@@ -77,6 +74,9 @@ export default function LoginPage({redirectAfterLogin = routes.home}) {
         <div className={classes.infoBox}
              style={{visibility: status === 'error' ? 'visible' : 'hidden'}}>
           Unauthorized!
+        </div>
+        <div>
+          <Link href={routes.register}>Register new account</Link>
         </div>
       </form>
     </div>

@@ -1,7 +1,17 @@
 import {useState} from 'react';
 
-// https://rangle.io/blog/simplifying-controlled-inputs-with-hooks/
-export default function useInput<T>(initialValue: T) {
+/**
+ * Abstracted useState for the inputs.
+ *
+ * Use as:
+ * const {value: someNamedValue, bind: bindValue} = useInput('')
+ * <input {...bindValue}> </input>.
+ */
+export default function useInput<T>(
+  initialValue: T,
+  onChangeCallback: (value: T) => void = () => {
+  }
+) {
   const [value, setValue] = useState<T>(initialValue);
 
   return {
@@ -11,6 +21,7 @@ export default function useInput<T>(initialValue: T) {
     bind: {
       value,
       onChange: (event: { target: { value: T } }) => {
+        onChangeCallback(value)
         setValue(event.target.value);
       }
     }
