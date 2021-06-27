@@ -88,7 +88,6 @@ public class Application extends Server<Config> {
         environment.jersey().register(ServiceAuthenticationFilter.ServiceAuthenticationFeature.class);
         environment.jersey().register(ServiceTokenAuthenticationFilter.ServiceTokenAuthenticationFeature.class);
         environment.jersey().register(BackendAuthenticationFilter.BackendAuthenticationFeature.class);
-        environment.jersey().setUrlPattern("/api/*");
     }
 
     @Override
