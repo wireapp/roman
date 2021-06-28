@@ -1,5 +1,5 @@
 server:
-  rootPath: /api
+  rootPath: /hello/world/api
   applicationConnectors:
     - type: http
       port: ${HTTP_PORT:-8080}
@@ -25,7 +25,7 @@ logging:
 
 swagger:
   # make sure that this settings is the same as "server.rootPath"
-  uriPrefix: /api
+  uriPrefix: /hello/world/api
   title: Roman Swagger
   description: Roman - Wire Bots Proxy
   contactEmail: dejan@wire.com
@@ -38,10 +38,10 @@ swagger:
 
 assets:
   mappings:
-    /assets: /
+    /hello/world/assets: /
   overrides:
     # the default assumes you have build frontend by "npm run build"
-    /: ${FRONTEND_PATH:-../frontend/build}
+    /hello/world: ${FRONTEND_PATH:-../frontend/build}
 
 jerseyClient:
   timeout: 40s
