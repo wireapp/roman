@@ -396,6 +396,9 @@ public class MessageHandler extends MessageHandlerBase {
 
                 Logger.debug("MessageHandler.send: Sent: `%s` status: %d", message.type, post.getStatus());
 
+                if (message.type.equalsIgnoreCase("conversation.bot_request"))
+                    return post.getStatus() == 200;
+
                 if (post.hasEntity()) {
                     final IncomingMessage incomingMessage = getIncomingMessage(post);
                     if (incomingMessage != null && incomingMessage.type != null) {

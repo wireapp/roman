@@ -1,4 +1,5 @@
 server:
+  rootPath: /api
   applicationConnectors:
     - type: http
       port: ${HTTP_PORT:-8080}
@@ -23,6 +24,7 @@ logging:
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
 swagger:
+  # make sure that this settings is the same as "server.rootPath"
   uriPrefix: /api
   title: Roman Swagger
   description: Roman - Wire Bots Proxy
