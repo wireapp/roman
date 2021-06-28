@@ -1,5 +1,5 @@
 import {ProvideAuth} from '../hooks/UseAuth';
-import {BrowserRouter, HashRouter, Redirect, Route, Switch} from 'react-router-dom';
+import {HashRouter, Route, Switch} from 'react-router-dom';
 import LoginPage from '../pages/login/LoginPage';
 import React from 'react';
 import HomePage from '../pages/home/HomePage';
@@ -35,10 +35,6 @@ export default function Routing() {
           </PrivateRoute>
         </Switch>
       </HashRouter>
-      {/* redirect traffic to hashrouter */}
-      <BrowserRouter>
-        {!window.location.hash && (<Redirect to={`#${window.location.pathname}`}/>)}
-      </BrowserRouter>
     </ProvideAuth>
   );
 }

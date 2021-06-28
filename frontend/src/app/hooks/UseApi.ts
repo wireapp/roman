@@ -1,7 +1,7 @@
 import {Configuration, DefaultApi, RequestContext, ResponseContext} from '../generated';
 
 // the localhost is here just as a template for local development
-export const romanBasePath = process.env.REACT_APP_BASE_PATH ?? window.origin ?? 'http://localhost:8080';
+export const romanBasePath = process.env.REACT_APP_BASE_PATH ?? `${window.origin}${window.location.pathname}`;
 
 const api = new DefaultApi(
   new Configuration({
