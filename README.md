@@ -37,7 +37,7 @@ Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API.
 ```
 {
   "name": "My Cool Bot",    
-  "summary": "Short summary of this cool bot" // Optional
+  "summary": "Short summary of this cool bot", // Optional
   "url": "https://my.server.com/webhook",     // Optional: Leave as null if you prefere websockets
   "avatar": "..."                             // Optional: Base64 encoded image 
 }
@@ -87,8 +87,8 @@ wss://proxy.services.wire.com/await/`<app_key>`
     "type": "conversation.bot_request",
     "botId": "493ede3e-3b8c-4093-b850-3c2be8a87a95",  // Unique identifier for this bot
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107", // User who requested this bot  
-    "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
-    "conversation": "Bot Example Conversation"                // Conversation name
+    "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106",  // ConversationId 
+    "conversation": "Bot Example Conversation",                // Conversation name
     "handle": "dejan_wire",  // username of the user who requested this bot
     "locale": "en_US",       // locale of the user who requested this bot    
     "token": "..."           // Access token. Store this token so the bot can post back later
@@ -121,7 +121,7 @@ implementation it is enough the socket is connected to the Proxy at that moment.
     "userId": "4dfc5c70-dcc8-4d9e-82be-a3cbe6661107",         // Author of this message      
     "conversationId": "5dfc5c70-dcc8-4d9e-82be-a3cbe6661106", // ConversationId 
     "messageId" : "baf93012-23f2-429e-b76a-b7649514da4d",     
-    "token": "..."                                           // Use this token to reply to this message - valid for 20 sec
+    "token": "...",                                           // Use this token to reply to this message - valid for 20 sec
     "refMessageId" : "caf93012-23f2-429e-b76a-b7649511db2e", // reference msgId in case of a Reply, Reaction,.. (can be null)
     "text": {
         "data": "Hi everybody!"
@@ -235,7 +235,7 @@ If the event contains `token` field this `token` can be used to respond to this 
 Example:
 
 ```
-curl -X POST https://proxy.services.wire.com/conversation -d '{"type": "text", "text": {"data": "Hello!"} }' \
+curl -X POST https://proxy.services.wire.com/api/conversation -d '{"type": "text", "text": {"data": "Hello!"} }' \
 -H'Authorization: Bearer eyJhbGciOiJIUyPjcKUGUXXD_AXWVKTMI...'
 ```
 
