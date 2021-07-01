@@ -23,8 +23,10 @@ public class Service {
     @JsonProperty("base_url")
     public String baseUrl;
 
+    @JsonProperty
     public String description = "Powered by Roman";
 
+    @JsonProperty
     public String summary = "Summary";
 
     @JsonProperty("public_key")

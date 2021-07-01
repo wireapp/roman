@@ -84,6 +84,7 @@ public class ServiceResource {
             Service service = newService();
             service.name = payload.name;
             service.summary = payload.summary;
+            service.description = payload.description;
 
             if (payload.avatar != null) {
                 byte[] image = Base64.getDecoder().decode(payload.avatar);
@@ -328,6 +329,10 @@ public class ServiceResource {
         @JsonProperty
         @Length(min = 3, max = 128)
         public String summary = "Summary";
+
+        @JsonProperty
+        @Length(min = 3, max = 128)
+        public String description = "Powered by Roman";
 
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
