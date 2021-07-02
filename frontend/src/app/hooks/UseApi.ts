@@ -3,9 +3,14 @@ import {Configuration, DefaultApi, RequestContext, ResponseContext} from '../gen
 // the localhost is here just as a template for local development
 export const romanBasePath = process.env.REACT_APP_BASE_PATH ?? `${window.origin}${window.location.pathname}`;
 
+const getApiPath = (path: string) => {
+  const pathWithSlash = path.endsWith('/') ? '' : '/'
+  return `${path}${pathWithSlash}api`
+}
+
 const api = new DefaultApi(
   new Configuration({
-    basePath: `${romanBasePath}/api`,
+    basePath: getApiPath(romanBasePath),
     middleware: [{
       pre: async (context: RequestContext) => {
         // TODO this is fix for wrong swagger in the Roman
