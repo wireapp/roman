@@ -8,8 +8,11 @@ services:
         - release_version=docker-compose
     image: eu.gcr.io/wire-bot/roman
     ports:
+      # port where Roman has its API
       - 8080:8080
+      # Dropwizard admin API
       - 8081:8081
+      # Prometheus Metrics
       - 8082:8082
     environment:
       - DB_URL=jdbc:postgresql://db:5432/roman
@@ -17,6 +20,8 @@ services:
       - DB_PASSWORD=roman
       # randomly generated for local testing
       - APP_KEY=b53181dd-6400-4960-8988-f775545588ff-0949f503-421e-4588-a2c5-f64fd9c180fd
+      # random base 64 string used as certificate, replace with real one
+      - ROMAN_PUB_KEY_BASE64=bm90aGluZyBhbmQgdGhhdAo=
     depends_on:
       - db
 

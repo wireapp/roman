@@ -1,0 +1,6 @@
+src/app/generated/
+*.spec.ts
+test.ts
+main.ts
+zone-flags.ts
+.eslintrc.js
