@@ -23,4 +23,17 @@ public class Call {
 
     @JsonProperty("props")
     public HashMap<String, String> properties;
+
+    // SFT
+    @JsonProperty("sft_url")
+    public String sftUrl;
+
+    @JsonProperty("seqno")
+    public int sequence;
+
+    @JsonProperty("secret")
+    public String secret;
+
+    @JsonProperty("timestamp")
+    public int timestamp;
 }
