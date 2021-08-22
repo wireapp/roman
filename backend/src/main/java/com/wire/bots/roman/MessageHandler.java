@@ -252,6 +252,19 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     @Override
+    public void onPing(WireClient client, PingMessage msg) {
+        final String type = "conversation.ping";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+
+        send(message);
+    }
+
+    @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
         final UUID botId = client.getId();
         final UUID conversationId = client.getConversationId();
