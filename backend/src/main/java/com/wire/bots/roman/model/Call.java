@@ -32,13 +32,13 @@ public class Call {
     public String sftUrl;
 
     @JsonProperty("seqno")
-    public int sequence;
+    public String sequence;
 
     @JsonProperty("secret")
     public String secret;
 
     @JsonProperty("timestamp")
-    public int timestamp;
+    public String timestamp;
 
     @JsonProperty("conf_id")
     public String confId;
