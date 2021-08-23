@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -39,4 +42,23 @@ public class Call {
 
     @JsonProperty("confId")
     public String confId;
+
+    @JsonProperty("src_clientid")
+    public String clientId;
+
+    @JsonProperty("src_userid")
+    public UUID userId;
+
+    @JsonProperty
+    public ArrayList<PreKey> keys;
+
+    static class PreKey {
+        @JsonProperty
+        @NotNull
+        public int idx;
+
+        @JsonProperty
+        @NotNull
+        public String data;   //base64 encoded data
+    }
 }
