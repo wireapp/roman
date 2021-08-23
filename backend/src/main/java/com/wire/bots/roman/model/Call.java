@@ -37,6 +37,6 @@ public class Call {
     @JsonProperty("timestamp")
     public int timestamp;
 
-    @JsonProperty("clientid")
-    public String clientId;
+    @JsonProperty("confId")
+    public String confId;
 }
