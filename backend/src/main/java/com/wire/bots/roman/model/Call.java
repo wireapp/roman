@@ -40,7 +40,7 @@ public class Call {
     @JsonProperty("timestamp")
     public int timestamp;
 
-    @JsonProperty("confId")
+    @JsonProperty("conf_id")
     public String confId;
 
     @JsonProperty("src_clientid")
