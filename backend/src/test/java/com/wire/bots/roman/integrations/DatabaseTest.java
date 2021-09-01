@@ -78,7 +78,9 @@ public class DatabaseTest {
         final String auth = "auth";
         final UUID serviceId = UUID.randomUUID();
         final String service_name = "service name";
-        int update = providersDAO.update(providerId, url, auth, serviceId, service_name);
+        final String prefix = "/";
+
+        int update = providersDAO.update(providerId, url, auth, serviceId, service_name, prefix);
         assert update == 1;
 
         provider = providersDAO.getByAuth(auth);
@@ -87,6 +89,7 @@ public class DatabaseTest {
         assert provider.serviceUrl.equals(url);
         assert provider.serviceId.equals(serviceId);
         assert provider.serviceName.equals(service_name);
+        assert provider.commandPrefix.equals(prefix);
 
         final String newURL = "newURL";
         update = providersDAO.updateUrl(providerId, newURL);
@@ -103,6 +106,14 @@ public class DatabaseTest {
         provider = providersDAO.get(providerId);
         assert provider != null;
         assert provider.serviceName.equals(newName);
+
+        final String newPrefix = "@";
+        update = providersDAO.updateServicePrefix(providerId, newPrefix);
+        assert update == 1;
+
+        provider = providersDAO.get(providerId);
+        assert provider != null;
+        assert provider.commandPrefix.equals(newPrefix);
 
         final int deleteService = providersDAO.deleteService(providerId);
         provider = providersDAO.get(providerId);

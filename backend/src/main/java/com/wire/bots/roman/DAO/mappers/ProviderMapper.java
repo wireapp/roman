@@ -21,6 +21,7 @@ public class ProviderMapper implements ColumnMapper<Provider> {
         ret.serviceId = getUuid(rs, "service");
         ret.name = rs.getString("name");
         ret.serviceName = rs.getString("service_name");
+        ret.commandPrefix = rs.getString("command_prefix");
 
         return ret;
     }

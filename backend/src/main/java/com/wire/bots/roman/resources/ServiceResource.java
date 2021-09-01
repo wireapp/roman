@@ -120,7 +120,7 @@ public class ServiceResource {
                         build();
             }
 
-            providersDAO.update(providerId, payload.url, service.auth, service.id, payload.name);
+            providersDAO.update(providerId, payload.url, service.auth, service.id, payload.name, payload.commandPrefix);
 
             provider = providersDAO.get(providerId);
 
@@ -131,6 +131,7 @@ public class ServiceResource {
             result.url = provider.serviceUrl;
             result.service = provider.serviceName;
             result.company = provider.name;
+            result.commandPrefix = provider.commandPrefix;
 
             Logger.info("ServiceResource.create: service authentication %s, code: %s", result.auth, result.code);
 
@@ -191,6 +192,10 @@ public class ServiceResource {
                 providerClient.updateServiceName(cookie, provider.serviceId, payload.name);
             }
 
+            if (payload.commandPrefix != null) {
+                providersDAO.updateServicePrefix(provider.id, payload.commandPrefix);
+            }
+
             if (payload.avatar != null) {
                 byte[] image = Base64.getDecoder().decode(payload.avatar);
                 Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
@@ -207,6 +212,7 @@ public class ServiceResource {
             result.url = provider.serviceUrl;
             result.service = provider.serviceName;
             result.company = provider.name;
+            result.commandPrefix = provider.commandPrefix;
 
             return Response.
                     ok(result).
@@ -244,6 +250,7 @@ public class ServiceResource {
             result.email = provider.email;
             result.company = provider.name;
             result.service = provider.serviceName;
+            result.commandPrefix = provider.commandPrefix;
 
             return Response.
                     ok(result).
@@ -334,6 +341,9 @@ public class ServiceResource {
         @Length(min = 3, max = 128)
         public String description = "Powered by Roman";
 
+        @JsonProperty("command_prefix")
+        public String commandPrefix;
+
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
         public boolean isUrlValid() {
@@ -366,6 +376,9 @@ public class ServiceResource {
 
         @JsonProperty
         public String avatar;
+
+        @JsonProperty("command_prefix")
+        public String commandPrefix;
 
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
@@ -412,5 +425,8 @@ public class ServiceResource {
 
         @JsonProperty
         public String service;
+
+        @JsonProperty("command_prefix")
+        public String commandPrefix;
     }
 }

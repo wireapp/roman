@@ -400,6 +400,11 @@ public class MessageHandler extends MessageHandlerBase {
 
             trace(message);
 
+            if (shouldIgnore(provider, message)) {
+                Logger.debug("MessageHandler.send: Ignoring %s", message.type);
+                return true;
+            }
+
             // Webhook
             if (provider.serviceUrl != null) {
                 Response post = jerseyClient.target(provider.serviceUrl)
@@ -428,6 +433,24 @@ public class MessageHandler extends MessageHandlerBase {
             Logger.exception("MessageHandler.send: error %s", e, e.getMessage());
             return false;
         }
+    }
+
+    private boolean shouldIgnore(Provider provider, OutgoingMessage message) {
+        if (message.type.equalsIgnoreCase("conversation.bot_request"))
+            return false;
+
+        if (provider.commandPrefix == null)
+            return false;
+
+        if (provider.commandPrefix.equalsIgnoreCase("***"))
+            return true;
+
+        if (!message.type.equalsIgnoreCase("text"))
+            return true;
+
+        final String text = message.text.data;
+
+        return !text.startsWith(provider.commandPrefix);
     }
 
     private IncomingMessage getIncomingMessage(Response post) {
