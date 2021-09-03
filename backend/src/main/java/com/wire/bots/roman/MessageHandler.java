@@ -445,7 +445,7 @@ public class MessageHandler extends MessageHandlerBase {
         if (provider.commandPrefix.equalsIgnoreCase("***"))
             return true;
 
-        if (!message.type.equalsIgnoreCase("text"))
+        if (!message.type.equalsIgnoreCase("conversation.new_text"))
             return true;
 
         final String text = message.text.data;
