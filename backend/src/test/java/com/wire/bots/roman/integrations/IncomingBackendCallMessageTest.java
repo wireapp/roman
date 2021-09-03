@@ -72,7 +72,7 @@ public class IncomingBackendCallMessageTest {
         // Create some fake provider and service
         ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
         providersDAO.insert("Test Provider", providerId, email, "hash", "password");
-        providersDAO.update(providerId, "http://localhost:8080/messages", serviceAuth, UUID.randomUUID(), "Test Service");
+        providersDAO.update(providerId, "http://localhost:8080/messages", serviceAuth, UUID.randomUUID(), "Test Service", null);
 
         // Test Bot added into conv. BE calls POST /bots with NewBot object
         NewBotResponseModel newBotResponseModel = newBotFromBE(botId, userId, convId);

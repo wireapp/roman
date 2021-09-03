@@ -20,6 +20,8 @@ import org.junit.Test;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class DatabaseTest {
     private static final DropwizardTestSupport<Config> SUPPORT = new DropwizardTestSupport<>(
             Application.class, "roman.yaml",
@@ -56,53 +58,64 @@ public class DatabaseTest {
         final String hash = "hash";
         final String password = "password";
         final int insert = providersDAO.insert(name, providerId, email, hash, password);
-        assert insert == 1;
+        assertThat(insert).isEqualTo(1);
 
         Provider provider = providersDAO.get(providerId);
-        assert provider != null;
-        assert provider.name.equals(name);
-        assert provider.hash.equals(hash);
-        assert provider.password.equals(password);
-        assert provider.id.equals(providerId);
-        assert provider.email.equals(email);
+        assertThat(provider).isNotNull();
+        assertThat(provider.name).isEqualTo(name);
+        assertThat(provider.hash).isEqualTo(hash);
+        assertThat(provider.password).isEqualTo(password);
+        assertThat(provider.id).isEqualTo(providerId);
+        assertThat(provider.email).isEqualTo(email);
 
         provider = providersDAO.get(email);
-        assert provider != null;
-        assert provider.name.equals(name);
-        assert provider.hash.equals(hash);
-        assert provider.password.equals(password);
-        assert provider.id.equals(providerId);
-        assert provider.email.equals(email);
+        assertThat(provider).isNotNull();
+        assertThat(provider.name).isEqualTo(name);
+        assertThat(provider.hash).isEqualTo(hash);
+        assertThat(provider.password).isEqualTo(password);
+        assertThat(provider.id).isEqualTo(providerId);
+        assertThat(provider.email).isEqualTo(email);
 
         final String url = "url";
         final String auth = "auth";
         final UUID serviceId = UUID.randomUUID();
         final String service_name = "service name";
-        int update = providersDAO.update(providerId, url, auth, serviceId, service_name);
-        assert update == 1;
+        final String prefix = "/";
+
+        int update = providersDAO.update(providerId, url, auth, serviceId, service_name, prefix);
+        assertThat(update).isEqualTo(1);
 
         provider = providersDAO.getByAuth(auth);
-        assert provider != null;
-        assert provider.serviceAuth.equals(auth);
-        assert provider.serviceUrl.equals(url);
-        assert provider.serviceId.equals(serviceId);
-        assert provider.serviceName.equals(service_name);
+        assertThat(provider).isNotNull();
+        assertThat(provider.serviceAuth).isEqualTo(auth);
+        assertThat(provider.serviceUrl).isEqualTo(url);
+        assertThat(provider.serviceId).isEqualTo(serviceId);
+        assertThat(provider.serviceName).isEqualTo(service_name);
+        assertThat(provider.commandPrefix).isEqualTo(prefix);
 
         final String newURL = "newURL";
         update = providersDAO.updateUrl(providerId, newURL);
-        assert update == 1;
+        assertThat(update).isEqualTo(1);
 
         provider = providersDAO.get(providerId);
-        assert provider != null;
-        assert provider.serviceUrl.equals(newURL);
+        assertThat(provider).isNotNull();
+        assertThat(provider.serviceUrl).isEqualTo(newURL);
 
         final String newName = "new service name";
         update = providersDAO.updateServiceName(providerId, newName);
-        assert update == 1;
+        assertThat(update).isEqualTo(1);
 
         provider = providersDAO.get(providerId);
-        assert provider != null;
-        assert provider.serviceName.equals(newName);
+        assertThat(provider).isNotNull();
+        assertThat(provider.serviceName).isEqualTo(newName);
+
+        final String newPrefix = "@";
+        update = providersDAO.updateServicePrefix(providerId, newPrefix);
+        assertThat(update).isEqualTo(1);
+
+        provider = providersDAO.get(providerId);
+        assertThat(provider).isNotNull();
+        assertThat(provider.commandPrefix).isEqualTo(newPrefix);
 
         final int deleteService = providersDAO.deleteService(providerId);
         provider = providersDAO.get(providerId);
@@ -119,18 +132,18 @@ public class DatabaseTest {
         final UUID messageId = UUID.randomUUID();
 
         final int insert1 = broadcastDAO.insert(broadcastId, botId, providerId, messageId, 0);
-        assert insert1 == 1;
+        assertThat(insert1).isEqualTo(1);
 
         int insertStatus = broadcastDAO.insertStatus(messageId, 1);
-        assert insertStatus == 1;
+        assertThat(insertStatus).isEqualTo(1);
         insertStatus = broadcastDAO.insertStatus(messageId, 2);
-        assert insertStatus == 1;
+        assertThat(insertStatus).isEqualTo(1);
         insertStatus = broadcastDAO.insertStatus(messageId, 3);
-        assert insertStatus == 1;
+        assertThat(insertStatus).isEqualTo(1);
 
         final UUID get = broadcastDAO.getBroadcastId(providerId);
-        assert get != null;
-        assert get.equals(broadcastId);
+        assertThat(get).isNotNull();
+        assertThat(get).isEqualTo(broadcastId);
 
         final List<BroadcastDAO.Pair> report = broadcastDAO.report(broadcastId);
 
@@ -138,11 +151,11 @@ public class DatabaseTest {
         final UUID botId2 = UUID.randomUUID();
         final UUID messageId2 = UUID.randomUUID();
         final int insert2 = broadcastDAO.insert(broadcastId2, botId2, providerId, messageId2, 0);
-        assert insert2 == 1;
+        assertThat(insert2).isEqualTo(1);
 
         final UUID get2 = broadcastDAO.getBroadcastId(providerId);
-        assert get2 != null;
-        assert get2.equals(broadcastId2);
+        assertThat(get2).isNotNull();
+        assertThat(get2).isEqualTo(broadcastId2);
     }
 
     @Test
@@ -158,8 +171,8 @@ public class DatabaseTest {
         outgoingMessageDAO.insert(message.messageId, mapper.writeValueAsString(message));
 
         final OutgoingMessage challenge = outgoingMessageDAO.get(message.messageId);
-        assert challenge != null;
-        assert challenge.messageId.equals(message.messageId);
+        assertThat(challenge).isNotNull();
+        assertThat(challenge.messageId).isEqualTo(message.messageId);
 
         outgoingMessageDAO.delete(message.messageId);
     }
