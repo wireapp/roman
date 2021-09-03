@@ -439,7 +439,7 @@ public class MessageHandler extends MessageHandlerBase {
         if (message.type.equalsIgnoreCase("conversation.bot_request"))
             return false;
 
-        if (provider.commandPrefix == null)
+        if (provider.commandPrefix == null || provider.commandPrefix.isBlank())
             return false;
 
         if (provider.commandPrefix.equalsIgnoreCase("***"))
