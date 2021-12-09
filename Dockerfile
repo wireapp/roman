@@ -1,4 +1,4 @@
-FROM node:alpine as frontend-build
+FROM node:16-alpine as frontend-build
 COPY frontend/ ./frontend
 WORKDIR ./frontend
 RUN npm i
