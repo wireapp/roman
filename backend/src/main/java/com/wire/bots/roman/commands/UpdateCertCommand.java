@@ -1,7 +1,6 @@
 package com.wire.bots.roman.commands;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.ProviderClient;
 import com.wire.bots.roman.Tools;
@@ -30,12 +29,6 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
     @Override
     public void configure(Subparser subparser) {
         super.configure(subparser);
-
-        subparser.addArgument("-d", "--domain")
-                .dest("domain")
-                .type(String.class)
-                .required(true)
-                .help("Domain");
     }
 
     @Override
@@ -54,14 +47,12 @@ public class UpdateCertCommand extends ConfiguredCommand<Config> {
 
         ProvidersDAO providersDAO = jdbi.onDemand(ProvidersDAO.class);
 
-        String hostname = namespace.getString("domain");
-
         String pubkey = Tools.decodeBase64(config.romanPubKeyBase64);
 
         Logger.info("\nCert:\n%s\n\n", pubkey);
 
         List<Provider> providers = providersDAO.selectAll();
-        Logger.info("Updating %s cert for %d providers...\n\n", hostname, providers.size());
+        Logger.info("Updating cert for %d providers...\n\n", providers.size());
 
         for (Provider provider : providers) {
             if (provider.serviceId == null) {
