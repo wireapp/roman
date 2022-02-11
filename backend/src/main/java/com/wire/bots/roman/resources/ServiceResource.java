@@ -90,6 +90,7 @@ public class ServiceResource {
                 byte[] image = Base64.getDecoder().decode(payload.avatar);
                 if (image != null) {
                     Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
+                    mediumImage.setPublic(true);
                     String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mediumImage.getMimeType());
                     service.assets.get(0).key = key;
                     service.assets.get(1).key = key;

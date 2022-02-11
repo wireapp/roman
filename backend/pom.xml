@@ -6,7 +6,7 @@
 
     <groupId>com.wire.bots</groupId>
     <artifactId>roman</artifactId>
-    <version>1.17.0</version>
+    <version>1.17.2</version>
 
     <name>Roman</name>
     <description>Wire Bot API Proxy</description>
@@ -28,7 +28,7 @@
 
         <maven.test.skip>true</maven.test.skip>
 
-        <lithium.version>3.3.1</lithium.version>
+        <lithium.version>3.3.5</lithium.version>
         <dropwizard.version>2.0.21</dropwizard.version>
         <jwt.version>0.11.2</jwt.version>
     </properties>
