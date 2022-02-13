@@ -1,4 +1,7 @@
-FROM node:16-alpine as frontend-build
+FROM node:17-alpine as frontend-build
+# TODO: disable this once fully migrated to latest packages
+ENV NODE_OPTIONS=--openssl-legacy-provider
+
 COPY frontend/ ./frontend
 WORKDIR ./frontend
 RUN npm i
@@ -15,7 +18,7 @@ COPY backend/ ./
 
 RUN mvn -Dmaven.test.skip=true package
 
-FROM wirebot/runtime AS runtime
+FROM wirebot/runtime:arm AS runtime
 LABEL description="Wire Roman"
 LABEL project="wire-bots:roman"
 
