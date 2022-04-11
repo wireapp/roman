@@ -38,6 +38,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
+          platforms: linux/amd64,linux/arm64
           tags: quay.io/wire/roman:${{ github.event.inputs.tag }}
           labels: ${{ steps.docker_meta.outputs.labels }}
           push: true

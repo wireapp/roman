@@ -67,14 +67,14 @@ public class BroadcastResource {
             final UUID broadcastId = UUID.randomUUID();
 
             MDCUtils.put("broadcastId", broadcastId);
-            Logger.info("BroadcastResource.post: `%s`", message.type);
+            Logger.info("BroadcastResource.post: `%s`. Audience: %d", message.type, botIds.size());
 
             for (UUID botId : botIds) {
                 broadcast.submit(() -> {
                     try {
                         final UUID messageId = sender.send(message, botId);
                         persist(providerId, broadcastId, botId, messageId);
-                        Logger.info("Broadcast: id: %s, botId: %s, messageId: %s", broadcastId, botId, messageId);
+                        Logger.info("Broadcasted: `%s`, messageId: %s", message.type, messageId);
                     } catch (MissingStateException e) {
                         final int remove = botsDAO.remove(botId);
                         Logger.info("Broadcast: id: %s, botId: %s, Deleted: %d", broadcastId, botId, remove);

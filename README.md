@@ -1,5 +1,7 @@
 # Wire Bot API Proxy
 
+https://proxy.services.wire.com/#/login
+
 Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API.
 
 ### API documentation:

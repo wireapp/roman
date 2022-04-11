@@ -27,4 +27,6 @@ public class Provider {
     public UUID serviceId;
 
     public String serviceName;
+
+    public String commandPrefix;
 }

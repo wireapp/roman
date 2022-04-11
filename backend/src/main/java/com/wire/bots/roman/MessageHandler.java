@@ -252,6 +252,19 @@ public class MessageHandler extends MessageHandlerBase {
     }
 
     @Override
+    public void onPing(WireClient client, PingMessage msg) {
+        final String type = "conversation.ping";
+
+        UUID botId = client.getId();
+
+        validate(botId);
+
+        OutgoingMessage message = createOutgoingMessage(botId, type, client.getConversationId(), msg);
+
+        send(message);
+    }
+
+    @Override
     public void onEvent(WireClient client, UUID userId, Messages.GenericMessage event) {
         final UUID botId = client.getId();
         final UUID conversationId = client.getConversationId();
@@ -387,6 +400,11 @@ public class MessageHandler extends MessageHandlerBase {
 
             trace(message);
 
+            if (shouldIgnore(provider, message)) {
+                Logger.debug("MessageHandler.send: Ignoring %s", message.type);
+                return true;
+            }
+
             // Webhook
             if (provider.serviceUrl != null) {
                 Response post = jerseyClient.target(provider.serviceUrl)
@@ -415,6 +433,24 @@ public class MessageHandler extends MessageHandlerBase {
             Logger.exception("MessageHandler.send: error %s", e, e.getMessage());
             return false;
         }
+    }
+
+    private boolean shouldIgnore(Provider provider, OutgoingMessage message) {
+        if (message.type.equalsIgnoreCase("conversation.bot_request"))
+            return false;
+
+        if (provider.commandPrefix == null || provider.commandPrefix.isBlank())
+            return false;
+
+        if (provider.commandPrefix.equalsIgnoreCase("***"))
+            return true;
+
+        if (!message.type.equalsIgnoreCase("conversation.new_text"))
+            return true;
+
+        final String text = message.text.data;
+
+        return !text.startsWith(provider.commandPrefix);
     }
 
     private IncomingMessage getIncomingMessage(Response post) {

@@ -30,7 +30,7 @@ swagger:
   description: Roman - Wire Bots Proxy
   contactEmail: dejan@wire.com
   license: GPLv3
-  version: 1.16.1
+  version: 1.17.0
   resourcePackage: com.wire.bots.roman.resources
   schemes:
     - https

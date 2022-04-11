@@ -28,18 +28,21 @@ public interface ProvidersDAO {
             "url = :url," +
             "service_auth = :auth, " +
             "service = :serviceId, " +
+            "command_prefix = :command_prefix, " +
             "service_name = :serviceName " +
             "WHERE id = :id")
     int update(@Bind("id") UUID id,
                @Bind("url") String url,
                @Bind("auth") String auth,
                @Bind("serviceId") UUID serviceId,
-               @Bind("serviceName") String serviceName);
+               @Bind("serviceName") String serviceName,
+               @Bind("command_prefix") String command_prefix);
 
     @SqlUpdate("UPDATE Providers SET " +
             "url = null," +
             "service_auth = null, " +
             "service = null, " +
+            "command_prefix = null, " +
             "service_name = null " +
             "WHERE id = :id")
     int deleteService(@Bind("id") UUID providerId);
@@ -51,6 +54,10 @@ public interface ProvidersDAO {
     @SqlUpdate("UPDATE Providers SET service_name = :name WHERE id = :id")
     int updateServiceName(@Bind("id") UUID id,
                           @Bind("name") String name);
+
+    @SqlUpdate("UPDATE Providers SET command_prefix = :command_prefix WHERE id = :id")
+    int updateServicePrefix(@Bind("id") UUID id,
+                            @Bind("command_prefix") String command_prefix);
 
     @SqlQuery("SELECT * FROM Providers WHERE email = :email")
     @RegisterColumnMapper(ProviderMapper.class)
