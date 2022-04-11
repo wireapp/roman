@@ -5,3 +5,4 @@ data/
 *.iml
 *.log
 *.lck
+.DS_Store

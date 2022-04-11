@@ -1,10 +1,11 @@
 .git
 .idea
-target
+backend/target
+docs/
 Dockerfile
 docker-compose.yml
 README.md
 roman.iml
-node_modules
-build
+frontend/node_modules
+frontend/build
 *.iml
