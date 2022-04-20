@@ -1,4 +1,7 @@
-FROM node:16-alpine as frontend-build
+FROM node:17-alpine as frontend-build
+# TODO: disable this once fully migrated to latest packages
+ENV NODE_OPTIONS=--openssl-legacy-provider
+
 COPY frontend/ ./frontend
 WORKDIR ./frontend
 RUN npm i
