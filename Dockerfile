@@ -19,6 +19,9 @@ FROM wirebot/runtime AS runtime
 LABEL description="Wire Roman"
 LABEL project="wire-bots:roman"
 
+# update dependencies in the base image
+RUN apt-get update && apt-get upgrade -y
+
 # Copy backend
 COPY --from=build /app/target/roman.jar /opt/roman/backend/
 COPY backend/roman.yaml /etc/roman/
