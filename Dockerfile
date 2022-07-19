@@ -18,9 +18,12 @@ COPY backend/ ./
 
 RUN mvn -Dmaven.test.skip=true package
 
-FROM wirebot/runtime AS runtime
+FROM wirebot/runtime:1.1.1 AS runtime
 LABEL description="Wire Roman"
 LABEL project="wire-bots:roman"
+
+# update dependencies in the base image
+RUN apt-get update && apt-get upgrade -y
 
 # Copy backend
 COPY --from=build /app/target/roman.jar /opt/roman/backend/
