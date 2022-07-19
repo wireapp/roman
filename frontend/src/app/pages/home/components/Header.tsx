@@ -8,7 +8,7 @@ export default function Header() {
   const styles = useStyles();
   return (
     <div className={styles.header}>
-      <Button href={`${romanBasePath}/swagger`} target="_blank">Wire Roman Swagger</Button>
+      <Button href={`${romanBasePath}swagger`} target="_blank">Wire Roman Swagger</Button>
 
       <Button onClick={logout}>Logout - {user}</Button>
     </div>
