@@ -30,21 +30,14 @@ import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.factories.CryptoFactory;
 import com.wire.xenon.factories.StorageFactory;
 import io.dropwizard.bundles.assets.ConfiguredAssetsBundle;
-import io.dropwizard.bundles.redirect.PathRedirect;
-import io.dropwizard.bundles.redirect.Redirect;
-import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Strings;
 import io.dropwizard.websockets.WebsocketBundle;
 import io.jsonwebtoken.security.Keys;
-import org.apache.http.HttpHeaders;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 
 import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.security.Key;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutorService;
@@ -95,7 +88,7 @@ public class Application extends Server<Config> {
         this.config = config;
         this.key = Keys.hmacShaKeyFor(config.key.getBytes());
 
-        if (!Strings.isNullOrEmpty(this.config.allowedCors)) {
+        if (!Tools.isNullOrEmpty(this.config.allowedCors)) {
             // Enable CORS headers
             final FilterRegistration.Dynamic cors = environment.servlets().addFilter("CORS", CrossOriginFilter.class);
 
@@ -118,14 +111,6 @@ public class Application extends Server<Config> {
         ProviderClient providerClient = new ProviderClient(getClient(), config.apiHost);
         Sender sender = new Sender(getRepo());
 
-        var rootPath = ((DefaultServerFactory) config.getServerFactory()).getJerseyRootPath().orElse("");
-        rootPath = rootPath.endsWith("/") ? rootPath : rootPath + "/";
-        var swaggerPath = rootPath + "swagger#/default";
-        registerRedirects(
-                new PathRedirect("/swagger-ui", swaggerPath),
-                new PathRedirect("/swagger", swaggerPath)
-        );
-
         final var jdbi = getJdbi();
         addResource(new ProviderResource(jdbi, providerClient));
         addResource(new ServiceResource(jdbi, providerClient));
@@ -135,37 +120,6 @@ public class Application extends Server<Config> {
         addResource(new MessagesResource());
 
         messageHandler.setSender(sender);
-    }
-
-    private void registerRedirects(PathRedirect... redirects) {
-        environment.servlets().addFilter("redirect", new Filter() {
-            @Override
-            public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
-                    throws IOException, ServletException {
-                if (req instanceof HttpServletRequest) {
-                    HttpServletRequest request = (HttpServletRequest) req;
-
-                    for (Redirect redirect : redirects) {
-                        String redirectUrl = redirect.getRedirect(request);
-                        if (redirectUrl != null) {
-                            HttpServletResponse response = (HttpServletResponse) res;
-
-                            response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
-                            response.setHeader(HttpHeaders.LOCATION, redirectUrl);
-                            return;
-                        }
-                    }
-                }
-
-                chain.doFilter(req, res);
-            }
-
-            @Override
-            public void destroy() { /* unused */ }
-
-            @Override
-            public void init(FilterConfig filterConfig) { /* unused */ }
-        }).addMappingForUrlPatterns(null, false, "*");
     }
 
     @Override
