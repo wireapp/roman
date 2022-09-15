@@ -2,6 +2,7 @@ package com.wire.bots.roman;
 
 import io.jsonwebtoken.Jwts;
 
+import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
@@ -38,5 +39,9 @@ public class Tools {
     public static String decodeBase64(final String base64String) {
         byte[] keyBytes = Base64.getDecoder().decode(base64String);
         return new String(keyBytes, StandardCharsets.UTF_8);
+    }
+
+    public static boolean isNullOrEmpty(@Nullable String string) {
+        return string == null || string.isEmpty();
     }
 }

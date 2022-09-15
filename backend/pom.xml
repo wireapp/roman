@@ -6,7 +6,7 @@
 
     <groupId>com.wire.bots</groupId>
     <artifactId>roman</artifactId>
-    <version>1.18.0</version>
+    <version>1.18.1</version>
 
     <name>Roman</name>
     <description>Wire Bot API Proxy</description>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.13.3</version>
+            <version>2.13.4</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -104,7 +104,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.23.4</version>
+            <version>4.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
