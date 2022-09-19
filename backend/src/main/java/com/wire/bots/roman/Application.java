@@ -19,11 +19,17 @@ package com.wire.bots.roman;
 
 import com.wire.bots.roman.commands.UpdateCertCommand;
 import com.wire.bots.roman.filters.BackendAuthenticationFilter;
+import com.wire.bots.roman.filters.CspResponseFilter;
 import com.wire.bots.roman.filters.ProxyAuthenticationFilter;
 import com.wire.bots.roman.filters.ServiceAuthenticationFilter;
 import com.wire.bots.roman.filters.ServiceTokenAuthenticationFilter;
 import com.wire.bots.roman.model.Config;
-import com.wire.bots.roman.resources.*;
+import com.wire.bots.roman.resources.BroadcastResource;
+import com.wire.bots.roman.resources.ConversationResource;
+import com.wire.bots.roman.resources.MessagesResource;
+import com.wire.bots.roman.resources.ProviderResource;
+import com.wire.bots.roman.resources.ServiceResource;
+import com.wire.bots.roman.resources.UsersResource;
 import com.wire.lithium.ClientRepo;
 import com.wire.lithium.Server;
 import com.wire.xenon.MessageHandlerBase;
@@ -32,12 +38,12 @@ import com.wire.xenon.factories.StorageFactory;
 import io.dropwizard.bundles.assets.ConfiguredAssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Strings;
 import io.dropwizard.websockets.WebsocketBundle;
 import io.jsonwebtoken.security.Keys;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 
-import javax.servlet.*;
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import java.security.Key;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutorService;
@@ -81,6 +87,7 @@ public class Application extends Server<Config> {
         environment.jersey().register(ServiceAuthenticationFilter.ServiceAuthenticationFeature.class);
         environment.jersey().register(ServiceTokenAuthenticationFilter.ServiceTokenAuthenticationFeature.class);
         environment.jersey().register(BackendAuthenticationFilter.BackendAuthenticationFeature.class);
+        environment.jersey().register(CspResponseFilter.class);
     }
 
     @Override
