@@ -26,7 +26,7 @@ services:
       - db
 
   db:
-    image: postgres:13
+    image: postgres:14
     # just for local development
     environment:
       - POSTGRES_USER=roman
