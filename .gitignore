@@ -1,6 +1,7 @@
 .env.prod
 target/
 data/
+libs/
 .idea/
 *.iml
 *.log

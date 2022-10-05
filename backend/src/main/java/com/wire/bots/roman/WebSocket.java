@@ -47,6 +47,6 @@ public class WebSocket {
 
     @OnError
     public void onError(Session session, Throwable throwable) {
-        Logger.exception("%s error: %s", throwable, session.getId(), throwable.getMessage());
+        Logger.exception(throwable,"%s error: %s", session.getId(), throwable.getMessage());
     }
 }
