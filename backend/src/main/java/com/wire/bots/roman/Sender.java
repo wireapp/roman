@@ -239,5 +239,6 @@ public class Sender {
         final AssetKey assetKey = wireClient.uploadAsset(asset);
         asset.setAssetKey(assetKey.id);
         asset.setAssetToken(assetKey.token);
+        asset.setDomain(assetKey.domain);
     }
 }
