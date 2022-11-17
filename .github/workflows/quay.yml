@@ -1,4 +1,4 @@
-name: Quay Deployment
+name: quay.io image
 
 on:
   # manual dispatch
@@ -9,7 +9,7 @@ on:
         required: true
 jobs:
   publish:
-    name: Deploy to staging
+    name: Build and push container
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
