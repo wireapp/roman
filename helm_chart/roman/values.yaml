@@ -1,0 +1,34 @@
+# Default values for roman.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+roman:
+  replicaCount: 1
+  image:
+    repository: nginx
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+  serviceToken: # Provide the service recording bot service token.
+  # randomly generated for local testing
+  appKey: b53181dd-6400-4960-8988-f775545588ff-0949f503-421e-4588-a2c5-f64fd9c180fd
+  # random base 64 string used as certificate, replace with real one
+  pubKeyBase64: bm90aGluZyBhbmQgdGhhdAo=
+  publicURL: # Link to the subdomain pointing to recordingbot.
+  dbURL: jdbc:postgresql://data-postgres:5432/recording # Link to your Postgres server.
+  dbUser: recording # Provide your Postgres DB username.
+  dbPassword: recording # Provide your Postgres DB password.
+
+postgresql:
+  enabled: false
+  fullnameOverride: data-postgres
+  auth:
+    postgresPassword: recording
+    username: recording
+    password: recording
+    database: recording
+  primary:
+    persistence:
+      existingClaim: postgresql-pv-claim
+  volumePermissions:
+    enabled: true

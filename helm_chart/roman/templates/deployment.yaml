@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: roman
+  labels:
+    name: roman
+spec:
+  replicas: {{ .Values.roman.replicaCount }}
+  selector:
+    matchLabels:
+      name: roman
+  template:
+    metadata:
+      labels:
+        name: roman
+    spec:
+      containers:
+        - name: roman
+          image: "{{ .Values.roman.image.repository }}:{{ .Values.roman.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8081
+              protocol: TCP
+            - containerPort: 8082
+              protocol: TCP
+
+          env:
+            - name: APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "roman-secrets"
+                  key: appKey
+              
+            - name: ROMAN_PUB_KEY_BASE64
+              valueFrom:
+                secretKeyRef:
+                  name: "roman-secrets"
+                  key: pubKeyBase64
+
+            - name: DB_URL
+              value: "{{ required "Must specify publicURL" .Values.roman.dbURL }}"
+
+            - name: DB_USER
+              value: "{{ required "Must specify dbUser" .Values.roman.dbUser }}"
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "roman-secrets"
+                  key: dbPassword
+
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+
+          resources:
+            requests:
+              memory: "1500Mi"
+              cpu: 50m
+            limits:
+              memory: "1500Mi"
