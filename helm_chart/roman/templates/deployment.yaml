@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: roman
+  app: roman
   labels:
-    name: roman
+    app: roman
 spec:
   replicas: {{ .Values.roman.replicaCount }}
   selector:
     matchLabels:
-      name: roman
+      app: roman
   template:
     metadata:
       labels:
-        name: roman
+        app: roman
     spec:
       containers:
-        - name: roman
+        - app: roman
           image: "{{ .Values.roman.image.repository }}:{{ .Values.roman.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
 
@@ -54,12 +54,12 @@ spec:
 
           livenessProbe:
             httpGet:
-              path: /status
+              path: /api/status
               port: 8080
 
           readinessProbe:
             httpGet:
-              path: /status
+              path: /api/status
               port: 8080
 
           resources:

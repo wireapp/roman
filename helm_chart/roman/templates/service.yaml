@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: roman
+  app: roman
   labels:
-    name: roman
+    app: roman
 spec:
   type: ClusterIP
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    name: roman
+    app: roman

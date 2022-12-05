@@ -4,11 +4,11 @@
 
 
 roman:
-  replicaCount: 1
+  replicaCount: 2
   image:
-    repository: nginx
+    repository: quay.io/wire/roman
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: staging
   serviceToken: # Provide the service recording bot service token.
   # randomly generated for local testing
   appKey: b53181dd-6400-4960-8988-f775545588ff-0949f503-421e-4588-a2c5-f64fd9c180fd
