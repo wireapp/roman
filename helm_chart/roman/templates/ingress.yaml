@@ -11,10 +11,10 @@ metadata:
 spec:
   tls:
   - hosts:
-      - "{{ required  "Must specify host" .Values.roman.host }}"
+      - "{{ required  "Must specify host" .Values.roman.publicURL }}"
     # secretName: "{{ include "roman.fullname" . }}"
   rules:
-    - host: "{{ .Values.roman.host }}"
+    - host: "{{ .Values.roman.publicURL }}"
       http:
         paths:
           - path: /

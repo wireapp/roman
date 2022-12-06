@@ -15,7 +15,7 @@ spec:
         app: roman
     spec:
       containers:
-        - app: roman
+        - name: roman
           image: "{{ .Values.roman.image.repository }}:{{ .Values.roman.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
 
@@ -41,7 +41,13 @@ spec:
                   key: pubKeyBase64
 
             - name: DB_URL
-              value: "{{ required "Must specify publicURL" .Values.roman.dbURL }}"
+              value: "{{ required "Must specify dbURL" .Values.roman.dbURL }}"
+
+            - name: WIRE_API_HOST
+              value: "{{ required "Must specify wireApiHost" .Values.roman.wireApiHost }}"
+
+            - name: PROXY_DOMAIN
+              value: "{{ .Values.roman.proxyDomain }}"
 
             - name: DB_USER
               value: "{{ required "Must specify dbUser" .Values.roman.dbUser }}"
