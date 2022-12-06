@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: roman
+  labels:
+    app: roman
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    # nginx.ingress.kubernetes.io/cors-allow-origin: "{{ required "Must specify allowOrigin" .Values.allowOrigin }}"
+spec:
+  tls:
+  - hosts:
+      - "{{ required  "Must specify host" .Values.roman.host }}"
+    # secretName: "{{ include "roman.fullname" . }}"
+  rules:
+    - host: "{{ .Values.roman.host }}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: roman
+              servicePort: 80
+
