@@ -58,6 +58,13 @@ spec:
                   name: "roman-secrets"
                   key: dbPassword
 
+          startupProbe:
+            httpGet:
+              path: /api/status
+              port: 8080
+            failureThreshold: 6
+            periodSeconds: 5
+
           livenessProbe:
             httpGet:
               path: /api/status
