@@ -2,7 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-
 roman:
   replicaCount: 1
   image:
@@ -12,24 +11,27 @@ roman:
   serviceToken: # Provide the roman service token.
   # randomly generated for local testing
   appKey: b53181dd-6400-4960-8988-f775545588ff-0949f503-421e-4588-a2c5-f64fd9c180fd
-  wireApiHost: https://nginz-https.kiwee.world
+  wireApiHost: https://nginz-https.example.com
   proxyDomain:
   # random base 64 string used as certificate, replace with real one
-  pubKeyBase64: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUEyQnJjU2FWV0FJRmdUNWFNeHRPZApPa0N3ZlU2c21kaXpWTDV4ajBjL0FxaXFsT2R6VHplVUQrTjB3S1ZwdW5iS2hzY2tpcmtVZzE1cWFmeHZJK21QCkNsb0tUZEMwY1AyZjAwK0hPRHpTbTRwdTBoUTNqQUhLUWRUaHhTVEFsb2VrY094cTRUMEhQL01hRU9OcFQvWjcKMlczd1A1TzJvenM0V1h3aFRDcG50ZkFIRyt1VVlOUEMyd0FzamJ6cE50UnFUaGpFL2NsSVhUQnlWZjJnSUJrNApLWnFYRWlEYk9XcXVySmp2N1Q4bDdORXVYRzJjMFhDdDJjUzIvY1VLWUpvU2JxTWdYYi9HR25xQ05JV3VhMzdyCkZ2N2pIY2N6anRIR0JaU2dMQnZveWF2TXVaSklwVXBNMFFSM3JXUWJQSVBXdXFDcmxybjB6UTBES3RGQXovRFoKUVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
-  publicURL: roman.kiwee.world # Link to the subdomain pointing to roman.
+  pubKeyBase64: LS0tLS1CRUdJTiBQVcFQvWjcKMlczd1A1TzJveFVCTElDIEtFWS0tLS0tCg==
+  publicURL: roman.example.com # Link to the subdomain pointing to roman.
   dbURL: jdbc:postgresql://data-postgres:5432/recording # Link to your Postgres server.
-  dbUser: recording # Provide your Postgres DB username.
-  dbPassword: recording # Provide your Postgres DB password.
+  dbUser: romanservice # Provide your Postgres DB username.
+  dbPassword: romanservice # Provide your Postgres DB password.
 
+tls:
+  issuerRef:
+    name: letsencrypt-http01
 
 postgresql:
   enabled: true
   fullnameOverride: data-postgres
   auth:
-    postgresPassword: recording
-    username: recording
-    password: recording
-    database: recording
+    postgresPassword: romanservice
+    username: romanservice
+    password: romanservice
+    database: romanservice
   primary:
     persistence:
       existingClaim: postgresql-pv-claim
