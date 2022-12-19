@@ -46,9 +46,6 @@ spec:
             - name: WIRE_API_HOST
               value: "{{ required "Must specify wireApiHost" .Values.roman.wireApiHost }}"
 
-            - name: PROXY_DOMAIN
-              value: "{{ .Values.roman.proxyDomain }}"
-
             - name: DB_USER
               value: "{{ required "Must specify dbUser" .Values.roman.dbUser }}"
 
