@@ -1,7 +1,6 @@
 global:
   postgresql:
     enabled: true
-    fullnameOverride: data-postgres
     auth:
       postgresPassword: externalPostgresql
       username: externalPostgresql
