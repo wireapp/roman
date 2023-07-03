@@ -259,6 +259,20 @@ _Outgoing Message_ can be of 4 types:
 ```
 
 - **Image message**
+```
+{
+    "type": "attachment",
+    "attachment": {
+        "mimeType" : "image/jpeg",
+        "height" : 320,
+        "width" : 160,
+        "size" : 2048,
+        "meta" : {
+
+        }
+    } 
+}    
+```
 
 ```
 {
