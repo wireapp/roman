@@ -6,12 +6,12 @@ Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API.
 
 ### API documentation:
 
-* Production - [swagger](https://proxy.services.wire.com/swagger#/default)
+* Production - [swagger](https://proxy.services.wire.com/api/swagger#/default)
 * Staging - [swagger](https://roman.integrations.zinfra.io/api/swagger#/default)
 
 ### Register as Wire Bot Developer
 
-- [register](https://proxy.services.wire.com/swagger#!/default/register)
+- [register](https://proxy.services.wire.com/api/swagger#!/default/register)
 
 ```
  {
@@ -23,7 +23,7 @@ Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API.
 
 ### Login
 
-- [login](https://proxy.services.wire.com/swagger#!/default/login)
+- [login](https://proxy.services.wire.com/api/swagger#!/default/login)
 
 ```
  {
@@ -34,7 +34,7 @@ Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API.
 
 ### Create a service
 
-- [create service](https://proxy.services.wire.com/swagger#!/default/create)
+- [create service](https://proxy.services.wire.com/api/swagger#!/default/create)
 
 ```
 {
@@ -77,7 +77,7 @@ request to the `url` you specified when creating the Service. Your webhook shoul
 In order to receive events via _Websocket_ connect to:
 
 ```
-wss://proxy.services.wire.com/await/`<app_key>`
+wss://proxy.services.wire.com/api/await/`<app_key>`
 ```
 
 ### Events that are sent as HTTP `POST` to your endpoint (Webhook or Websocket)

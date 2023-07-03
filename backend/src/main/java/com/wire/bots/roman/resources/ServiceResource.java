@@ -73,8 +73,10 @@ public class ServiceResource {
             Logger.debug("ServiceResource.create: login status: %d", login.getStatus());
 
             if (login.getStatus() >= 400) {
+                String msg = login.readEntity(String.class);
+                Logger.debug("ServiceResource.create: login response: %s", msg);
                 return Response.
-                        ok(login.readEntity(String.class)).
+                        ok(msg).
                         status(login.getStatus()).
                         build();
             }
@@ -102,8 +104,10 @@ public class ServiceResource {
             Logger.debug("ServiceResource.create: create service status: %d", create.getStatus());
 
             if (create.getStatus() >= 400) {
+                String msg = create.readEntity(String.class);
+                Logger.debug("ServiceResource.create: create service response: %s", msg);
                 return Response.
-                        ok(create.readEntity(String.class)).
+                        ok(msg).
                         status(create.getStatus()).
                         build();
             }
@@ -115,8 +119,10 @@ public class ServiceResource {
             Logger.debug("ServiceResource.create: enable service status: %d", update.getStatus());
 
             if (update.getStatus() >= 400) {
+                String msg = update.readEntity(String.class);
+                Logger.debug("ServiceResource.create: enable service response: %s", msg);
                 return Response.
-                        ok(update.readEntity(String.class)).
+                        ok(msg).
                         status(update.getStatus()).
                         build();
             }
@@ -177,7 +183,7 @@ public class ServiceResource {
 
             Response login = providerClient.login(provider.email, provider.password);
 
-            Logger.debug("ServiceResource.create: login status: %d", login.getStatus());
+            Logger.debug("ServiceResource.update: login status: %d", login.getStatus());
 
             if (login.getStatus() >= 400) {
                 return Response.
