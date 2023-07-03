@@ -28,7 +28,7 @@
 
         <maven.test.skip>true</maven.test.skip>
 
-        <lithium.version>3.4.5</lithium.version>
+        <lithium.version>3.5.1</lithium.version>
         <dropwizard.version>2.1.4</dropwizard.version>
         <jwt.version>0.11.5</jwt.version>
     </properties>

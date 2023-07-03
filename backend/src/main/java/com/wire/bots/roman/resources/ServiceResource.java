@@ -183,7 +183,7 @@ public class ServiceResource {
 
             Response login = providerClient.login(provider.email, provider.password);
 
-            Logger.debug("ServiceResource.create: login status: %d", login.getStatus());
+            Logger.debug("ServiceResource.update: login status: %d", login.getStatus());
 
             if (login.getStatus() >= 400) {
                 return Response.
