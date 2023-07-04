@@ -45,8 +45,10 @@ Uses [lithium](https://github.com/wireapp/lithium) to utilize Wire Bot API.
 }
 ```
 
-Only `name` is mandatory. Specify `url` if you want to use your _Webhook_ to receive events from Wire Backend. Leave `url` _null_ if you
-prefer _Websocket_. `avatar` for your bot is optional, and it is `Base64` encoded `jpeg`|`png` image. If `avatar` field is left _null_
+Only `name` is mandatory. Specify `url` if you want to use your _Webhook_ to receive events from Wire Backend.
+Leave `url` _null_ if you
+prefer _Websocket_. `avatar` for your bot is optional, and it is `Base64` encoded `jpeg`|`png` image. If `avatar` field
+is left _null_
 default avatar is assigned for the Service.
 
 After creating your Service the following json is returned:
@@ -62,15 +64,19 @@ After creating your Service the following json is returned:
 }
 ```
 
-Go to your _Team Settings_ page and navigate to _Services_ tab. Add this `service_code` and enable this service for your team. Now your team
+Go to your _Team Settings_ page and navigate to _Services_ tab. Add this `service_code` and enable this service for your
+team. Now your team
 members should be able to see your _Service_ when they open _people picker_ and navigate to _services_ tab.
 
 ### Webhook
 
-In case `url` was specified when creating the service webhook will be used. All requests coming from Wire to your Service's endpoint will
+In case `url` was specified when creating the service webhook will be used. All requests coming from Wire to your
+Service's endpoint will
 have HTTP Header `Authorization` with value:
-`Bearer <service_authentication>`. Make sure you verify this value in your webhook implementation. Wire will send events as `POST` HTTP
-request to the `url` you specified when creating the Service. Your webhook should always return HTTP code `200` as the result.
+`Bearer <service_authentication>`. Make sure you verify this value in your webhook implementation. Wire will send events
+as `POST` HTTP
+request to the `url` you specified when creating the Service. Your webhook should always return HTTP code `200` as the
+result.
 
 ### Websocket
 
@@ -97,7 +103,8 @@ wss://proxy.services.wire.com/api/await/`<app_key>`
 }
 ```
 
-Your service must be available at the moment `bot_request` event is sent. It must respond with http code `200`. In case of Websocket
+Your service must be available at the moment `bot_request` event is sent. It must respond with http code `200`. In case
+of Websocket
 implementation it is enough the socket is connected to the Proxy at that moment.
 
 - `conversation.init` If your Service responded with `200` to a `bot_request` another event is sent: `init`.
@@ -232,7 +239,8 @@ implementation it is enough the socket is connected to the Proxy at that moment.
 
 ### Posting back to Wire conversation
 
-If the event contains `token` field this `token` can be used to respond to this event by sending `Outgoing Message` like:
+If the event contains `token` field this `token` can be used to respond to this event by sending `Outgoing Message`
+like:
 
 Example:
 
@@ -242,7 +250,8 @@ curl -X POST https://proxy.services.wire.com/api/conversation -d '{"type": "text
 ```
 
 In order to post text, or an image as a bot into Wire conversation you need to send a `POST` request to `/conversation`
-You must also specify the HTTP header as `Authorization:Bearer <token>` where `token` was obtained in `init` or other events
+You must also specify the HTTP header as `Authorization:Bearer <token>` where `token` was obtained in `init` or other
+events
 like: `new_text` or `new_image`.
 
 _Outgoing Message_ can be of 4 types:
@@ -259,6 +268,7 @@ _Outgoing Message_ can be of 4 types:
 ```
 
 - **Image message**
+
 ```
 {
     "type": "attachment",
@@ -268,16 +278,27 @@ _Outgoing Message_ can be of 4 types:
         "width" : 160,
         "size" : 2048,
         "meta" : {
-
+           "assetId" : "3-cef231a2-23f2-429e-b76a-b7649594d3fe",
+           "assetToken" : "...", // Optional
+           "sha256" : "...", // Base64 encoded SHA256 digest of the file
+           "otrKey" : "..." // Base64 encoded otr key used to encrypt the file
         }
     } 
 }    
 ```
 
+or
+
 ```
 {
     "type": "attachment",
-    "attachment": {  "mimeType" : "image/jpeg", "data" : "..." } 
+    "attachment": {  
+        "mimeType" : "image/jpeg",
+        "height" : 320,
+        "width" : 160,
+        "size" : 2048,
+        "data" : "..." // Base64 encoded image data
+    } 
 }     
 ```
 
@@ -337,7 +358,8 @@ The best way how to run Roman is to use Docker, another option is to run the Rom
 
 ### Configuration
 
-Almost all necessary variables and configurations are located in the [roman.yaml](roman.yaml). Following environment variables should be
+Almost all necessary variables and configurations are located in the [roman.yaml](roman.yaml). Following environment
+variables should be
 set.
 
 ```bash          
@@ -379,7 +401,8 @@ openssl rand -hex 32
 
 We provide [Dockerfile](Dockerfile) and the
 prepared [runtime image](https://github.com/wireapp/cryptobox4j/blob/master/dockerfiles/Dockerfile.runtime) -
-[wirebot/runtime](https://hub.docker.com/r/wirebot/runtime). We don't provide the whole Roman docker image, but feel free to build one from
+[wirebot/runtime](https://hub.docker.com/r/wirebot/runtime). We don't provide the whole Roman docker image, but feel
+free to build one from
 the code, all necessary files are present in this repository.
 
 #### Build docker image from source code
@@ -393,7 +416,8 @@ docker build -t roman:latest .
 
 #### Example of Docker run command on local machine (without HTTPS)
 
-In order to run the Roman locally, to test the proxy itself (not sending data to Wire backend) one do not need to specify the HTTPS
+In order to run the Roman locally, to test the proxy itself (not sending data to Wire backend) one do not need to
+specify the HTTPS
 certificate and run following command:
 
 ```bash
@@ -413,7 +437,8 @@ docker run \
 
 #### Example with docker-compose (without HTTPS)
 
-We include [docker-compose.yml](docker-compose.yml) file to run the testing instance of Roman locally using Docker Compose. It includes all
+We include [docker-compose.yml](docker-compose.yml) file to run the testing instance of Roman locally using Docker
+Compose. It includes all
 necessary variables and PostgreSQL instance, to get the testing instance up and running. Simply execute:
 
 ```bash
@@ -422,18 +447,22 @@ docker-compose -f docker-compose.yml up
 
 #### Production deployment
 
-In order to run the Roman in the production, one needs to have an HTTPS and to set the `ROMAN_PUB_KEY_BASE64` as well as `PROXY_DOMAIN`
+In order to run the Roman in the production, one needs to have an HTTPS and to set the `ROMAN_PUB_KEY_BASE64` as well
+as `PROXY_DOMAIN`
 env variables. See [Configuration section](#configuration) how to obtain them.
 
 ### Native JVM
 
-As previously mentioned, Wire recommends running the Roman as a docker container. However, you can run it natively on the JVM as well.
-Please note that Roman requires JVM >= 11. To run it natively, one needs to install [Cryptobox4j](https://github.com/wireapp/cryptobox4j)
+As previously mentioned, Wire recommends running the Roman as a docker container. However, you can run it natively on
+the JVM as well.
+Please note that Roman requires JVM >= 11. To run it natively, one needs to
+install [Cryptobox4j](https://github.com/wireapp/cryptobox4j)
 and other cryptographic libraries. You can use
 [Docker Build Image](https://github.com/wireapp/cryptobox4j/blob/master/dockerfiles/Dockerfile.cryptobox)
 as an inspiration what needs to be installed and what environment variables need to be set to get the Cryptobox working.
 
-Also, don't forget to read the [Configuration section](#configuration) and set all necessary environment variables for the Roman itselgf.
+Also, don't forget to read the [Configuration section](#configuration) and set all necessary environment variables for
+the Roman itselgf.
 
 First, it is necessary to build the application:
 
@@ -451,16 +480,20 @@ java -jar target/roman.jar server roman.yaml
 
 ## Simple Guide to Roman Deployment
 
-The previous lines should give you all necessary material you need how to deploy the Roman in multiple environment and how to set everything
-up. Even though Wire runs Roman in cloud and uses Kubernetes setup, we decided to provide as simple guide as possible to deploy your own
-Roman using just a `docker-compose`. The following lines provides specific and opinionated simple guide, that requires just few basic
+The previous lines should give you all necessary material you need how to deploy the Roman in multiple environment and
+how to set everything
+up. Even though Wire runs Roman in cloud and uses Kubernetes setup, we decided to provide as simple guide as possible to
+deploy your own
+Roman using just a `docker-compose`. The following lines provides specific and opinionated simple guide, that requires
+just few basic
 things:
 
 - a machine with Docker, Docker Compose and OpenSSL installed
 - the machine has a public IP address and DNS record pointing to that IP address
 - *(optional)* install `jq` in order to browse and search in logs
 
-In this example we take the DNS as `roman.example.com`, when deploying, change this value to your own domain. In order to obtain the
+In this example we take the DNS as `roman.example.com`, when deploying, change this value to your own domain. In order
+to obtain the
 certificate, we will use [Traefik](https://traefik.io/) edge router and [Let's Encrypt](https://letsencrypt.org/).
 
 ### Step by step
@@ -471,7 +504,8 @@ certificate, we will use [Traefik](https://traefik.io/) edge router and [Let's E
 git clone git@github.com:wireapp/roman.git
 ```
 
-2. Set the correct DNS in the [docker-compose.prod.yml](docker-compose.prod.yml) - replace `roman.example.com` with your own and replace
+2. Set the correct DNS in the [docker-compose.prod.yml](docker-compose.prod.yml) - replace `roman.example.com` with your
+   own and replace
    the `developers@example.com` email address with our own email.
 
 3. Create `.env.prod` file that will contain all necessary environmental variables.
@@ -497,11 +531,15 @@ docker-compose -f docker-compose.prod.yml --env-file .env.prod up --build -d
 ```
 
 5. Check the logs
-    * proxy - `docker-compose -f docker-compose.prod.yml logs proxy` - should show some noise about certificate and routes registration
-    * Roman - `docker-compose -f docker-compose.prod.yml logs roman` - should show normal starting procedure and no errors
-    * with Roman, you can pipe logs data to `jq` (if installed), that way you will see nice and formatted JSONs instead of just lines.
+    * proxy - `docker-compose -f docker-compose.prod.yml logs proxy` - should show some noise about certificate and
+      routes registration
+    * Roman - `docker-compose -f docker-compose.prod.yml logs roman` - should show normal starting procedure and no
+      errors
+    * with Roman, you can pipe logs data to `jq` (if installed), that way you will see nice and formatted JSONs instead
+      of just lines.
 
-6. Give it some time to obtain necessary certificates - around 10 minutes should be fine. Then try to access the `https://roman.example.com`
+6. Give it some time to obtain necessary certificates - around 10 minutes should be fine. Then try to access
+   the `https://roman.example.com`
    to see whether the HTTPS works as expected. If yes, proceed, if no troubleshoot with Traefik proxy.
 7. Now you need to download real public key and encode it in base64 -
    see [Getting the ROMAN_PUB_KEY_BASE64](#getting-the-roman_pub_key_base64)

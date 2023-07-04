@@ -150,35 +150,38 @@ public class Sender {
     @Nullable
     private UUID sendPicture(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = getWireClient(botId)) {
-            final UUID messageId = UUID.randomUUID();
             final Attachment attachment = message.attachment;
 
-            Picture asset;
+            Picture picture;
             if (message.attachment.meta != null) {
-                asset = new Picture(messageId, attachment.mimeType);
-                setAssetMetadata(asset, message.attachment.meta);
-                asset.setHeight(attachment.height);
-                asset.setWidth(attachment.width);
-                asset.setSize(attachment.size.intValue());
-            } else if (message.attachment.data != null) {
-                final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
-                asset = new Picture(bytes, attachment.mimeType);
-                uploadAssetData(wireClient, asset);
-            } else {
-                throw new Exception("Meta or Data need to be set");
+                picture = new Picture(UUID.randomUUID(), attachment.mimeType);
+                setAssetMetadata(picture, message.attachment.meta);
+                picture.setHeight(attachment.height);
+                picture.setWidth(attachment.width);
+                picture.setSize(attachment.size.intValue());
+
+                wireClient.send(picture);
+                return picture.getMessageId();
             }
 
-            wireClient.send(asset);
-            return asset.getMessageId();
-        }
-    }
+            if (message.attachment.data != null) {
+                final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
+                picture = new Picture(bytes, attachment.mimeType);
 
-    private WireClient getWireClient(UUID botId) throws IOException, CryptoException {
-        final WireClient wireClient = repo.getClient(botId);
-        if (wireClient == null) {
-            throw new MissingStateException(botId);
+                setAssetMetadata(picture, message.attachment.meta);
+
+                picture.setHeight(attachment.height);
+                picture.setWidth(attachment.width);
+                picture.setSize(bytes.length);
+
+                uploadAssetData(wireClient, picture);
+
+                wireClient.send(picture);
+                return picture.getMessageId();
+            }
+
+            throw new Exception("Meta or Data needs to be set");
         }
-        return wireClient;
     }
 
     @Nullable
@@ -228,17 +231,29 @@ public class Sender {
         }
     }
 
-    private void setAssetMetadata(AssetBase asset, AssetMeta meta) {
+    private void setAssetMetadata(AssetBase asset, @Nullable AssetMeta meta) {
+        if (meta == null)
+            return;
+
         asset.setAssetKey(meta.assetId);
         asset.setAssetToken(meta.assetToken);
         asset.setSha256(Base64.getDecoder().decode(meta.sha256));
         asset.setOtrKey(Base64.getDecoder().decode(meta.otrKey));
     }
 
-    private void uploadAssetData(WireClient wireClient, AssetBase asset) throws Exception {
+    private AssetKey uploadAssetData(WireClient wireClient, AssetBase asset) throws Exception {
         final AssetKey assetKey = wireClient.uploadAsset(asset);
         asset.setAssetKey(assetKey.id);
         asset.setAssetToken(assetKey.token);
         asset.setDomain(assetKey.domain);
+        return assetKey;
+    }
+
+    private WireClient getWireClient(UUID botId) throws IOException, CryptoException {
+        final WireClient wireClient = repo.getClient(botId);
+        if (wireClient == null) {
+            throw new MissingStateException(botId);
+        }
+        return wireClient;
     }
 }
