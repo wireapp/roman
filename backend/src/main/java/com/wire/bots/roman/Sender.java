@@ -153,7 +153,7 @@ public class Sender {
             final Attachment attachment = message.attachment;
 
             UUID messageId = UUID.randomUUID();
-            Picture preview = new Picture(messageId, attachment.mimeType);
+            ImagePreview preview = new ImagePreview(messageId, attachment.mimeType);
             preview.setHeight(attachment.height);
             preview.setWidth(attachment.width);
             preview.setSize(attachment.size.intValue());
@@ -162,11 +162,11 @@ public class Sender {
 
             AssetBase asset;
             if (message.attachment.meta != null) {
-                asset = new Picture(preview.getMessageId(), attachment.mimeType);
+                asset = new ImageAsset(preview.getMessageId(), null, attachment.mimeType);
                 setAssetMetadata(asset, message.attachment.meta);
             } else if (message.attachment.data != null) {
                 final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
-                asset = new Picture(bytes, attachment.mimeType);
+                asset = new ImageAsset(messageId, bytes, attachment.mimeType);
                 asset.setMessageId(messageId);
                 uploadAssetData(wireClient, asset);
             } else {

@@ -6,7 +6,7 @@
 
     <groupId>com.wire.bots</groupId>
     <artifactId>roman</artifactId>
-    <version>1.18.7</version>
+    <version>1.18.8</version>
 
     <name>Roman</name>
     <description>Wire Bot API Proxy</description>
@@ -38,6 +38,11 @@
             <groupId>com.wire</groupId>
             <artifactId>lithium</artifactId>
             <version>${lithium.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wire</groupId>
+            <artifactId>xenon</artifactId>
+            <version>1.5.2</version>
         </dependency>
         <dependency>
             <groupId>com.lambdaworks</groupId>
