@@ -152,35 +152,29 @@ public class Sender {
         try (WireClient wireClient = getWireClient(botId)) {
             final Attachment attachment = message.attachment;
 
-            Picture picture;
+            UUID messageId = UUID.randomUUID();
+            Picture preview = new Picture(messageId, attachment.mimeType);
+            preview.setHeight(attachment.height);
+            preview.setWidth(attachment.width);
+            preview.setSize(attachment.size.intValue());
+
+            wireClient.send(preview);
+
+            AssetBase asset;
             if (message.attachment.meta != null) {
-                picture = new Picture(UUID.randomUUID(), attachment.mimeType);
-                setAssetMetadata(picture, message.attachment.meta);
-                picture.setHeight(attachment.height);
-                picture.setWidth(attachment.width);
-                picture.setSize(attachment.size.intValue());
-
-                wireClient.send(picture);
-                return picture.getMessageId();
-            }
-
-            if (message.attachment.data != null) {
+                asset = new Picture(preview.getMessageId(), attachment.mimeType);
+                setAssetMetadata(asset, message.attachment.meta);
+            } else if (message.attachment.data != null) {
                 final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
-                picture = new Picture(bytes, attachment.mimeType);
-
-                setAssetMetadata(picture, message.attachment.meta);
-
-                picture.setHeight(attachment.height);
-                picture.setWidth(attachment.width);
-                picture.setSize(bytes.length);
-
-                uploadAssetData(wireClient, picture);
-
-                wireClient.send(picture);
-                return picture.getMessageId();
+                asset = new Picture(bytes, attachment.mimeType);
+                asset.setMessageId(messageId);
+                uploadAssetData(wireClient, asset);
+            } else {
+                throw new Exception("Meta or Data need to be set");
             }
 
-            throw new Exception("Meta or Data needs to be set");
+            wireClient.send(asset);
+            return asset.getMessageId();
         }
     }
 
