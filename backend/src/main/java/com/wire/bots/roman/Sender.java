@@ -160,21 +160,21 @@ public class Sender {
 
             wireClient.send(preview);
 
-            AssetBase asset;
+            ImageAsset image;
             if (message.attachment.meta != null) {
-                asset = new ImageAsset(preview.getMessageId(), null, attachment.mimeType);
-                setAssetMetadata(asset, message.attachment.meta);
+                image = new ImageAsset(preview.getMessageId(), new byte[0], attachment.mimeType);
+                setAssetMetadata(image, message.attachment.meta);
             } else if (message.attachment.data != null) {
                 final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
-                asset = new ImageAsset(messageId, bytes, attachment.mimeType);
-                asset.setMessageId(messageId);
-                uploadAssetData(wireClient, asset);
+                image = new ImageAsset(messageId, bytes, attachment.mimeType);
+                image.setMessageId(messageId);
+                uploadAssetData(wireClient, image);
             } else {
                 throw new Exception("Meta or Data need to be set");
             }
 
-            wireClient.send(asset);
-            return asset.getMessageId();
+            wireClient.send(image);
+            return image.getMessageId();
         }
     }
 
@@ -225,10 +225,7 @@ public class Sender {
         }
     }
 
-    private void setAssetMetadata(AssetBase asset, @Nullable AssetMeta meta) {
-        if (meta == null)
-            return;
-
+    private void setAssetMetadata(AssetBase asset, AssetMeta meta) {
         asset.setAssetKey(meta.assetId);
         asset.setAssetToken(meta.assetToken);
         asset.setSha256(Base64.getDecoder().decode(meta.sha256));
