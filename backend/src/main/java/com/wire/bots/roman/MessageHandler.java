@@ -430,7 +430,7 @@ public class MessageHandler extends MessageHandlerBase {
                 return WebSocket.send(provider.id, message);
             }
         } catch (Exception e) {
-            Logger.exception("MessageHandler.send: error %s", e, e.getMessage());
+            Logger.error("MessageHandler.send: error %s", e.getMessage());
             return false;
         }
     }
@@ -465,7 +465,7 @@ public class MessageHandler extends MessageHandlerBase {
         try {
             if (Logger.getLevel() == Level.FINE) {
                 ObjectMapper objectMapper = new ObjectMapper();
-                Logger.debug(objectMapper.writeValueAsString(message));
+                Logger.info(objectMapper.writeValueAsString(message));
             }
         } catch (Exception ignore) {
 
