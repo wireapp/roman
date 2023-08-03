@@ -104,7 +104,7 @@ public class ConversationResource {
         try {
             if (Logger.getLevel() == Level.FINE) {
                 ObjectMapper mapper = new ObjectMapper();
-                Logger.debug(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
+                Logger.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
             }
         } catch (Exception ignore) {
 
