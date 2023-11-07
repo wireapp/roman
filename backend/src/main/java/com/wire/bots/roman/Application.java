@@ -17,6 +17,7 @@
 
 package com.wire.bots.roman;
 
+import com.bazaarvoice.dropwizard.assets.ConfiguredAssetsBundle;
 import com.wire.bots.roman.commands.UpdateCertCommand;
 import com.wire.bots.roman.filters.BackendAuthenticationFilter;
 import com.wire.bots.roman.filters.CspResponseFilter;
@@ -35,9 +36,8 @@ import com.wire.lithium.Server;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.factories.CryptoFactory;
 import com.wire.xenon.factories.StorageFactory;
-import io.dropwizard.bundles.assets.ConfiguredAssetsBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.websockets.WebsocketBundle;
 import io.jsonwebtoken.security.Keys;
 import org.eclipse.jetty.servlets.CrossOriginFilter;

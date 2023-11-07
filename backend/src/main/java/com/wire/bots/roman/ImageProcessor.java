@@ -1,6 +1,6 @@
 package com.wire.bots.roman;
 
-import com.wire.xenon.assets.Picture;
+import com.wire.xenon.assets.ImagePreview;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -59,12 +59,9 @@ public class ImageProcessor {
         return resizedImage;
     }
 
-    private static Picture getScaledImage(Picture image, double dimension) throws Exception {
+    private static Picture getScaledImage(ImagePreview image, double dimension) throws Exception {
         String resultImageType;
         switch (image.getMimeType()) {
-            case "image/gif":
-                resultImageType = "gif";
-                break;
             case "image/jpeg":
                 resultImageType = "jpg";
                 break;
