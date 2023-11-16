@@ -1,6 +1,7 @@
 package com.wire.bots.roman;
 
-import com.wire.xenon.assets.Picture;
+import com.wire.bots.roman.resources.Picture;
+import com.wire.xenon.assets.ImagePreview;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -11,14 +12,8 @@ import java.io.ByteArrayOutputStream;
 public class ImageProcessor {
 
     private static final int MEDIUM_DIMENSION = 2896;
-    private static final int SMALL_DIMENSION = 2896;
-
-    public static Picture getMediumImage(Picture original) throws Exception {
-        return getScaledImage(original, MEDIUM_DIMENSION);
-    }
-
-    public static Picture getSmallImage(Picture original) throws Exception {
-        return getScaledImage(original, SMALL_DIMENSION);
+    public static Picture getMediumImage(Picture picture) throws Exception {
+        return getScaledImage(picture, MEDIUM_DIMENSION);
     }
 
     private static Boolean shouldScaleOriginalSize(double width, double height, double dimension) {
@@ -59,12 +54,9 @@ public class ImageProcessor {
         return resizedImage;
     }
 
-    private static Picture getScaledImage(Picture image, double dimension) throws Exception {
+    private static Picture getScaledImage(ImagePreview image, int dimension) throws Exception {
         String resultImageType;
         switch (image.getMimeType()) {
-            case "image/gif":
-                resultImageType = "gif";
-                break;
             case "image/jpeg":
                 resultImageType = "jpg";
                 break;
@@ -89,9 +81,7 @@ public class ImageProcessor {
         try (ByteArrayOutputStream resultStream = new ByteArrayOutputStream()) {
             ImageIO.write(resultImage, resultImageType, resultStream);
             resultStream.flush();
-            Picture picture = new Picture(resultStream.toByteArray(), image.getMimeType());
-            picture.setRetention(image.getRetention());
-            return picture;
+            return new Picture(resultStream.toByteArray(), image.getMimeType());
         }
     }
 

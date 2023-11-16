@@ -35,15 +35,13 @@ import com.wire.lithium.Server;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.factories.CryptoFactory;
 import com.wire.xenon.factories.StorageFactory;
-import io.dropwizard.bundles.assets.ConfiguredAssetsBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import io.dropwizard.websockets.WebsocketBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
 import java.security.Key;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutorService;
@@ -72,7 +70,6 @@ public class Application extends Server<Config> {
         instance = (Application) bootstrap.getApplication();
         bootstrap.addBundle(new WebsocketBundle(WebSocket.class));
         bootstrap.addCommand(new UpdateCertCommand());
-        bootstrap.addBundle(new ConfiguredAssetsBundle("/assets/", "/", "index.html"));
     }
 
     @Override
