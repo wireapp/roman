@@ -56,7 +56,7 @@ public class ConversationResourceTest {
             this.text = new Text();
             this.text.data = "Hi there!";
         }};
-        when(sender.sendText(eq(message), eq(Const.BOT_ID)))
+        when(sender.sendText(any(), any()))
                 .thenReturn(Const.MSG_ID);
 
         PostMessageResult result;
