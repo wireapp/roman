@@ -18,8 +18,8 @@ import jakarta.ws.rs.Produces;
 import org.hibernate.validator.constraints.Length;
 import org.jdbi.v3.core.Jdbi;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 

@@ -14,6 +14,8 @@ import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
@@ -21,8 +23,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jdbi.v3.core.Jdbi;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;

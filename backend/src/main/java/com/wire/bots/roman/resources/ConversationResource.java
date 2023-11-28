@@ -11,6 +11,8 @@ import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -20,8 +22,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.UUID;
 import java.util.logging.Level;
 

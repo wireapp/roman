@@ -10,7 +10,7 @@ server:
     enabled: true
 
   requestLog:
-    appends:
+    appenders:
       - type: ${APPENDER_TYPE:-console}
         filterFactories:
           - type: status-filter-factory

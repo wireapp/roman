@@ -3,15 +3,13 @@ package com.wire.bots.roman;
 import com.wire.bots.roman.resources.Picture;
 import com.wire.xenon.assets.ImagePreview;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 
 public class ImageProcessor {
 
     private static final int MEDIUM_DIMENSION = 2896;
+
     public static Picture getMediumImage(Picture picture) throws Exception {
         return getScaledImage(picture, MEDIUM_DIMENSION);
     }
@@ -54,6 +52,7 @@ public class ImageProcessor {
         return resizedImage;
     }
 
+    // todo. fixme, xenon to expose getMimeType type and getImageData
     private static Picture getScaledImage(ImagePreview image, int dimension) throws Exception {
 //        String resultImageType;
 //        switch ("image/jpeg") {

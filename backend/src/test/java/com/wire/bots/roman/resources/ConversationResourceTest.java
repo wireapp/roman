@@ -14,27 +14,34 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
+import static com.wire.bots.roman.resources.dummies.Const.CONV_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 public class ConversationResourceTest {
     private static final Sender sender = mock(Sender.class);
 
-    @ClassRule
-    public static final ResourceTestRule resources = ResourceTestRule.builder()
+    @Rule
+    public final ResourceTestRule resources = ResourceTestRule.builder()
             .addProvider(AuthenticationFeatureDummy.class)
             .addResource(new ConversationResource(sender))
             .build();
 
+    private final Conversation conversation = new Conversation() {{
+        id = CONV_ID;
+    }};
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+    }
+
     @Before
     public void setup() throws Exception {
-        Conversation conversation = new Conversation();
-        conversation.id = Const.CONV_ID;
-
-        when(sender.getConversation(Const.BOT_ID)).thenReturn(conversation);
+        when(sender.getConversation(any())).thenReturn(conversation);
     }
 
     @After
@@ -44,20 +51,24 @@ public class ConversationResourceTest {
 
     @Test
     public void testPostTextIntoConversation() throws Exception {
-        final IncomingMessage message = new IncomingMessage();
-        message.type = "text";
-        message.text = new Text();
-        message.text.data = "Hi there!";
+        final IncomingMessage message = new IncomingMessage() {{
+            this.type = "text";
+            this.text = new Text();
+            this.text.data = "Hi there!";
+        }};
+        when(sender.sendText(eq(message), eq(Const.BOT_ID)))
+                .thenReturn(Const.MSG_ID);
 
-        when(sender.send(message, Const.BOT_ID)).thenReturn(Const.MSG_ID);
-
-        final Response response = resources
+        PostMessageResult result;
+        try (Response response = resources
                 .target("conversation")
+                .property("botid", Const.BOT_ID)
                 .request()
-                .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE))) {
 
-        assertThat(response.getStatus()).isEqualTo(200);
-        final PostMessageResult result = response.readEntity(PostMessageResult.class);
+            assertThat(response.getStatus()).isEqualTo(200);
+            result = response.readEntity(PostMessageResult.class);
+        }
         assertThat(result.messageId).isNotNull();
     }
 
@@ -87,6 +98,7 @@ public class ConversationResourceTest {
                 .request()
                 .get(Conversation.class);
 
-        assertThat(response.id).isEqualTo(Const.CONV_ID);
+        assertThat(response).isNotNull();
+        assertThat(response.id).isEqualTo(CONV_ID);
     }
 }

@@ -77,11 +77,11 @@ public class WebsocketBundle implements ConfiguredBundle<Config>, LifeCycle.List
 
     public void addEndpoint(Class<?> clazz) {
         ServerEndpoint anno = clazz.getAnnotation(ServerEndpoint.class);
-        if(anno == null){
-            throw new RuntimeException(clazz.getCanonicalName()+" does not have a "+ServerEndpoint.class.getCanonicalName()+" annotation");
+        if (anno == null) {
+            throw new RuntimeException(clazz.getCanonicalName() + " does not have a " + ServerEndpoint.class.getCanonicalName() + " annotation");
         }
-        ServerEndpointConfig.Builder bldr =  ServerEndpointConfig.Builder.create(clazz, anno.value());
-        if(defaultConfigurator != null){
+        ServerEndpointConfig.Builder bldr = ServerEndpointConfig.Builder.create(clazz, anno.value());
+        if (defaultConfigurator != null) {
             bldr.configurator(defaultConfigurator);
         }
         endpointConfigs.add(bldr.build());
@@ -119,10 +119,12 @@ public class WebsocketBundle implements ConfiguredBundle<Config>, LifeCycle.List
             }
         });
     }
+
     public static class InstWebSocketServerContainerInitializer {
         public static ServerContainer configureContext(final MutableServletContextHandler context, final MetricRegistry metrics) throws ServletException {
-            WebSocketUpgradeFilter filter = WebSocketUpgradeFilter.configureContext(context);
+            WebSocketUpgradeFilter filter = WebSocketUpgradeFilter.configure(context);
             NativeWebSocketConfiguration wsConfig = filter.getConfiguration();
+
 
             ServerContainer wsContainer = new ServerContainer(wsConfig, context.getServer().getThreadPool());
             EventDriverFactory edf = wsConfig.getFactory().getEventDriverFactory();

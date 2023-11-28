@@ -23,8 +23,8 @@ import jakarta.ws.rs.core.Response;
 import org.hibernate.validator.constraints.Length;
 import org.jdbi.v3.core.Jdbi;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
