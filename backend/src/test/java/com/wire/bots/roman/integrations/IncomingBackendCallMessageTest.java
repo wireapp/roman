@@ -18,15 +18,15 @@ import com.wire.xenon.models.otr.PreKeys;
 import com.wire.xenon.models.otr.Recipients;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.jdbi.v3.core.Jdbi;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -124,7 +124,7 @@ public class IncomingBackendCallMessageTest {
     private Response newOtrMessageFromBackend(UUID botId, UUID userId, String cypher) {
         Payload payload = new Payload();
         payload.type = "conversation.otr-message-add";
-        payload.from = userId;
+        payload.from = new Payload.Qualified(userId, "wire.com");
         payload.time = new Date().toString();
         payload.data = new Payload.Data();
         payload.data.sender = USER_CLIENT_DUMMY;

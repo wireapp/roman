@@ -55,34 +55,35 @@ public class ImageProcessor {
     }
 
     private static Picture getScaledImage(ImagePreview image, int dimension) throws Exception {
-        String resultImageType;
-        switch (image.getMimeType()) {
-            case "image/jpeg":
-                resultImageType = "jpg";
-                break;
-            case "image/png":
-                resultImageType = "png";
-                break;
-            default:
-                throw new Exception("Unsupported mime type: " + image.getMimeType());
-        }
-
-        int origWidth = image.getWidth();
-        int origHeight = image.getHeight();
-
-        BufferedImage resultImage = ImageIO.read(new ByteArrayInputStream(image.getImageData()));
-
-        if (shouldScaleOriginalSize(origWidth, origHeight, dimension)) {
-            Size scaledSize = getScaledSize(origWidth, origHeight, dimension);
-            resultImage = resizeImage(resultImage, (int) scaledSize.width,
-                    (int) scaledSize.height);
-        }
-
-        try (ByteArrayOutputStream resultStream = new ByteArrayOutputStream()) {
-            ImageIO.write(resultImage, resultImageType, resultStream);
-            resultStream.flush();
-            return new Picture(resultStream.toByteArray(), image.getMimeType());
-        }
+//        String resultImageType;
+//        switch ("image/jpeg") {
+//            case "image/jpeg":
+//                resultImageType = "jpg";
+//                break;
+//            case "image/png":
+//                resultImageType = "png";
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Unsupported mime type");
+//        }
+//
+//        int origWidth = image.getWidth();
+//        int origHeight = image.getHeight();
+//
+//        BufferedImage resultImage = ImageIO.read(new ByteArrayInputStream(image.getImageData()));
+//
+//        if (shouldScaleOriginalSize(origWidth, origHeight, dimension)) {
+//            Size scaledSize = getScaledSize(origWidth, origHeight, dimension);
+//            resultImage = resizeImage(resultImage, (int) scaledSize.width,
+//                    (int) scaledSize.height);
+//        }
+//
+//        try (ByteArrayOutputStream resultStream = new ByteArrayOutputStream()) {
+//            ImageIO.write(resultImage, resultImageType, resultStream);
+//            resultStream.flush();
+//            return new Picture(resultStream.toByteArray(), image.getMimeType());
+//        }
+        return null;
     }
 
     private static class Size {

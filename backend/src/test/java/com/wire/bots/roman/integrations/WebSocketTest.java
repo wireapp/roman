@@ -3,18 +3,17 @@ package com.wire.bots.roman.integrations;
 import com.wire.bots.roman.Application;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.Tools;
-import com.wire.bots.roman.model.*;
+import com.wire.bots.roman.model.Config;
+import com.wire.bots.roman.model.Provider;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
+import jakarta.ws.rs.client.Client;
 import org.jdbi.v3.core.Jdbi;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.websocket.ClientEndpoint;
-
 import javax.websocket.*;
-import javax.ws.rs.client.Client;
 import java.net.URI;
 import java.util.UUID;
 
