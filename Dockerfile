@@ -7,7 +7,7 @@ WORKDIR ./frontend
 RUN npm i
 RUN npm run build
 
-FROM maven:3-openjdk-11 AS build
+FROM maven:3-openjdk-17 AS build
 WORKDIR /app
 
 COPY backend/pom.xml ./
@@ -18,7 +18,7 @@ COPY backend/ ./
 
 RUN mvn -Dmaven.test.skip=true package
 
-FROM wirebot/runtime:1.3.0 AS runtime
+FROM --platform=linux/amd64 wirebot/runtime:1.4.0 AS runtime
 LABEL description="Wire Roman"
 LABEL project="wire-bots:roman"
 
