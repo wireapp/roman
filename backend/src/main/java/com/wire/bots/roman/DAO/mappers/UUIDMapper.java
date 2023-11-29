@@ -1,10 +1,10 @@
 package com.wire.bots.roman.DAO.mappers;
 
 import com.wire.xenon.tools.Logger;
+import jakarta.annotation.Nullable;
 import org.jdbi.v3.core.mapper.ColumnMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
