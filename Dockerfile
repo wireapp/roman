@@ -18,7 +18,7 @@ COPY backend/ ./
 
 RUN mvn -Dmaven.test.skip=true package
 
-FROM --platform=linux/amd64 wirebot/runtime:1.4.0 AS runtime
+FROM wirebot/runtime:1.4.0 AS runtime
 LABEL description="Wire Roman"
 LABEL project="wire-bots:roman"
 
