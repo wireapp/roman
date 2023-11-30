@@ -1,32 +1,32 @@
 package com.wire.bots.roman.resources;
 
+import com.wire.bots.cryptobox.CryptoException;
 import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.roman.model.Text;
-import com.wire.bots.roman.resources.dummies.AuthenticationFeatureDummy;
 import com.wire.bots.roman.resources.dummies.Const;
 import com.wire.xenon.backend.models.Conversation;
-import io.dropwizard.testing.junit.ResourceTestRule;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.dropwizard.testing.junit5.ResourceExtension;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.io.IOException;
 
 import static com.wire.bots.roman.resources.dummies.Const.CONV_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class ConversationResourceTest {
     private static final Sender sender = mock(Sender.class);
-
-    @Rule
-    public final ResourceTestRule resources = ResourceTestRule.builder()
-            .addProvider(AuthenticationFeatureDummy.class)
+    public static final ResourceExtension resources = ResourceExtension.builder()
             .addResource(new ConversationResource(sender))
             .build();
 
@@ -34,17 +34,7 @@ public class ConversationResourceTest {
         id = CONV_ID;
     }};
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-    }
-
-    @Before
-    public void setup() throws Exception {
-        when(sender.getConversation(any())).thenReturn(conversation);
-    }
-
-    @After
+    @AfterEach
     public void tearDown() {
         reset(sender);
     }
@@ -56,13 +46,11 @@ public class ConversationResourceTest {
             this.text = new Text();
             this.text.data = "Hi there!";
         }};
-        when(sender.sendText(any(), any()))
-                .thenReturn(Const.MSG_ID);
+        when(sender.send(any(), any())).thenReturn(Const.MSG_ID);
 
         PostMessageResult result;
         try (Response response = resources
                 .target("conversation")
-                .property("botid", Const.BOT_ID)
                 .request()
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE))) {
 
@@ -73,7 +61,9 @@ public class ConversationResourceTest {
     }
 
     @Test
-    public void testPostImageIntoConversation() {
+    public void testPostImageIntoConversation() throws Exception {
+        when(sender.send(any(), any())).thenReturn(Const.MSG_ID);
+
         IncomingMessage message = new IncomingMessage();
         message.type = "attachment";
         message.attachment = new Attachment();
@@ -82,8 +72,8 @@ public class ConversationResourceTest {
                 "BwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zND";
 
         final Response response = resources
-                .target("conversation")
-                .request()
+                .target("/conversation")
+                .request(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
 
         assertThat(response.getStatus()).isEqualTo(200);
@@ -92,9 +82,10 @@ public class ConversationResourceTest {
     }
 
     @Test
-    public void testGetConversation() {
+    public void testGetConversation() throws IOException, CryptoException {
+        when(sender.getConversation(any())).thenReturn(conversation);
         final Conversation response = resources
-                .target("conversation")
+                .target("/conversation")
                 .request()
                 .get(Conversation.class);
 
