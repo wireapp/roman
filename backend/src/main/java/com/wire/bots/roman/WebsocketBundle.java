@@ -20,24 +20,19 @@
 
 package com.wire.bots.roman;
 
-import com.codahale.metrics.MetricRegistry;
 import com.wire.bots.roman.model.Config;
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
-import io.dropwizard.jetty.MutableServletContextHandler;
+import jakarta.websocket.DeploymentException;
+import jakarta.websocket.server.ServerContainer;
+import jakarta.websocket.server.ServerEndpoint;
+import jakarta.websocket.server.ServerEndpointConfig;
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.eclipse.jetty.websocket.common.events.EventDriverFactory;
-import org.eclipse.jetty.websocket.jsr356.server.ServerContainer;
-import org.eclipse.jetty.websocket.server.NativeWebSocketConfiguration;
-import org.eclipse.jetty.websocket.server.WebSocketUpgradeFilter;
+import org.eclipse.jetty.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
-import javax.websocket.DeploymentException;
-import javax.websocket.server.ServerEndpoint;
-import javax.websocket.server.ServerEndpointConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -99,18 +94,21 @@ public class WebsocketBundle implements ConfiguredBundle<Config>, LifeCycle.List
             @Override
             public void lifeCycleStarting(LifeCycle event) {
                 starting = true;
-                try {
-                    ServerContainer wsContainer = InstWebSocketServerContainerInitializer.
-                            configureContext(environment.getApplicationContext(), environment.metrics());
+                JakartaWebSocketServletContainerInitializer.configure(environment.getApplicationContext(), (servletContext, wsContainer) ->
+                {
+                    // This lambda will be called at the appropriate place in the
+                    // ServletContext initialization phase where you can initialize
+                    // and configure your websocket container.
+                    // Configure defaults for container
+                    wsContainer.setDefaultMaxTextMessageBufferSize(65535);
 
+                    // Add WebSocket endpoint to jakarta.websocket layer
                     StringBuilder sb = new StringBuilder("Registering websocket endpoints: ")
                             .append(System.lineSeparator())
                             .append(System.lineSeparator());
                     endpointConfigs.forEach(rethrow(conf -> addEndpoint(wsContainer, conf, sb)));
                     LOG.info(sb.toString());
-                } catch (ServletException ex) {
-                    throw new RuntimeException(ex);
-                }
+                });
             }
 
             private void addEndpoint(ServerContainer wsContainer, ServerEndpointConfig conf, StringBuilder sb) throws DeploymentException {
@@ -118,25 +116,6 @@ public class WebsocketBundle implements ConfiguredBundle<Config>, LifeCycle.List
                 sb.append(String.format("    WS      %s (%s)", conf.getPath(), conf.getEndpointClass().getName())).append(System.lineSeparator());
             }
         });
-    }
-
-    public static class InstWebSocketServerContainerInitializer {
-        public static ServerContainer configureContext(final MutableServletContextHandler context, final MetricRegistry metrics) throws ServletException {
-            WebSocketUpgradeFilter filter = WebSocketUpgradeFilter.configure(context);
-            NativeWebSocketConfiguration wsConfig = filter.getConfiguration();
-
-
-            ServerContainer wsContainer = new ServerContainer(wsConfig, context.getServer().getThreadPool());
-            EventDriverFactory edf = wsConfig.getFactory().getEventDriverFactory();
-            edf.clearImplementations();
-
-            //edf.addImplementation(new InstJsrServerEndpointImpl(metrics));
-            //edf.addImplementation(new InstJsrServerExtendsEndpointImpl(metrics));
-            context.addBean(wsContainer);
-            context.setAttribute(javax.websocket.server.ServerContainer.class.getName(), wsContainer);
-            context.setAttribute(WebSocketUpgradeFilter.class.getName(), filter);
-            return wsContainer;
-        }
     }
 
     public static <T> Consumer<T> rethrow(ConsumerCheckException<T> c) {
