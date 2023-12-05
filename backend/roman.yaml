@@ -34,13 +34,6 @@ swagger:
     - https
     - http
 
-assets:
-  mappings:
-    /assets: /
-  overrides:
-    # the default assumes you have build frontend by "npm run build"
-    /: ${FRONTEND_PATH:-../frontend/build}
-
 jerseyClient:
   timeout: 40s
   connectionTimeout: 40s

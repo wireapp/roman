@@ -35,6 +35,7 @@ import com.wire.lithium.Server;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.factories.CryptoFactory;
 import com.wire.xenon.factories.StorageFactory;
+import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.jsonwebtoken.security.Keys;
@@ -70,6 +71,7 @@ public class Application extends Server<Config> {
         instance = (Application) bootstrap.getApplication();
         bootstrap.addBundle(new WebsocketBundle(WebSocket.class));
         bootstrap.addCommand(new UpdateCertCommand());
+        bootstrap.addBundle(new AssetsBundle("/frontend", "/", "index.html"));
     }
 
     @Override

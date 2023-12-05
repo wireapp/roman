@@ -16,6 +16,10 @@ RUN mvn verify --fail-never -U
 
 COPY backend/ ./
 
+# Copy frontend build to local resources classpath folder
+ENV FRONTEND_PATH=/app/src/main/resources/frontend
+COPY --from=frontend-build ./frontend/build $FRONTEND_PATH
+
 RUN mvn -Dmaven.test.skip=true package
 
 FROM wirebot/runtime:1.4.0 AS runtime
@@ -28,9 +32,6 @@ RUN apt-get update && apt-get upgrade -y
 # Copy backend
 COPY --from=build /app/target/roman.jar /opt/roman/backend/
 COPY backend/roman.yaml /etc/roman/
-# Copy frontend
-ENV FRONTEND_PATH=/opt/roman/frontend
-COPY --from=frontend-build ./frontend/build $FRONTEND_PATH
 
 # create version file
 ARG release_version=development
