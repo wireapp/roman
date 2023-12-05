@@ -18,9 +18,18 @@
 package com.wire.bots.roman;
 
 import com.wire.bots.roman.commands.UpdateCertCommand;
-import com.wire.bots.roman.filters.*;
+import com.wire.bots.roman.filters.BackendAuthenticationFilter;
+import com.wire.bots.roman.filters.CspResponseFilter;
+import com.wire.bots.roman.filters.ProxyAuthenticationFilter;
+import com.wire.bots.roman.filters.ServiceAuthenticationFilter;
+import com.wire.bots.roman.filters.ServiceTokenAuthenticationFilter;
 import com.wire.bots.roman.model.Config;
-import com.wire.bots.roman.resources.*;
+import com.wire.bots.roman.resources.BroadcastResource;
+import com.wire.bots.roman.resources.ConversationResource;
+import com.wire.bots.roman.resources.MessagesResource;
+import com.wire.bots.roman.resources.ProviderResource;
+import com.wire.bots.roman.resources.ServiceResource;
+import com.wire.bots.roman.resources.UsersResource;
 import com.wire.lithium.ClientRepo;
 import com.wire.lithium.Server;
 import com.wire.xenon.MessageHandlerBase;
