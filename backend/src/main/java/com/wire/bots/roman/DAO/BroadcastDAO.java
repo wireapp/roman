@@ -1,6 +1,7 @@
 package com.wire.bots.roman.DAO;
 
 import com.wire.bots.roman.DAO.mappers.UUIDMapper;
+import jakarta.annotation.Nullable;
 import org.jdbi.v3.core.mapper.ColumnMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.sqlobject.config.RegisterColumnMapper;
@@ -8,7 +9,6 @@ import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;

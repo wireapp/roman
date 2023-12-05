@@ -9,34 +9,45 @@ import com.wire.lithium.models.NewBotResponseModel;
 import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.backend.models.NewBot;
 import com.wire.xenon.backend.models.User;
-import io.dropwizard.testing.ConfigOverride;
-import io.dropwizard.testing.DropwizardTestSupport;
+import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.jdbi.v3.core.Jdbi;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
 import java.util.UUID;
 
+import static io.dropwizard.testing.ConfigOverride.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class BroadcastResourceTest {
     private static final String BOT_CLIENT_DUMMY = "bot_client_dummy";
-    private static final DropwizardTestSupport<Config> SUPPORT = new DropwizardTestSupport<>(
-            Application.class, "roman.yaml",
-            ConfigOverride.config("key", "TcZA2Kq4GaOcIbQuOvasrw34321cZAfLW4Ga54fsds43hUuOdcdm42"),
-            ConfigOverride.config("apiHost", "http://localhost:8090"));
+    private static final String CONFIG = "roman-test.yml";
+    @TempDir
+    static Path tempDir;
+    static final DropwizardAppExtension<Config> SUPPORT = new DropwizardAppExtension<>(
+            Application.class, CONFIG,
+            new ResourceConfigurationSourceProvider(),
+            config("database.url", () -> "jdbc:h2:" + tempDir.resolve("database.h2")),
+            config("key", "TcZA2Kq4GaOcIbQuOvasrw34321cZAfLW4Ga54fsds43hUuOdcdm42"),
+            config("apiHost", "http://localhost:8090"));
     private Client client;
     private Jdbi jdbi;
 
-    @Before
+    @BeforeEach
     public void beforeClass() throws Exception {
         SUPPORT.before();
         Application app = SUPPORT.getApplication();
@@ -44,7 +55,7 @@ public class BroadcastResourceTest {
         jdbi = app.getJdbi();
     }
 
-    @After
+    @AfterEach
     public void afterClass() {
         SUPPORT.after();
     }

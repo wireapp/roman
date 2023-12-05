@@ -15,13 +15,13 @@ import com.wire.xenon.backend.models.SystemMessage;
 import com.wire.xenon.backend.models.User;
 import com.wire.xenon.models.*;
 import com.wire.xenon.tools.Logger;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.jdbi.v3.core.Jdbi;
 
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.UUID;

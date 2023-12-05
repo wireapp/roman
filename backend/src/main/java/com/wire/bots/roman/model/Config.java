@@ -25,8 +25,8 @@ import io.dropwizard.bundles.assets.AssetsBundleConfiguration;
 import io.dropwizard.bundles.assets.AssetsConfiguration;
 import io.dropwizard.validation.ValidationMethod;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 public class Config extends Configuration implements AssetsBundleConfiguration {
     @NotNull

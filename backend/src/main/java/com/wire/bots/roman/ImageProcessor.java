@@ -1,24 +1,17 @@
 package com.wire.bots.roman;
 
-import com.wire.xenon.assets.Picture;
+import com.wire.bots.roman.resources.Picture;
+import com.wire.xenon.assets.ImagePreview;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 
 public class ImageProcessor {
 
     private static final int MEDIUM_DIMENSION = 2896;
-    private static final int SMALL_DIMENSION = 2896;
 
-    public static Picture getMediumImage(Picture original) throws Exception {
-        return getScaledImage(original, MEDIUM_DIMENSION);
-    }
-
-    public static Picture getSmallImage(Picture original) throws Exception {
-        return getScaledImage(original, SMALL_DIMENSION);
+    public static Picture getMediumImage(Picture picture) throws Exception {
+        return getScaledImage(picture, MEDIUM_DIMENSION);
     }
 
     private static Boolean shouldScaleOriginalSize(double width, double height, double dimension) {
@@ -59,40 +52,37 @@ public class ImageProcessor {
         return resizedImage;
     }
 
-    private static Picture getScaledImage(Picture image, double dimension) throws Exception {
-        String resultImageType;
-        switch (image.getMimeType()) {
-            case "image/gif":
-                resultImageType = "gif";
-                break;
-            case "image/jpeg":
-                resultImageType = "jpg";
-                break;
-            case "image/png":
-                resultImageType = "png";
-                break;
-            default:
-                throw new Exception("Unsupported mime type: " + image.getMimeType());
-        }
-
-        int origWidth = image.getWidth();
-        int origHeight = image.getHeight();
-
-        BufferedImage resultImage = ImageIO.read(new ByteArrayInputStream(image.getImageData()));
-
-        if (shouldScaleOriginalSize(origWidth, origHeight, dimension)) {
-            Size scaledSize = getScaledSize(origWidth, origHeight, dimension);
-            resultImage = resizeImage(resultImage, (int) scaledSize.width,
-                    (int) scaledSize.height);
-        }
-
-        try (ByteArrayOutputStream resultStream = new ByteArrayOutputStream()) {
-            ImageIO.write(resultImage, resultImageType, resultStream);
-            resultStream.flush();
-            Picture picture = new Picture(resultStream.toByteArray(), image.getMimeType());
-            picture.setRetention(image.getRetention());
-            return picture;
-        }
+    // todo. fixme, xenon to expose getMimeType type and getImageData
+    private static Picture getScaledImage(ImagePreview image, int dimension) throws Exception {
+//        String resultImageType;
+//        switch ("image/jpeg") {
+//            case "image/jpeg":
+//                resultImageType = "jpg";
+//                break;
+//            case "image/png":
+//                resultImageType = "png";
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Unsupported mime type");
+//        }
+//
+//        int origWidth = image.getWidth();
+//        int origHeight = image.getHeight();
+//
+//        BufferedImage resultImage = ImageIO.read(new ByteArrayInputStream(image.getImageData()));
+//
+//        if (shouldScaleOriginalSize(origWidth, origHeight, dimension)) {
+//            Size scaledSize = getScaledSize(origWidth, origHeight, dimension);
+//            resultImage = resizeImage(resultImage, (int) scaledSize.width,
+//                    (int) scaledSize.height);
+//        }
+//
+//        try (ByteArrayOutputStream resultStream = new ByteArrayOutputStream()) {
+//            ImageIO.write(resultImage, resultImageType, resultStream);
+//            resultStream.flush();
+//            return new Picture(resultStream.toByteArray(), image.getMimeType());
+//        }
+        return null;
     }
 
     private static class Size {

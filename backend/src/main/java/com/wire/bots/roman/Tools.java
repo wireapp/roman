@@ -1,8 +1,8 @@
 package com.wire.bots.roman;
 
 import io.jsonwebtoken.Jwts;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;

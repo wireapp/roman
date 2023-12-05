@@ -10,22 +10,21 @@ import com.wire.bots.roman.filters.ServiceAuthorization;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
-import com.wire.xenon.assets.Picture;
 import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.tools.Logger;
 import io.dropwizard.validation.ValidationMethod;
 import io.swagger.annotations.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.Response;
 import org.hibernate.validator.constraints.Length;
 import org.jdbi.v3.core.Jdbi;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -68,86 +67,90 @@ public class ServiceResource {
 
             Logger.debug("ServiceResource.create: provider: %s, %s", provider.id, provider.email);
 
-            Response login = providerClient.login(provider.email, provider.password);
-
-            Logger.debug("ServiceResource.create: login status: %d", login.getStatus());
-
-            if (login.getStatus() >= 400) {
-                String msg = login.readEntity(String.class);
-                Logger.debug("ServiceResource.create: login response: %s", msg);
-                return Response.
-                        ok(msg).
-                        status(login.getStatus()).
-                        build();
-            }
-
-            NewCookie cookie = login.getCookies().get(Z_PROVIDER);
-
             Service service = newService();
             service.name = payload.name;
             service.summary = payload.summary;
             service.description = payload.description;
 
-            if (payload.avatar != null) {
-                byte[] image = Base64.getDecoder().decode(payload.avatar);
-                if (image != null) {
-                    Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
-                    mediumImage.setPublic(true);
-                    String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mediumImage.getMimeType());
-                    service.assets.get(0).key = key;
-                    service.assets.get(1).key = key;
+            NewCookie cookie;
+
+            try (Response login = providerClient.login(provider.email, provider.password)) {
+
+                Logger.debug("ServiceResource.create: login status: %d", login.getStatus());
+
+                if (login.getStatus() >= 400) {
+                    String msg = login.readEntity(String.class);
+                    Logger.debug("ServiceResource.create: login response: %s", msg);
+                    return Response.
+                            ok(msg).
+                            status(login.getStatus()).
+                            build();
+                }
+
+                cookie = login.getCookies().get(Z_PROVIDER);
+
+                if (payload.avatar != null) {
+                    byte[] image = Base64.getDecoder().decode(payload.avatar);
+                    if (image != null) {
+                        String mimeType = "image/png";
+                        Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image, mimeType));
+                        String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mimeType);
+                        service.assets.get(0).key = key;
+                        service.assets.get(1).key = key;
+                    }
                 }
             }
 
-            Response create = providerClient.createService(cookie, service);
+            try (Response create = providerClient.createService(cookie, service)) {
+                Logger.debug("ServiceResource.create: create service status: %d", create.getStatus());
 
-            Logger.debug("ServiceResource.create: create service status: %d", create.getStatus());
+                if (create.getStatus() >= 400) {
+                    String msg = create.readEntity(String.class);
+                    Logger.debug("ServiceResource.create: create service response: %s", msg);
+                    return Response.
+                            ok(msg).
+                            status(create.getStatus()).
+                            build();
+                }
 
-            if (create.getStatus() >= 400) {
-                String msg = create.readEntity(String.class);
-                Logger.debug("ServiceResource.create: create service response: %s", msg);
-                return Response.
-                        ok(msg).
-                        status(create.getStatus()).
-                        build();
+                service = create.readEntity(Service.class);
             }
 
-            service = create.readEntity(Service.class);
+            try (Response update = providerClient.enableService(cookie, service.id, provider.password)) {
 
-            Response update = providerClient.enableService(cookie, service.id, provider.password);
+                Logger.debug("ServiceResource.create: enable service status: %d", update.getStatus());
 
-            Logger.debug("ServiceResource.create: enable service status: %d", update.getStatus());
+                if (update.getStatus() >= 400) {
+                    String msg = update.readEntity(String.class);
+                    Logger.debug("ServiceResource.create: enable service response: %s", msg);
+                    return Response.
+                            ok(msg).
+                            status(update.getStatus()).
+                            build();
+                }
 
-            if (update.getStatus() >= 400) {
-                String msg = update.readEntity(String.class);
-                Logger.debug("ServiceResource.create: enable service response: %s", msg);
+                providersDAO.update(providerId, payload.url, service.auth, service.id, payload.name, payload.commandPrefix);
+
+                provider = providersDAO.get(providerId);
+
+                _ServiceInformation result = new _ServiceInformation();
+                result.auth = provider.serviceAuth;
+                result.key = token;
+                result.code = String.format("%s:%s", providerId, provider.serviceId);
+                result.url = provider.serviceUrl;
+                result.service = provider.serviceName;
+                result.company = provider.name;
+                result.commandPrefix = provider.commandPrefix;
+
+                Logger.info("ServiceResource.create: service authentication %s, code: %s", result.auth, result.code);
+
                 return Response.
-                        ok(msg).
+                        ok(result).
                         status(update.getStatus()).
                         build();
             }
-
-            providersDAO.update(providerId, payload.url, service.auth, service.id, payload.name, payload.commandPrefix);
-
-            provider = providersDAO.get(providerId);
-
-            _ServiceInformation result = new _ServiceInformation();
-            result.auth = provider.serviceAuth;
-            result.key = token;
-            result.code = String.format("%s:%s", providerId, provider.serviceId);
-            result.url = provider.serviceUrl;
-            result.service = provider.serviceName;
-            result.company = provider.name;
-            result.commandPrefix = provider.commandPrefix;
-
-            Logger.info("ServiceResource.create: service authentication %s, code: %s", result.auth, result.code);
-
-            return Response.
-                    ok(result).
-                    status(update.getStatus()).
-                    build();
         } catch (Exception e) {
-            Logger.exception("ServiceResource.create: %s", e, e.getMessage());
+            Logger.exception(e, "ServiceResource.create: %s", e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
@@ -205,8 +208,9 @@ public class ServiceResource {
 
             if (payload.avatar != null) {
                 byte[] image = Base64.getDecoder().decode(payload.avatar);
-                Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image));
-                String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mediumImage.getMimeType());
+                String mimeType = "image/jpeg";
+                Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image, mimeType));
+                String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mimeType);
                 providerClient.updateServiceAvatar(cookie, provider.serviceId, key);
             }
 
@@ -225,7 +229,7 @@ public class ServiceResource {
                     ok(result).
                     build();
         } catch (Exception e) {
-            Logger.exception("ServiceResource.update: %s", e, e.getMessage());
+            Logger.exception(e, "ServiceResource.update: %s", e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
@@ -263,7 +267,7 @@ public class ServiceResource {
                     ok(result).
                     build();
         } catch (Exception e) {
-            Logger.exception("ServiceResource.get: %s", e, e.getMessage());
+            Logger.exception(e, "ServiceResource.get: %s", e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)
@@ -287,19 +291,16 @@ public class ServiceResource {
 
             Provider provider = providersDAO.get(providerId);
 
-            final int update = providersDAO.deleteService(providerId);
+            providersDAO.deleteService(providerId);
 
-            Response login = providerClient.login(provider.email, provider.password);
+            try (Response login = providerClient.login(provider.email, provider.password)) {
 
-            NewCookie cookie = login.getCookies().get(Z_PROVIDER);
+                NewCookie cookie = login.getCookies().get(Z_PROVIDER);
 
-            final Response response = providerClient.deleteService(cookie, provider.serviceId);
-
-            return Response.
-                    ok().
-                    build();
+                return providerClient.deleteService(cookie, provider.serviceId);
+            }
         } catch (Exception e) {
-            Logger.exception("ServiceResource.delete: %s", e, e.getMessage());
+            Logger.exception(e, "ServiceResource.delete: %s", e.getMessage());
             return Response
                     .ok(new ErrorMessage("Something went wrong"))
                     .status(500)

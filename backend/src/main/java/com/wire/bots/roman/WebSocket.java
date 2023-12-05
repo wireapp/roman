@@ -2,10 +2,10 @@ package com.wire.bots.roman;
 
 import com.wire.bots.roman.model.OutgoingMessage;
 import com.wire.xenon.tools.Logger;
+import jakarta.websocket.*;
+import jakarta.websocket.server.PathParam;
+import jakarta.websocket.server.ServerEndpoint;
 
-import javax.websocket.*;
-import javax.websocket.server.PathParam;
-import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,6 +47,6 @@ public class WebSocket {
 
     @OnError
     public void onError(Session session, Throwable throwable) {
-        Logger.exception(throwable,"%s error: %s", session.getId(), throwable.getMessage());
+        Logger.exception(throwable, "%s error: %s", session.getId(), throwable.getMessage());
     }
 }

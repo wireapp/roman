@@ -13,8 +13,8 @@ import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
