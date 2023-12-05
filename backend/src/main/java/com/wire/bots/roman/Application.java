@@ -18,23 +18,15 @@
 package com.wire.bots.roman;
 
 import com.wire.bots.roman.commands.UpdateCertCommand;
-import com.wire.bots.roman.filters.BackendAuthenticationFilter;
-import com.wire.bots.roman.filters.CspResponseFilter;
-import com.wire.bots.roman.filters.ProxyAuthenticationFilter;
-import com.wire.bots.roman.filters.ServiceAuthenticationFilter;
-import com.wire.bots.roman.filters.ServiceTokenAuthenticationFilter;
+import com.wire.bots.roman.filters.*;
 import com.wire.bots.roman.model.Config;
-import com.wire.bots.roman.resources.BroadcastResource;
-import com.wire.bots.roman.resources.ConversationResource;
-import com.wire.bots.roman.resources.MessagesResource;
-import com.wire.bots.roman.resources.ProviderResource;
-import com.wire.bots.roman.resources.ServiceResource;
-import com.wire.bots.roman.resources.UsersResource;
+import com.wire.bots.roman.resources.*;
 import com.wire.lithium.ClientRepo;
 import com.wire.lithium.Server;
 import com.wire.xenon.MessageHandlerBase;
 import com.wire.xenon.factories.CryptoFactory;
 import com.wire.xenon.factories.StorageFactory;
+import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.jsonwebtoken.security.Keys;
@@ -70,6 +62,7 @@ public class Application extends Server<Config> {
         instance = (Application) bootstrap.getApplication();
         bootstrap.addBundle(new WebsocketBundle(WebSocket.class));
         bootstrap.addCommand(new UpdateCertCommand());
+        bootstrap.addBundle(new AssetsBundle("/frontend", "/", "index.html"));
     }
 
     @Override
