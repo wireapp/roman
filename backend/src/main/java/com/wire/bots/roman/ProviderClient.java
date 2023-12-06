@@ -7,6 +7,7 @@ import com.wire.bots.roman.model.SignIn;
 import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
 import com.wire.xenon.tools.Util;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
@@ -15,7 +16,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 
-import jakarta.validation.constraints.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -74,9 +74,11 @@ public class ProviderClient {
         updateService.enabled = true;
         updateService.password = password;
 
-        return servicesTarget
+        WebTarget connection = servicesTarget
                 .path(serviceId.toString())
-                .path("connection")
+                .path("connection");
+        Logger.debug("enableService: PUT %s", connection.getUri());
+        return connection
                 .request(MediaType.APPLICATION_JSON)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
