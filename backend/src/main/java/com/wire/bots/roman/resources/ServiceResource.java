@@ -14,6 +14,8 @@ import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.tools.Logger;
 import io.dropwizard.validation.ValidationMethod;
 import io.swagger.annotations.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
@@ -22,9 +24,6 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import org.hibernate.validator.constraints.Length;
 import org.jdbi.v3.core.Jdbi;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -126,14 +125,14 @@ public class ServiceResource {
 
                 Logger.debug("ServiceResource.create: enable service status: %d", update.getStatus());
 
-                if (update.getStatus() >= 400) {
-                    String msg = update.readEntity(String.class);
-                    Logger.debug("ServiceResource.create: enable service (%s) response: %s", service.id, msg);
-                    return Response.
-                            ok(msg).
-                            status(update.getStatus()).
-                            build();
-                }
+//                if (update.getStatus() >= 400) {
+//                    String msg = update.readEntity(String.class);
+//                    Logger.debug("ServiceResource.create: enable service (%s) response: %s", service.id, msg);
+//                    return Response.
+//                            ok(msg).
+//                            status(update.getStatus()).
+//                            build();
+//                }
 
                 providersDAO.update(providerId, payload.url, service.auth, service.id, payload.name, payload.commandPrefix);
 
