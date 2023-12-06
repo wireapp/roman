@@ -128,7 +128,7 @@ public class ServiceResource {
 
                 if (update.getStatus() >= 400) {
                     String msg = update.readEntity(String.class);
-                    Logger.debug("ServiceResource.create: enable service response: %s", msg);
+                    Logger.debug("ServiceResource.create: enable service (%s) response: %s", service.id, msg);
                     return Response.
                             ok(msg).
                             status(update.getStatus()).
