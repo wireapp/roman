@@ -4,26 +4,16 @@ import com.wire.xenon.assets.ImagePreview;
 
 import java.util.UUID;
 
-public class Picture extends ImagePreview {
-
-    private boolean aPublic;
+public class Picture  {
+    private final String mimeType;
     private final byte[] imageData;
     private int width;
     private int height;
-    private String retention;
 
     public Picture(byte[] image, String mimeType)
     {
-        super(UUID.randomUUID(), mimeType);
         this.imageData = image;
-    }
-
-    public void setPublic(boolean aPublic) {
-        this.aPublic = aPublic;
-    }
-
-    public boolean isaPublic() {
-        return aPublic;
+        this.mimeType = mimeType;
     }
 
     public byte[] getImageData() {
@@ -44,5 +34,9 @@ public class Picture extends ImagePreview {
 
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    public String getMimeType() {
+        return mimeType;
     }
 }
