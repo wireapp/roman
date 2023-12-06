@@ -25,6 +25,7 @@ import org.jdbi.v3.core.Jdbi;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -61,6 +62,11 @@ public class ServiceResource {
                            @Context ContainerRequestContext context,
                            @ApiParam @Valid _NewService payload) {
         try {
+            //hack
+            if (payload.url != null && payload.url.isEmpty()) {
+                payload.url = null;
+            }
+
             UUID providerId = (UUID) context.getProperty(Const.PROVIDER_ID);
 
             Provider provider = providersDAO.get(providerId);
@@ -355,7 +361,7 @@ public class ServiceResource {
         @ValidationMethod(message = "`url` is not a valid URL")
         @JsonIgnore
         public boolean isUrlValid() {
-            if (url == null)
+            if (url == null || url.isEmpty())
                 return true;
             try {
                 new URL(url).toURI();
