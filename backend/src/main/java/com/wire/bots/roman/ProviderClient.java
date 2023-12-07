@@ -11,15 +11,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.Cookie;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.NewCookie;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.*;
+import org.glassfish.jersey.logging.LoggingFeature;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class ProviderClient {
     private final WebTarget servicesTarget;
@@ -30,6 +29,12 @@ public class ProviderClient {
                 .path("provider");
         servicesTarget = providerTarget
                 .path("services");
+
+        if (Logger.getLevel() == Level.FINE) {
+            Feature feature = new LoggingFeature(Logger.getLOGGER(), Level.FINE, null, null);
+            providerTarget.register(feature);
+            servicesTarget.register(feature);
+        }
     }
 
     public Response register(String name, String email) {
@@ -80,6 +85,7 @@ public class ProviderClient {
         Logger.debug("enableService: PUT %s", connection.getUri());
         return connection
                 .request(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
