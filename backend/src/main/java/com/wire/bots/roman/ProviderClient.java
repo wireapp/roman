@@ -102,8 +102,7 @@ public class ProviderClient {
                 .path("provider")
                 .path("services")
                 .path(serviceId.toString())
-                .request(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
