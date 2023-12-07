@@ -103,6 +103,7 @@ public class ProviderClient {
                 .path("services")
                 .path(serviceId.toString())
                 .request(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -143,6 +144,7 @@ public class ProviderClient {
                 .path(serviceId.toString())
                 .path("connection")
                 .request(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -158,6 +160,7 @@ public class ProviderClient {
                 .path(serviceId.toString())
                 .path("connection")
                 .request(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
