@@ -82,7 +82,6 @@ public class ProviderClient {
         WebTarget connection = servicesTarget
                 .path(serviceId.toString())
                 .path("connection");
-        Logger.debug("enableService: PUT %s", connection.getUri());
         return connection
                 .request(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -208,7 +207,7 @@ public class ProviderClient {
         public String name;
 
         @JsonProperty
-        public boolean enabled;
+        public Boolean enabled;
 
         @JsonProperty("public_keys")
         public String[] pubKeys;

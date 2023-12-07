@@ -80,12 +80,11 @@ public class ServiceResource {
             NewCookie cookie;
 
             try (Response login = providerClient.login(provider.email, provider.password)) {
-
                 Logger.debug("ServiceResource.create: login status: %d", login.getStatus());
 
                 if (login.getStatus() >= 400) {
                     String msg = login.readEntity(String.class);
-                    Logger.debug("ServiceResource.create: login response: %s", msg);
+                    Logger.warning("ServiceResource.create: login response: %s", msg);
                     return Response.
                             ok(msg).
                             status(login.getStatus()).
@@ -111,7 +110,7 @@ public class ServiceResource {
 
                 if (create.getStatus() >= 400) {
                     String msg = create.readEntity(String.class);
-                    Logger.debug("ServiceResource.create: create service response: %s", msg);
+                    Logger.warning("ServiceResource.create: create service response: %s", msg);
                     return Response.
                             ok(msg).
                             status(create.getStatus()).
@@ -122,17 +121,16 @@ public class ServiceResource {
             }
 
             try (Response update = providerClient.enableService(cookie, service.id, provider.password)) {
-
                 Logger.debug("ServiceResource.create: enable service status: %d", update.getStatus());
 
-//                if (update.getStatus() >= 400) {
-//                    String msg = update.readEntity(String.class);
-//                    Logger.debug("ServiceResource.create: enable service (%s) response: %s", service.id, msg);
-//                    return Response.
-//                            ok(msg).
-//                            status(update.getStatus()).
-//                            build();
-//                }
+                if (update.getStatus() >= 400) {
+                    String msg = update.readEntity(String.class);
+                    Logger.warning("ServiceResource.create: enable service (%s) response: %s", service.id, msg);
+                    return Response.
+                            ok(msg).
+                            status(update.getStatus()).
+                            build();
+                }
 
                 providersDAO.update(providerId, payload.url, service.auth, service.id, payload.name, payload.commandPrefix);
 
