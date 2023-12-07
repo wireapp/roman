@@ -72,7 +72,7 @@ public class ProviderClient {
                 .path("provider")
                 .path("services")
                 .path(serviceId.toString())
-                .request(MediaType.APPLICATION_JSON)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .delete();
     }
@@ -82,14 +82,12 @@ public class ProviderClient {
         updateService.enabled = true;
         updateService.password = password;
 
-        WebTarget connection = providerTarget
+        providerTarget
                 .path("provider")
                 .path("services")
                 .path(serviceId.toString())
-                .path("connection");
-        return connection
-                .request(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
+                .path("connection")
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -127,7 +125,7 @@ public class ProviderClient {
                 .path("provider")
                 .path("services")
                 .path(serviceId.toString())
-                .request(MediaType.APPLICATION_JSON)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -142,8 +140,7 @@ public class ProviderClient {
                 .path("services")
                 .path(serviceId.toString())
                 .path("connection")
-                .request(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -158,8 +155,7 @@ public class ProviderClient {
                 .path("services")
                 .path(serviceId.toString())
                 .path("connection")
-                .request(MediaType.APPLICATION_JSON)
-                .accept(MediaType.TEXT_PLAIN)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
