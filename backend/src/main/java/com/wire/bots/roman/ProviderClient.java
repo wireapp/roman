@@ -89,7 +89,7 @@ public class ProviderClient {
                 .path("connection");
         return connection
                 .request(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
