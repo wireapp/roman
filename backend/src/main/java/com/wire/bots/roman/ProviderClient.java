@@ -82,7 +82,7 @@ public class ProviderClient {
         updateService.enabled = true;
         updateService.password = password;
 
-        providerTarget
+        return providerTarget
                 .path("provider")
                 .path("services")
                 .path(serviceId.toString())
