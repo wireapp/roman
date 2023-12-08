@@ -83,7 +83,6 @@ public class Application extends Server<Config> {
     }
 
     @Override
-
     protected MessageHandlerBase createHandler(Config config, Environment env) {
         this.messageHandler = new MessageHandler(getJdbi(), getClient());
         return messageHandler;
