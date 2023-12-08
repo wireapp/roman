@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wire.lithium.Configuration;
 import io.dropwizard.validation.ValidationMethod;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -41,6 +42,9 @@ public class Config extends Configuration {
     @NotEmpty
     @JsonProperty
     public String romanPubKeyBase64;
+
+    @JsonProperty("swagger")
+    public SwaggerBundleConfiguration swaggerBundleConfiguration;
 
     @ValidationMethod(message = "`romanPubKeyBase64` is not in a valid base64 format")
     @JsonIgnore
