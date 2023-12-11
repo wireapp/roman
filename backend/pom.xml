@@ -34,6 +34,8 @@
         <junit5.version>5.8.2</junit5.version>
         <jetty.version>11.0.18</jetty.version>
         <jakarta.version>2.1.1</jakarta.version>
+        <!-- BEFORE UPGRADING! VERIFY RUNTIME PG VERSION COMPATIBILITY -->
+        <flyway.version>7.15.0</flyway.version>
     </properties>
 
     <dependencyManagement>
@@ -124,6 +126,12 @@
             <version>${jwt.version}</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
+
 
         <!-- test dependencies-->
         <dependency>
