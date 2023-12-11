@@ -2,7 +2,7 @@ server:
   rootPath: /api
   applicationConnectors:
     - type: http
-      port: ${HTTP_PORT:-8080}
+      port: 8080
       maxRequestHeaderSize: 16KiB
 
   gzip:
@@ -11,12 +11,12 @@ server:
 
   requestLog:
     appenders:
-      - type: ${APPENDER_TYPE:-console}
+      - type: console
 
 logging:
   level: INFO
   appenders:
-    - type: ${APPENDER_TYPE:-console}
+    - type: console
   loggers:
     "org.reflections.Reflections": ERROR
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
@@ -34,6 +34,13 @@ swagger:
     - https
     - http
 
+assets:
+  mappings:
+    /assets: /
+  overrides:
+    # the default assumes you have build frontend by "npm run build"
+    /: ${FRONTEND_PATH:-../frontend/build}
+
 jerseyClient:
   timeout: 40s
   connectionTimeout: 40s
@@ -49,12 +56,10 @@ jerseyClient:
       - TLSv1.2
 
 database:
-  driverClass: org.postgresql.Driver
-  url: ${DB_URL:-jdbc:postgresql://localhost/roman}
-  user: ${DB_USER:-}
-  password: ${DB_PASSWORD:-}
-  baseline: ${DB_BASELINE:-}
-  maxSize: 33
+  driverClass: org.h2.Driver
+  user: sa
+  password: sa
+  url: jdbc:h2:./target/test
 
 token: dummy
 # used to sign JWT
@@ -67,7 +72,7 @@ apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
 
 # TLS public key of "domain" in base64 format - used to pin certificates in Wire backend
 # for the bot
-romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-}
+romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-default}
 
 # optional enabling of CORS - in format a.domain.com,another.domain.com
 allowedCors: ${ALLOWED_CORS}

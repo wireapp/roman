@@ -13,8 +13,8 @@ import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
@@ -150,35 +150,32 @@ public class Sender {
     @Nullable
     private UUID sendPicture(IncomingMessage message, UUID botId) throws Exception {
         try (WireClient wireClient = getWireClient(botId)) {
-            final UUID messageId = UUID.randomUUID();
             final Attachment attachment = message.attachment;
 
-            Picture asset;
+            UUID messageId = UUID.randomUUID();
+            ImagePreview preview = new ImagePreview(messageId, attachment.mimeType);
+            preview.setHeight(attachment.height);
+            preview.setWidth(attachment.width);
+            preview.setSize(attachment.size.intValue());
+
+            wireClient.send(preview);
+
+            ImageAsset image;
             if (message.attachment.meta != null) {
-                asset = new Picture(messageId, attachment.mimeType);
-                setAssetMetadata(asset, message.attachment.meta);
-                asset.setHeight(attachment.height);
-                asset.setWidth(attachment.width);
-                asset.setSize(attachment.size.intValue());
+                image = new ImageAsset(preview.getMessageId(), new byte[0], attachment.mimeType);
+                setAssetMetadata(image, message.attachment.meta);
             } else if (message.attachment.data != null) {
                 final byte[] bytes = Base64.getDecoder().decode(message.attachment.data);
-                asset = new Picture(bytes, attachment.mimeType);
-                uploadAssetData(wireClient, asset);
+                image = new ImageAsset(messageId, bytes, attachment.mimeType);
+                image.setMessageId(messageId);
+                uploadAssetData(wireClient, image);
             } else {
                 throw new Exception("Meta or Data need to be set");
             }
 
-            wireClient.send(asset);
-            return asset.getMessageId();
+            wireClient.send(image);
+            return image.getMessageId();
         }
-    }
-
-    private WireClient getWireClient(UUID botId) throws IOException, CryptoException {
-        final WireClient wireClient = repo.getClient(botId);
-        if (wireClient == null) {
-            throw new MissingStateException(botId);
-        }
-        return wireClient;
     }
 
     @Nullable
@@ -235,10 +232,19 @@ public class Sender {
         asset.setOtrKey(Base64.getDecoder().decode(meta.otrKey));
     }
 
-    private void uploadAssetData(WireClient wireClient, AssetBase asset) throws Exception {
+    private AssetKey uploadAssetData(WireClient wireClient, AssetBase asset) throws Exception {
         final AssetKey assetKey = wireClient.uploadAsset(asset);
         asset.setAssetKey(assetKey.id);
         asset.setAssetToken(assetKey.token);
         asset.setDomain(assetKey.domain);
+        return assetKey;
+    }
+
+    private WireClient getWireClient(UUID botId) throws IOException, CryptoException {
+        final WireClient wireClient = repo.getClient(botId);
+        if (wireClient == null) {
+            throw new MissingStateException(botId);
+        }
+        return wireClient;
     }
 }

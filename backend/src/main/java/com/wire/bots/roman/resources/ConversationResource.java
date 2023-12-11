@@ -11,17 +11,17 @@ import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -104,7 +104,7 @@ public class ConversationResource {
         try {
             if (Logger.getLevel() == Level.FINE) {
                 ObjectMapper mapper = new ObjectMapper();
-                Logger.debug(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
+                Logger.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
             }
         } catch (Exception ignore) {
 

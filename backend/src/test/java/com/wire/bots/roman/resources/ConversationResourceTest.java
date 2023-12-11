@@ -1,69 +1,69 @@
 package com.wire.bots.roman.resources;
 
+import com.wire.bots.cryptobox.CryptoException;
 import com.wire.bots.roman.Sender;
 import com.wire.bots.roman.model.Attachment;
 import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.PostMessageResult;
 import com.wire.bots.roman.model.Text;
-import com.wire.bots.roman.resources.dummies.AuthenticationFeatureDummy;
 import com.wire.bots.roman.resources.dummies.Const;
 import com.wire.xenon.backend.models.Conversation;
-import io.dropwizard.testing.junit.ResourceTestRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import io.dropwizard.testing.junit5.ResourceExtension;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.io.IOException;
 
+import static com.wire.bots.roman.resources.dummies.Const.CONV_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class ConversationResourceTest {
     private static final Sender sender = mock(Sender.class);
-
-    @ClassRule
-    public static final ResourceTestRule resources = ResourceTestRule.builder()
-            .addProvider(AuthenticationFeatureDummy.class)
+    public static final ResourceExtension resources = ResourceExtension.builder()
             .addResource(new ConversationResource(sender))
             .build();
 
-    @Before
-    public void setup() throws Exception {
-        Conversation conversation = new Conversation();
-        conversation.id = Const.CONV_ID;
+    private final Conversation conversation = new Conversation() {{
+        id = CONV_ID;
+    }};
 
-        when(sender.getConversation(Const.BOT_ID)).thenReturn(conversation);
-    }
-
-    @After
+    @AfterEach
     public void tearDown() {
         reset(sender);
     }
 
     @Test
     public void testPostTextIntoConversation() throws Exception {
-        final IncomingMessage message = new IncomingMessage();
-        message.type = "text";
-        message.text = new Text();
-        message.text.data = "Hi there!";
+        final IncomingMessage message = new IncomingMessage() {{
+            this.type = "text";
+            this.text = new Text();
+            this.text.data = "Hi there!";
+        }};
+        when(sender.send(any(), any())).thenReturn(Const.MSG_ID);
 
-        when(sender.send(message, Const.BOT_ID)).thenReturn(Const.MSG_ID);
-
-        final Response response = resources
+        PostMessageResult result;
+        try (Response response = resources
                 .target("conversation")
                 .request()
-                .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE))) {
 
-        assertThat(response.getStatus()).isEqualTo(200);
-        final PostMessageResult result = response.readEntity(PostMessageResult.class);
+            assertThat(response.getStatus()).isEqualTo(200);
+            result = response.readEntity(PostMessageResult.class);
+        }
         assertThat(result.messageId).isNotNull();
     }
 
     @Test
-    public void testPostImageIntoConversation() {
+    public void testPostImageIntoConversation() throws Exception {
+        when(sender.send(any(), any())).thenReturn(Const.MSG_ID);
+
         IncomingMessage message = new IncomingMessage();
         message.type = "attachment";
         message.attachment = new Attachment();
@@ -72,8 +72,8 @@ public class ConversationResourceTest {
                 "BwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zND";
 
         final Response response = resources
-                .target("conversation")
-                .request()
+                .target("/conversation")
+                .request(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON_TYPE));
 
         assertThat(response.getStatus()).isEqualTo(200);
@@ -82,12 +82,14 @@ public class ConversationResourceTest {
     }
 
     @Test
-    public void testGetConversation() {
+    public void testGetConversation() throws IOException, CryptoException {
+        when(sender.getConversation(any())).thenReturn(conversation);
         final Conversation response = resources
-                .target("conversation")
+                .target("/conversation")
                 .request()
                 .get(Conversation.class);
 
-        assertThat(response.id).isEqualTo(Const.CONV_ID);
+        assertThat(response).isNotNull();
+        assertThat(response.id).isEqualTo(CONV_ID);
     }
 }

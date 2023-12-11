@@ -7,29 +7,29 @@ import com.wire.bots.roman.model.SignIn;
 import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
 import com.wire.xenon.tools.Util;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.*;
+import org.glassfish.jersey.logging.LoggingFeature;
 
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class ProviderClient {
-    private final WebTarget servicesTarget;
     private final WebTarget providerTarget;
 
     public ProviderClient(Client jerseyClient, String apiHost) {
-        providerTarget = jerseyClient.target(apiHost)
-                .path("provider");
-        servicesTarget = providerTarget
-                .path("services");
+        providerTarget = jerseyClient.target(apiHost);
+
+        if (Logger.getLevel() == Level.FINE) {
+            Feature feature = new LoggingFeature(Logger.getLOGGER(), Level.FINE, null, null);
+            providerTarget.register(feature);
+        }
     }
 
     public Response register(String name, String email) {
@@ -39,7 +39,9 @@ public class ProviderClient {
         newProvider.description = "Description";
         newProvider.url = "https://wire.com";
 
-        return providerTarget.path("register")
+        return providerTarget
+                .path("provider")
+                .path("register")
                 .request(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(newProvider, MediaType.APPLICATION_JSON));
     }
@@ -49,22 +51,28 @@ public class ProviderClient {
         signIn.email = email;
         signIn.password = password;
 
-        return providerTarget.path("login")
+        return providerTarget
+                .path("provider")
+                .path("login")
                 .request(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(signIn, MediaType.APPLICATION_JSON));
     }
 
     public Response createService(NewCookie zprovider, Service service) {
-        return servicesTarget
+        return providerTarget
+                .path("provider")
+                .path("services")
                 .request(MediaType.APPLICATION_JSON)
                 .cookie(zprovider)
                 .post(Entity.entity(service, MediaType.APPLICATION_JSON));
     }
 
     public Response deleteService(NewCookie zprovider, UUID serviceId) {
-        return servicesTarget
+        return providerTarget
+                .path("provider")
+                .path("services")
                 .path(serviceId.toString())
-                .request(MediaType.APPLICATION_JSON)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .delete();
     }
@@ -74,10 +82,12 @@ public class ProviderClient {
         updateService.enabled = true;
         updateService.password = password;
 
-        return servicesTarget
+        return providerTarget
+                .path("provider")
+                .path("services")
                 .path(serviceId.toString())
                 .path("connection")
-                .request(MediaType.APPLICATION_JSON)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -86,9 +96,11 @@ public class ProviderClient {
         _UpdateService updateService = new _UpdateService();
         updateService.name = name;
 
-        return servicesTarget
+        return providerTarget
+                .path("provider")
+                .path("services")
                 .path(serviceId.toString())
-                .request(MediaType.APPLICATION_JSON)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -109,9 +121,11 @@ public class ProviderClient {
 
         updateService.assets = assets;
 
-        return servicesTarget
+        return providerTarget
+                .path("provider")
+                .path("services")
                 .path(serviceId.toString())
-                .request(MediaType.APPLICATION_JSON)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -121,10 +135,12 @@ public class ProviderClient {
         updateService.pubKeys = new String[]{pubkey};
         updateService.password = password;
 
-        return servicesTarget
+        return providerTarget
+                .path("provider")
+                .path("services")
                 .path(serviceId.toString())
                 .path("connection")
-                .request(MediaType.APPLICATION_JSON)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -134,10 +150,12 @@ public class ProviderClient {
         updateService.baseUrl = url;
         updateService.password = password;
 
-        return servicesTarget
+        return providerTarget
+                .path("provider")
+                .path("services")
                 .path(serviceId.toString())
                 .path("connection")
-                .request(MediaType.APPLICATION_JSON)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(zprovider)
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
@@ -176,6 +194,7 @@ public class ProviderClient {
         os.write("\r\n--frontier--\r\n".getBytes(StandardCharsets.UTF_8));
 
         Response response = providerTarget
+                .path("provider")
                 .path("assets")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .cookie(cookie)
@@ -200,7 +219,7 @@ public class ProviderClient {
         public String name;
 
         @JsonProperty
-        public boolean enabled;
+        public Boolean enabled;
 
         @JsonProperty("public_keys")
         public String[] pubKeys;

@@ -1,24 +1,24 @@
 package com.wire.bots.roman.commands;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import com.wire.bots.roman.DAO.ProvidersDAO;
 import com.wire.bots.roman.ProviderClient;
 import com.wire.bots.roman.Tools;
 import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
 import com.wire.xenon.tools.Logger;
-import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.cli.ConfiguredCommand;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.Response;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 public class UpdateCertCommand extends ConfiguredCommand<Config> {

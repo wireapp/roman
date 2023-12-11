@@ -2,11 +2,15 @@ name: Release Pipeline
 
 on:
   release:
-    types: [published]
+    types: [ published ]
 
 env:
   DOCKER_IMAGE: wire-bot/roman
   SERVICE_NAME: roman
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:

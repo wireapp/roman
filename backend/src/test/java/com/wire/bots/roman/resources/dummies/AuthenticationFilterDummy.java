@@ -1,7 +1,7 @@
 package com.wire.bots.roman.resources.dummies;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
 
 public class AuthenticationFilterDummy implements ContainerRequestFilter {
     @Override

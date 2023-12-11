@@ -12,9 +12,9 @@ import com.wire.xenon.factories.StorageFactory;
 import com.wire.xenon.models.otr.Missing;
 import com.wire.xenon.models.otr.Recipients;
 import com.wire.xenon.tools.Logger;
+import jakarta.ws.rs.client.Client;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import javax.ws.rs.client.Client;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
