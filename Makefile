@@ -1,3 +1,7 @@
+docker-run-tests: db
+	trap ./test.sh EXIT
+	docker-compose stop
+
 db:
 	docker-compose up -d db
 

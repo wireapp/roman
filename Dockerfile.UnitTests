@@ -1,0 +1,9 @@
+FROM --platform=linux/x86_64 wirebot/cryptobox:1.4.0 AS test-stage
+WORKDIR /app
+
+COPY . ./
+WORKDIR /app/backend
+RUN ./mvnw clean test -Dmaven.test.skip=false
+
+FROM scratch AS export-stage
+COPY --from=test-stage /app/backend/target/surefire-reports/TEST-*.xml /

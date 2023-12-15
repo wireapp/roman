@@ -34,13 +34,6 @@ swagger:
     - https
     - http
 
-assets:
-  mappings:
-    /assets: /
-  overrides:
-    # the default assumes you have build frontend by "npm run build"
-    /: ${FRONTEND_PATH:-../frontend/build}
-
 jerseyClient:
   timeout: 40s
   connectionTimeout: 40s
@@ -56,23 +49,23 @@ jerseyClient:
       - TLSv1.2
 
 database:
-  driverClass: org.h2.Driver
-  user: sa
-  password: sa
-  url: jdbc:h2:./target/test
+  driverClass: org.postgresql.Driver
+  user: roman
+  password: roman
+  url: jdbc:postgresql://localhost:5432/roman
 
 token: dummy
 # used to sign JWT
-key: ${APP_KEY:-}
+key: ${APP_KEY:-TcZA2Kq4GaOcIbQuOvasrw34321cZAfLW4Ga54fsds43hUuOdcdm42}
 # the public URL of the Roman instance, should end with "/api" as all Roman endpoints
 # are served starting with /api
-domain: ${PROXY_DOMAIN:-https://proxy.services.wire.com/api}
+domain: http://localhost:8080/api
 # URL of the Wire Backend
-apiHost: ${WIRE_API_HOST:-https://prod-nginz-https.wire.com}
+apiHost: https://staging-nginz-https.zinfra.io/v4
 
 # TLS public key of "domain" in base64 format - used to pin certificates in Wire backend
 # for the bot
-romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-default}
+romanPubKeyBase64: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3xtHqyZPlb0lxlnP0rNAJVmAjB1Tenl11brkkKihcJNRAYrnrT/6sPX4u2lVn/aPncUTjN8omL47MBct7qYV1VY4a5beOyNiVL0ZjZMuh07aL9Z2A4cu67tKZrCoGttn3jpSVlqoOtwEgW+TpgpmKojcRC4DDXEZTEvRoi0RLzAyWCH/8hwWzXR7J082zmn0Ur211QVbOJN/62PAIWyjl5bLglp00AY5OnBHgRNwwRkBJIJLwgNm8u9+0ZplqmMGd3C/QFNngCOeRvFe+5g4qfO4/FOlbkM2kYFAi5KUowfG7cdMQELI+fe4v7yNsgrbMKhnIiLtDIU4wiQIRjbrZwIDAQAB
 
 # optional enabling of CORS - in format a.domain.com,another.domain.com
 allowedCors: ${ALLOWED_CORS}
