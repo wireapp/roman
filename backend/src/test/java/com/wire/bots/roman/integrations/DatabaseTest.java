@@ -22,12 +22,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.util.List;
 import java.util.UUID;
 
+import static com.wire.bots.roman.resources.dummies.Const.ROMAN_TEST_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class DatabaseTest {
     private static final DropwizardTestSupport<Config> SUPPORT = new DropwizardTestSupport<>(
-            Application.class, "roman-test.yml", new ResourceConfigurationSourceProvider()
+            Application.class, ROMAN_TEST_CONFIG, new ResourceConfigurationSourceProvider()
     );
     private Jdbi jdbi;
 

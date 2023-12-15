@@ -34,16 +34,16 @@ import java.util.Base64;
 import java.util.Random;
 import java.util.UUID;
 
+import static com.wire.bots.roman.resources.dummies.Const.ROMAN_TEST_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class BroadcastResourceTest {
     private static final String BOT_CLIENT_DUMMY = "bot_client_dummy";
-    private static final String CONFIG = "roman-test.yml";
     @TempDir
     static Path tempDir;
     static final DropwizardAppExtension<Config> SUPPORT = new DropwizardAppExtension<>(
-            Application.class, CONFIG, new ResourceConfigurationSourceProvider());
+            Application.class, ROMAN_TEST_CONFIG, new ResourceConfigurationSourceProvider());
     private Client client;
     private Jdbi jdbi;
 
@@ -60,7 +60,6 @@ public class BroadcastResourceTest {
         SUPPORT.after();
     }
 
-    @Disabled("Disabled until Broadcast usage it's clear and testable")
     @Test
     public void broadcastTest() throws InterruptedException {
         final Random random = new Random();
