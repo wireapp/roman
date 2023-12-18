@@ -1,5 +1,5 @@
 docker-run-tests: db
-	trap ./test.sh EXIT
+	./test.sh
 	docker-compose stop
 
 db:

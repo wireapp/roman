@@ -3,7 +3,9 @@ WORKDIR /app
 
 COPY . ./
 WORKDIR /app/backend
-RUN ./mvnw clean test -Dmaven.test.skip=false 2>&1 | tee /tmp/test.log || echo "Tests failed"
+
+# execute tests, store exit code and force success so export stage can copy the test results, evaluating exit status at later stage.
+RUN ./mvnw test -Dmaven.test.skip=false 2>&1 || echo $? > /tmp/test.result || echo "Tests failed"
 
 FROM scratch AS export-stage
-COPY --from=test-stage /app/backend/target/surefire-reports/TEST-*.xml /
+COPY --from=test-stage /app/backend/target/surefire-reports/TEST-*.xml /tmp/test.result /
