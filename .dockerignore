@@ -9,3 +9,5 @@ roman.iml
 frontend/node_modules
 frontend/build
 *.iml
+!backend/target/surefire-reports
+!backend/target/test.result
