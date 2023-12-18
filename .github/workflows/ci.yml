@@ -29,6 +29,13 @@ jobs:
       - name: Run tests
         run: make docker-run-tests
 
+      - name: Publish test report
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2.7
+        if: always()
+        with:
+          files: |
+            **/target/reports/**/*.xml      
+
       - name: Build image
         id: docker_build
         uses: docker/build-push-action@v2
