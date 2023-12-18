@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - feat/test-setup
-    branches-ignore:
-      - master
-      - staging
+#    branches-ignore:
+#      - master
+#      - staging
 
   pull_request:
 
