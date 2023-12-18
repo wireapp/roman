@@ -29,18 +29,12 @@ jobs:
       - name: Run tests
         run: make docker-run-tests
 
-      - name: Show dir
-        run: |
-          ls -la
-          ls -la backend/target/
-          ls -la backend/target/reports/
-
       - name: Publish test report
         uses: EnricoMi/publish-unit-test-result-action/composite@v2.7
         if: always()
         with:
           files: |
-            **/reports/TEST-*.xml      
+            backend/target/reports/reports/TEST-*.xml      
 
       - name: Build image
         id: docker_build
