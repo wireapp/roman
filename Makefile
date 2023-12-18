@@ -1,6 +1,5 @@
-docker-run-tests: db
+docker-run-tests:
 	./test.sh
-	docker-compose stop
 
 db:
 	docker-compose up -d db
