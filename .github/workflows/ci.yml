@@ -34,7 +34,7 @@ jobs:
         if: always()
         with:
           files: |
-            **/target/reports/**/*.xml      
+            **/target/reports/*.xml      
 
       - name: Build image
         id: docker_build
