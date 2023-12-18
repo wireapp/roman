@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - feat/test-setup
-#    branches-ignore:
-#      - master
-#      - staging
+  #    branches-ignore:
+  #      - master
+  #      - staging
 
   pull_request:
 
@@ -34,7 +34,7 @@ jobs:
         if: always()
         with:
           files: |
-            backend/target/reports/reports/TEST-*.xml      
+            backend/target/reports/TEST-*.xml
 
       - name: Build image
         id: docker_build
