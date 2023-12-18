@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 set -x
 
 echo "1/4) Starting test environment..."
@@ -11,5 +11,5 @@ echo "3/4) Cleaning up test environment..."
 docker-compose stop
 
 echo "4/4) Evaluating tests result exit status..."
-EXIT_CODE=$(<backend/target/reports/test.result)
+EXIT_CODE=`cat backend/target/reports/test.result`
 exit $EXIT_CODE
