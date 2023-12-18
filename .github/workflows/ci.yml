@@ -1,12 +1,8 @@
 name: CI
 
 on:
-  push:
-    branches-ignore:
-      - master
-      - staging
-
   pull_request:
+    types: [ opened, synchronize ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
