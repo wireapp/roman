@@ -1,0 +1,12 @@
+FROM --platform=linux/x86_64 wirebot/cryptobox:1.4.0 AS test-stage
+WORKDIR /app
+
+COPY . ./
+WORKDIR /app/backend
+
+# in case of error, write test output status code to /tmp/test.result and exit with 0 for later stages checks.
+RUN echo "0" > /tmp/test.result
+RUN ./mvnw test -Dmaven.test.skip=false 2>&1 || echo $? > /tmp/test.result || echo "Tests failed"
+
+FROM scratch AS export-stage
+COPY --from=test-stage /app/backend/target/surefire-reports/TEST-*.xml /tmp/test.result /

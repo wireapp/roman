@@ -353,7 +353,7 @@ The best way how to run Roman is to use Docker, another option is to run the Rom
 - In order to actually being able to connect to the Wire backend, Roman's endpoints needs to run on HTTPS.
 - You need a PostgreSQL instance with an empty database and credentials.
 - In order to run it as a Docker container, you need to have Docker installed.
-- In order to run it natively on JVM, you need to have JVM 11 installed + all necessary libraries
+- In order to run it natively on JVM, you need to have JVM 17 installed + all necessary libraries
   for [Cryptobox4j](https://github.com/wireapp/cryptobox4j).
 
 ### Configuration
@@ -455,7 +455,7 @@ env variables. See [Configuration section](#configuration) how to obtain them.
 
 As previously mentioned, Wire recommends running the Roman as a docker container. However, you can run it natively on
 the JVM as well.
-Please note that Roman requires JVM >= 11. To run it natively, one needs to
+Please note that Roman requires JVM >= 17. To run it natively, one needs to
 install [Cryptobox4j](https://github.com/wireapp/cryptobox4j)
 and other cryptographic libraries. You can use
 [Docker Build Image](https://github.com/wireapp/cryptobox4j/blob/master/dockerfiles/Dockerfile.cryptobox)
@@ -464,17 +464,17 @@ as an inspiration what needs to be installed and what environment variables need
 Also, don't forget to read the [Configuration section](#configuration) and set all necessary environment variables for
 the Roman itselgf.
 
-First, it is necessary to build the application:
+First, it is necessary to build the application under `backend` directory:
 
 ```bash
-# Maven and JVM 11 is required
-mvn package -DskipTests
+# Maven and JVM 17 is required
+./mvnw package -DskipTests
 ```
 
 Then to run it like that:
 
 ```bash
-# JVM 11 required
+# JVM 17 required
 java -jar target/roman.jar server roman.yaml
 ```
 
@@ -556,6 +556,20 @@ docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
 
 10. All set! You can go to `https://roman.example.com/swagger` and start using Roman.
+
+## Running Roman tests suite
+
+Tests run with the help of docker containers to setup all requirements.
+To run the test suite just run:
+
+```bash
+make docker-run-tests
+```
+
+or directly:
+```bash
+./test.sh
+```
 
 ## Comprehensive tutorial how to onboard new bot
 

@@ -1,12 +1,8 @@
 name: CI
 
 on:
-  push:
-    branches-ignore:
-      - master
-      - staging
-
   pull_request:
+    types: [ opened, synchronize ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,6 +19,16 @@ jobs:
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
+      - name: Run tests
+        run: make docker-run-tests
+
+      - name: Publish test report
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2.7
+        if: always()
+        with:
+          files: |
+            backend/target/reports/TEST-*.xml
 
       - name: Build image
         id: docker_build
