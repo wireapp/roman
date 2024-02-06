@@ -42,10 +42,10 @@ jerseyClient:
   retries: 3
   userAgent: roman
   tls:
-    protocol: TLSv1.2
+    protocol: TLSv1.3
     provider: SunJSSE
     supportedProtocols:
-      - TLSv1.1
+      - TLSv1.3
       - TLSv1.2
 
 database:
