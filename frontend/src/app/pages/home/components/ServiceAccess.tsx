@@ -23,7 +23,7 @@ export default function ServiceAccessInfo(accessInfo: ServiceAccessInfoProps) {
           InputProps={{
             readOnly: true
           }}
-          helperText={'Service code is used to enable the service in the team settings.'}
+          helperText={'Service code is made of ProviderID and ServiceID separated by a colon.'}
         />
         <Divider/>
 
