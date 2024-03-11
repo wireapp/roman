@@ -381,6 +381,7 @@ public class MessageHandler extends MessageHandlerBase {
         OutgoingMessage message = new OutgoingMessage();
         message.botId = botId;
         message.type = "conversation.bot_removed";
+        message.conversationId = msg.conversation.id;
 
         if (!send(message))
             Logger.info("onBotRemoved: failed to deliver message");
