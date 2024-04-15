@@ -8,7 +8,17 @@ import com.wire.bots.roman.model.IncomingMessage;
 import com.wire.bots.roman.model.Mention;
 import com.wire.lithium.ClientRepo;
 import com.wire.xenon.WireClient;
-import com.wire.xenon.assets.*;
+import com.wire.xenon.assets.AssetBase;
+import com.wire.xenon.assets.AudioAsset;
+import com.wire.xenon.assets.AudioPreview;
+import com.wire.xenon.assets.ButtonActionConfirmation;
+import com.wire.xenon.assets.Calling;
+import com.wire.xenon.assets.FileAsset;
+import com.wire.xenon.assets.FileAssetPreview;
+import com.wire.xenon.assets.ImageAsset;
+import com.wire.xenon.assets.ImagePreview;
+import com.wire.xenon.assets.MessageText;
+import com.wire.xenon.assets.Poll;
 import com.wire.xenon.backend.models.Conversation;
 import com.wire.xenon.exceptions.MissingStateException;
 import com.wire.xenon.models.AssetKey;
@@ -230,6 +240,7 @@ public class Sender {
         asset.setAssetToken(meta.assetToken);
         asset.setSha256(Base64.getDecoder().decode(meta.sha256));
         asset.setOtrKey(Base64.getDecoder().decode(meta.otrKey));
+        asset.setDomain(meta.domain);
     }
 
     private AssetKey uploadAssetData(WireClient wireClient, AssetBase asset) throws Exception {
