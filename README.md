@@ -83,7 +83,7 @@ result.
 In order to receive events via _Websocket_ connect to:
 
 ```
-wss://proxy.services.wire.com/api/await/`<app_key>`
+wss://proxy.services.wire.com/await/`<app_key>`
 ```
 
 ### Events that are sent as HTTP `POST` to your endpoint (Webhook or Websocket)
