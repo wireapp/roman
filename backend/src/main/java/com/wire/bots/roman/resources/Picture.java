@@ -8,6 +8,7 @@ public class Picture extends ImagePreview {
 
     private boolean aPublic;
     private final byte[] imageData;
+    private final String mimeType;
     private int width;
     private int height;
     private String retention;
@@ -16,6 +17,7 @@ public class Picture extends ImagePreview {
     {
         super(UUID.randomUUID(), mimeType);
         this.imageData = image;
+        this.mimeType = mimeType;
     }
 
     public void setPublic(boolean aPublic) {
@@ -44,5 +46,9 @@ public class Picture extends ImagePreview {
 
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    public String getMimeType() {
+        return mimeType;
     }
 }
