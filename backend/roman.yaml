@@ -22,7 +22,7 @@ logging:
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
 swagger:
-  # make sure that this settings is the same as "server.rootPath"
+  # make sure that these settings is the same as "server.rootPath"
   uriPrefix: /api
   title: Roman Swagger
   description: Roman - Wire Bots Proxy

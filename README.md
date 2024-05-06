@@ -334,7 +334,7 @@ or
 
 Full description: https://proxy.services.wire.com/swagger#!/default/post
 
-**Note:** `token` that comes with `conversation.init` events is _lifelong_. It should be stored for later usage. `token`
+**Note:** `token` that comes with `conversation.bot_request` events is _lifelong_. It should be stored for later usage. `token`
 that comes with other event types has lifespan of 20 seconds.
 
 ### Bot Examples
