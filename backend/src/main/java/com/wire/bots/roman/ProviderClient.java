@@ -197,7 +197,7 @@ public class ProviderClient {
         Response response = providerTarget
                 .path("provider")
                 .path("assets")
-                .request(MediaType.TEXT_PLAIN)
+                .request(MediaType.APPLICATION_JSON)
                 .cookie(cookie)
                 .post(Entity.entity(os.toByteArray(), "multipart/mixed; boundary=frontier"));
 
