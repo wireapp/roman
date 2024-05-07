@@ -26,6 +26,7 @@ import org.jdbi.v3.core.Jdbi;
 import static com.wire.bots.roman.Tools.generateToken;
 
 @Api
+@Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ProviderResource {
