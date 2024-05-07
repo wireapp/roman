@@ -12,22 +12,22 @@ import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.tools.Logger;
 import io.dropwizard.validation.ValidationMethod;
 import io.swagger.annotations.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import org.hibernate.validator.constraints.Length;
-import org.jdbi.v3.core.Jdbi;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.hibernate.validator.constraints.Length;
+import org.jdbi.v3.core.Jdbi;
 
 import static com.wire.bots.roman.Tools.generateToken;
 
 @Api
-@Path("/")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class ProviderResource {
 
     private final ProviderClient providerClient;

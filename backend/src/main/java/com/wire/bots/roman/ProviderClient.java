@@ -160,7 +160,7 @@ public class ProviderClient {
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
 
-    public String uploadProfilePicture(Cookie cookie, byte[] image, String mimeType) throws Exception {
+    public AssetKey uploadProfilePicture(Cookie cookie, byte[] image, String mimeType) throws Exception {
         final boolean isPublic = true;
         final String retention = "eternal";
         String strMetadata = String.format("{\"public\": %s, \"retention\": \"%s\"}", isPublic, retention);
@@ -196,18 +196,17 @@ public class ProviderClient {
         Response response = providerTarget
                 .path("provider")
                 .path("assets")
-                .request(MediaType.APPLICATION_JSON_TYPE)
+                .request(MediaType.TEXT_PLAIN)
                 .cookie(cookie)
                 .post(Entity.entity(os.toByteArray(), "multipart/mixed; boundary=frontier"));
 
         if (response.getStatus() >= 400) {
-            Logger.warning(response.readEntity(String.class));
-            return null;
+            String msg = response.readEntity(String.class);
+            Logger.warning(msg);
+            throw new Exception(msg);
         }
 
-        AssetKey assetKey = response.readEntity(AssetKey.class);
-
-        return assetKey.id;
+        return response.readEntity(AssetKey.class);
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

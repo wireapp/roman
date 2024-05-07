@@ -11,6 +11,7 @@ import com.wire.bots.roman.model.Config;
 import com.wire.bots.roman.model.Provider;
 import com.wire.bots.roman.model.Service;
 import com.wire.xenon.backend.models.ErrorMessage;
+import com.wire.xenon.models.AssetKey;
 import com.wire.xenon.tools.Logger;
 import io.dropwizard.validation.ValidationMethod;
 import io.swagger.annotations.*;
@@ -39,6 +40,7 @@ import static com.wire.bots.roman.Const.Z_ROMAN;
 @Api
 @Path("/service")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class ServiceResource {
     private static final String PROFILE_KEY = "3-1-c9262f6f-892f-40d5-9349-fbeb62c8aba4";
 
@@ -98,9 +100,9 @@ public class ServiceResource {
                     if (image != null) {
                         String mimeType = "image/png";
                         Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image, mimeType));
-                        String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mimeType);
-                        service.assets.get(0).key = key;
-                        service.assets.get(1).key = key;
+                        AssetKey assetKey = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mimeType);
+                        service.assets.get(0).key = assetKey.id;
+                        service.assets.get(1).key = assetKey.id;
                     }
                 }
             }
@@ -213,8 +215,8 @@ public class ServiceResource {
                 byte[] image = Base64.getDecoder().decode(payload.avatar);
                 String mimeType = "image/jpeg";
                 Picture mediumImage = ImageProcessor.getMediumImage(new Picture(image, mimeType));
-                String key = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mimeType);
-                providerClient.updateServiceAvatar(cookie, provider.serviceId, key);
+                AssetKey assetKey = providerClient.uploadProfilePicture(cookie, mediumImage.getImageData(), mimeType);
+                providerClient.updateServiceAvatar(cookie, provider.serviceId, assetKey.id);
             }
 
             provider = providersDAO.get(providerId);
