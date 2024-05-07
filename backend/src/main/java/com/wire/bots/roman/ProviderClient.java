@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.*;
 import org.glassfish.jersey.logging.LoggingFeature;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -202,8 +203,8 @@ public class ProviderClient {
 
         if (response.getStatus() >= 400) {
             String msg = response.readEntity(String.class);
-            Logger.warning(msg);
-            throw new Exception(msg);
+            Logger.warning("Error uploading asset: %s, status: %d", msg, response.getStatus());
+            throw new IOException(response.getStatusInfo().getReasonPhrase());
         }
 
         return response.readEntity(AssetKey.class);
