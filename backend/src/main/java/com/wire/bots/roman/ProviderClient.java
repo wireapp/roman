@@ -199,7 +199,7 @@ public class ProviderClient {
                 .path("assets")
                 .request(MediaType.APPLICATION_JSON)
                 .cookie(cookie)
-                .post(Entity.entity(os.toByteArray(), "multipart/mixed; boundary=frontier"));
+                .post(Entity.entity(os.toByteArray(), "multipart/mixed"));
 
         if (response.getStatus() >= 400) {
             String msg = response.readEntity(String.class);
