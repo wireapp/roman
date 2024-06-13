@@ -71,3 +71,5 @@ romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-}
 
 # optional enabling of CORS - in format a.domain.com,another.domain.com
 allowedCors: ${ALLOWED_CORS}
+
+healthchecks: false

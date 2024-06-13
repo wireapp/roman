@@ -194,20 +194,21 @@ public class ProviderClient {
         os.write(image);
         os.write("\r\n--frontier--\r\n".getBytes(StandardCharsets.UTF_8));
 
-        Response response = providerTarget
+        try (Response response = providerTarget
                 .path("provider")
                 .path("assets")
                 .request(MediaType.APPLICATION_JSON)
                 .cookie(cookie)
-                .post(Entity.entity(os.toByteArray(), MediaType.APPLICATION_JSON));
+                .post(Entity.entity(os.toByteArray(), "multipart/mixed; boundary=frontier"))) {
 
-        if (response.getStatus() >= 400) {
-            String msg = response.readEntity(String.class);
-            Logger.warning("Error uploading asset: %s, status: %d", msg, response.getStatus());
-            throw new IOException(response.getStatusInfo().getReasonPhrase());
+            if (response.getStatus() >= 400) {
+                String msg = response.readEntity(String.class);
+                Logger.warning("Error uploading asset: %s, status: %d", msg, response.getStatus());
+                throw new IOException(response.getStatusInfo().getReasonPhrase());
+            }
+
+            return response.readEntity(AssetKey.class);
         }
-
-        return response.readEntity(AssetKey.class);
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
