@@ -34,6 +34,7 @@ import static com.wire.bots.roman.Const.PROVIDER_ID;
 @Api
 @Path("/broadcast")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class BroadcastResource {
     private final Sender sender;
     private final BotsDAO botsDAO;

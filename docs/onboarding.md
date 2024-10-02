@@ -190,8 +190,8 @@ Now when we have a functional bot with a public URL, we need to register it in W
 }
 ```
 
-From this JSON you will need `service_code` *(in our case `41c5e09f-4867-43d9-b74f-12b27148469a:96917b38-b5d3-4217-bee8-d77569b3c4dc`)*
-for the following steps.
+From this JSON you will need the `service_code` *(in our case `41c5e09f-4867-43d9-b74f-12b27148469a:96917b38-b5d3-4217-bee8-d77569b3c4dc`)*
+for the next steps. The `service_code` is nothing but the combination of your `ProviderID` and `ServiceID` separated by `:`. `ServiceID` is the id of the service you have just created. `ProviderID` and `ServiceID` are needed in the next step.
 
 ## 5. Whitelisting the Bot
 

@@ -9,20 +9,18 @@ import com.wire.xenon.backend.models.ErrorMessage;
 import com.wire.xenon.backend.models.User;
 import com.wire.xenon.tools.Logger;
 import io.swagger.annotations.*;
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.UUID;
 
 @Api
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class UsersResource {
     private final ClientRepo repo;
 

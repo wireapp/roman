@@ -22,7 +22,7 @@ logging:
     "com.wire.bots.logger": ${LOG_LEVEL:-INFO}
 
 swagger:
-  # make sure that this settings is the same as "server.rootPath"
+  # make sure that these settings is the same as "server.rootPath"
   uriPrefix: /api
   title: Roman Swagger
   description: Roman - Wire Bots Proxy
@@ -42,10 +42,10 @@ jerseyClient:
   retries: 3
   userAgent: roman
   tls:
-    protocol: TLSv1.2
+    protocol: TLSv1.3
     provider: SunJSSE
     supportedProtocols:
-      - TLSv1.1
+      - TLSv1.3
       - TLSv1.2
 
 database:
@@ -71,3 +71,5 @@ romanPubKeyBase64: ${ROMAN_PUB_KEY_BASE64:-}
 
 # optional enabling of CORS - in format a.domain.com,another.domain.com
 allowedCors: ${ALLOWED_CORS}
+
+healthchecks: false

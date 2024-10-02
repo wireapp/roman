@@ -6,7 +6,7 @@
 
     <groupId>com.wire.bots</groupId>
     <artifactId>roman</artifactId>
-    <version>1.19.0</version>
+    <version>1.19.3</version>
 
     <name>Roman</name>
     <description>Wire Bot API Proxy</description>
@@ -28,8 +28,8 @@
 
         <maven.test.skip>true</maven.test.skip>
 
-        <lithium.version>3.6.0</lithium.version>
-        <dropwizard.version>4.0.0</dropwizard.version>
+        <lithium.version>3.6.4</lithium.version>
+        <dropwizard.version>4.0.7</dropwizard.version>
         <jwt.version>0.11.5</jwt.version>
         <junit5.version>5.8.2</junit5.version>
         <jetty.version>11.0.18</jetty.version>
@@ -68,9 +68,17 @@
             <artifactId>dropwizard-servlets</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-jdbi3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.smoketurner</groupId>
             <artifactId>dropwizard-swagger</artifactId>
-            <version>4.0.0-1</version>
+            <version>4.0.5-1</version>
         </dependency>
         <!-- MIGRATION TO JAKARTA JETTY 11 -->
         <dependency>
@@ -102,12 +110,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.15.1</version>
+            <version>2.17.1</version>
         </dependency>
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>4.0.1</version>
+            <version>4.0.2</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -178,6 +186,21 @@
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.2</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit-platform</artifactId>
+                        <version>3.2.2</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <argLine>-Djava.library.path=/wire/cryptobox/dist/lib</argLine>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

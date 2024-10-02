@@ -1,3 +1,6 @@
+docker-run-tests:
+	./test.sh
+
 db:
 	docker-compose up -d db
 

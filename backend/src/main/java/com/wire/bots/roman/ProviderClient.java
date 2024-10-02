@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.*;
 import org.glassfish.jersey.logging.LoggingFeature;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -160,7 +161,7 @@ public class ProviderClient {
                 .put(Entity.entity(updateService, MediaType.APPLICATION_JSON));
     }
 
-    public String uploadProfilePicture(Cookie cookie, byte[] image, String mimeType) throws Exception {
+    public AssetKey uploadProfilePicture(Cookie cookie, byte[] image, String mimeType) throws Exception {
         final boolean isPublic = true;
         final String retention = "eternal";
         String strMetadata = String.format("{\"public\": %s, \"retention\": \"%s\"}", isPublic, retention);
@@ -193,21 +194,21 @@ public class ProviderClient {
         os.write(image);
         os.write("\r\n--frontier--\r\n".getBytes(StandardCharsets.UTF_8));
 
-        Response response = providerTarget
+        try (Response response = providerTarget
                 .path("provider")
                 .path("assets")
-                .request(MediaType.APPLICATION_JSON_TYPE)
+                .request(MediaType.APPLICATION_JSON)
                 .cookie(cookie)
-                .post(Entity.entity(os.toByteArray(), "multipart/mixed; boundary=frontier"));
+                .post(Entity.entity(os.toByteArray(), "multipart/mixed; boundary=frontier"))) {
 
-        if (response.getStatus() >= 400) {
-            Logger.warning(response.readEntity(String.class));
-            return null;
+            if (response.getStatus() >= 400) {
+                String msg = response.readEntity(String.class);
+                Logger.warning("Error uploading asset: %s, status: %d", msg, response.getStatus());
+                throw new IOException(response.getStatusInfo().getReasonPhrase());
+            }
+
+            return response.readEntity(AssetKey.class);
         }
-
-        AssetKey assetKey = response.readEntity(AssetKey.class);
-
-        return assetKey.id;
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

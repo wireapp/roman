@@ -46,10 +46,11 @@ jobs:
             release_version=${{ github.event.inputs.tag }}
       # Send webhook to Wire using Slack Bot
       - name: Webhook to Wire
-        uses: 8398a7/action-slack@v2
+        uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
           author_name: Roman Quay Custom Tag Pipeline
+          fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.WEBHOOK_CI }}
         # Send message only if previous step failed
