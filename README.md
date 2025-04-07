@@ -574,3 +574,7 @@ or directly:
 ## Comprehensive tutorial how to onboard new bot
 
 Step-by-step guide, how to create a simple bot for Roman - [onboarding.md](docs/onboarding.md).
+
+## Comprehensive tutorial how to update the public key after the certificate renewal
+
+Step-by-step guide, how to update bots public key manually - [public-key-refresh.md](docs/public-key-refresh.md).
