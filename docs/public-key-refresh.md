@@ -6,7 +6,7 @@ Periodically, the certificates need to be updated.
 
 ## Requirements
 
-- Wire Team account with admin permissions.
+- Wire Provider account.
 - Roman instance *(you can use public Roman running [here](https://proxy.services.wire.com/))*, in this guide we will be
   using [internal staging Roman](https://roman.integrations.zinfra.io/swagger) with URL `https://roman.integrations.zinfra.io`.
     - Please note that Wire Staging environment is accessible only for the Wire development team and if you create the bot here, you won't
